@@ -1,0 +1,24 @@
+Package: AMRgen
+Title: Genotype-Phenotype Integration for Antimicrobial Resistance Research
+Version: 0.0.0.9000
+Date: 2024-11-29
+Authors@R: c(
+    person(family = "Berends", c("Matthijs", "S."), comment = c(ORCID = "0000-0001-7620-1800"), email = "m.s.berends@umcg.nl", role = c("aut", "cre")),
+    person(family = "Couto",   c("Natacha"),        comment = c(ORCID = "0000-0002-9152-5464"), role = "aut"),
+    person(family = "Hawkey",  c("Jane"),           comment = c(ORCID = "0000-0001-9661-5293"), role = "aut"),
+    person(family = "Holt",    c("Kat"),            comment = c(ORCID = "0000-0003-3949-2471"), role = "aut"))
+Description: 
+    The AMRgen package provides tools for interpreting antimicrobial resistance (AMR) genes, 
+    integrating genomic data with phenotypic antimicrobial susceptibility testing (AST) data, 
+    and calculating genotype-phenotype associations. This package extends the functionality 
+    of the AMR package, enabling researchers to fetch MIC distribution data from EUCAST, 
+    visualise multidrug resistance patterns using UpSet plots, and generate NCBI-compliant 
+    antibiograms. Designed for AMR research and surveillance, AMRgen aims to support data-driven 
+    decision-making in combating AMR on a global scale.
+License: GPL-3 | file LICENSE
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
