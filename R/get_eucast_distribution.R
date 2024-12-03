@@ -193,7 +193,7 @@ print.compare_eucast <- function(x, ...) {
 #' @noRd
 #' @importFrom tidyr pivot_longer
 #' @importFrom ggplot2 autoplot ggplot aes labs geom_col
-#' @importFrom AMR scale_x_mic
+# @importFrom AMR scale_x_mic
 #' @method autoplot compare_eucast
 #' @export
 autoplot.compare_eucast <- function(object, ...) {
@@ -204,6 +204,6 @@ autoplot.compare_eucast <- function(object, ...) {
     pivot_longer(-value, names_to = "Source", values_to = "count")
   ggplot(long, aes(x = value, y = count, fill = Source)) +
     geom_col(position = "dodge") +
-    labs(x = "Measurement Value", y = "Density") +
-    scale_x_mic(keep_operators = "none")
+    labs(x = "Measurement Value", y = "Density") # +
+    # scale_x_mic(keep_operators = "none")
 }
