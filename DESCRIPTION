@@ -16,7 +16,13 @@ Description:
     antibiograms. Designed for AMR research and surveillance, AMRgen aims to support data-driven 
     decision-making in combating AMR on a global scale.
 License: GPL-3 | file LICENSE
-Suggests: 
+Imports:
+    AMR (>= 2.1.1),
+    dplyr (>= 1.1.0),
+    ggplot2 (>= 3.1.0),
+    rvest (>= 1.0.0),
+    tidyr (>= 1.1.0)
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
