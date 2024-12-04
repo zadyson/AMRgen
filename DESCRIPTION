@@ -15,7 +15,6 @@ Description:
     visualise multidrug resistance patterns using UpSet plots, and generate NCBI-compliant 
     antibiograms. Designed for AMR research and surveillance, AMRgen aims to support data-driven 
     decision-making in combating AMR on a global scale.
-License: GPL-3 | file LICENSE
 Imports:
     AMR (>= 2.1.1),
     dplyr (>= 1.1.0),
@@ -24,6 +23,8 @@ Imports:
     tidyr (>= 1.1.0)
 Suggests:
     testthat (>= 3.0.0)
+License: GPL-3 | file LICENSE
+URL: https://interpretAMR.github.io/AMRgen/, https://github.com/interpretAMR/AMRgen
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

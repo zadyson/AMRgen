@@ -1,5 +1,5 @@
 # Site metadata
-url: 'https://interpretamr.github.io/AMRgen'
+url: 'https://interpretAMR.github.io/AMRgen'
 title: 'AMRgen'
 
 # Template settings
@@ -10,42 +10,22 @@ template:
 
 # Navbar configuration
 navbar:
-  structure:
-    left:
-      - text: 'Get Started'
-        href: articles/AMRgen.html
-      - text: 'Reference'
-        href: reference/index.html
-      - text: 'Articles'
-        menu:
-          - text: 'Introduction'
-            href: articles/AMRgen.html
-          # Add more articles as needed
-    right:
-      - icon: fab fa-github
-        href: https://github.com/interpretAMR/AMRgen
-
-# Reference section grouping
-# reference:
-#   - title: 'Core Functions'
-#     desc: 'Primary functions for resistance interpretation'
-#     contents:
-#       - function1
-#       - function2
-#   - title: 'Utilities'
-#     desc: 'Helper functions'
-#     contents:
-#       - function3
-#       - function4
-
-# Articles (vignettes) configuration
-# articles:
-#   - title: 'Introduction to AMRgen'
-#     contents:
-#       - AMRgen
-#   # Add more articles as needed
+  title: "AMRgen"
+  left:
+    - text: 'Get Started'
+      href: "articles/AMRgen.html"
+    - text: 'Reference'
+      href: "reference/index.html"
+  right:
+    - text: "Source Code"
+      icon: "fab fa-github"
+      href: "https://interpretAMR.github.io/AMRgen"
 
 # Footer configuration
 footer:
-  left: '© 2024 interpretAMR-AMRgen Development Team'
-  right: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'
+  structure:
+    left: [devteam]
+    right: [goal]
+  components:
+    devteam: '© 2024 interpretAMR-AMRgen Development Team'
+    goal: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'
