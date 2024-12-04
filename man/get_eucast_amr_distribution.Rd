@@ -6,7 +6,7 @@
 \alias{get_eucast_disk_distribution}
 \alias{compare_mic_with_eucast}
 \alias{compare_disk_with_eucast}
-\title{Retrieve Antimicrobial Wild Type Distributions from EUCAST}
+\title{Get and Compare Antimicrobial Wild Type Distributions from EUCAST}
 \usage{
 get_eucast_amr_distribution(
   ab,
@@ -24,47 +24,53 @@ compare_mic_with_eucast(mics, ab, mo = NULL)
 compare_disk_with_eucast(disks, ab, mo = NULL)
 }
 \arguments{
-\item{ab}{antimicrobial, can be anything understood by \code{\link[=ab_name]{ab_name()}}}
+\item{ab}{antimicrobial, can be anything understood by \code{\link[AMR:ab_property]{ab_name()}}}
 
-\item{mo}{microorganism, can be anything understood by \code{\link[=mo_name]{mo_name()}} (can be left blank)}
+\item{mo}{microorganism, can be anything understood by \code{\link[AMR:mo_property]{mo_name()}} (can be left blank)}
 
 \item{method}{either \code{"MIC"} or \code{"disk"}/\code{"diff"}}
 
-\item{as_freq_table}{either \code{TRUE} or \code{FALSE}, to return result as frequency table}
+\item{as_freq_table}{either \code{TRUE} (default) or \code{FALSE}, to return result as frequency table}
 
-\item{mics}{MIC values of class \code{\link[AMR:as.mic]{mic}}}
+\item{mics}{MIC values, will be coerced with \code{\link[AMR:as.mic]{as.mic()}}}
 
-\item{disks}{Disk diffusion values of class \code{\link[AMR:as.disk]{disk}}}
+\item{disks}{Disk diffusion values, will be coerced with \code{\link[AMR:as.disk]{as.disk()}}}
 }
 \description{
 These functions allow retrieval of antimicrobial wild type distributions, live from \href{https://mic.eucast.org}{eucast.org}.
 }
 \details{
+The \verb{compare_*_with_eucast()} functions allow to compare a user range with EUCAST distributions. Use \code{\link[ggplot2:autoplot]{ggplot2::autoplot()}} on the output to visualise the results.
+\subsection{Supported Antimicrobials}{
+
 In December 2024, EUCAST had 176 distributions available, namely for these antimicrobials:
 
 Amikacin, amoxicillin, amoxicillin/clavulanic acid, amphotericin B, ampicillin, ampicillin/sulbactam, anidulafungin, apramycin, aspoxicillin, avilamycin, azithromycin, aztreonam, aztreonam/avibactam, bacitracin, bedaquiline, benzylpenicillin, capreomycin, cefaclor, cefadroxil, cefalexin, cefaloridine, cefalotin, cefapirin, cefazolin, cefdinir, cefepime, cefepime/tazobactam, cefepime/zidebactam, cefiderocol, cefixime, cefoperazone, cefoperazone/sulbactam, cefoselis, cefotaxime, cefotetan, cefovecin, cefoxitin, cefpirome, cefpodoxime, cefpodoxime/clavulanic acid, cefquinome, ceftaroline, ceftazidime, ceftazidime/avibactam, ceftibuten, ceftiofur, ceftobiprole, ceftolozane/tazobactam, ceftriaxone, cefuroxime, cephradine, chloramphenicol, chlortetracycline, ciprofloxacin, clarithromycin, clavulanic acid, clinafloxacin, clindamycin, clofazimine, cloxacillin, colistin, cycloserine, dalbavancin, danofloxacin, daptomycin, delafloxacin, delamanid, dicloxacillin, difloxacin, doripenem, doxycycline, enrofloxacin, eravacycline, ertapenem, erythromycin, ethambutol, ethionamide, faropenem, fidaxomicin, florfenicol, flucloxacillin, fluconazole, flucytosine, flumequine, fosfomycin, fusidic acid, gamithromycin, gatifloxacin, gemifloxacin, gentamicin, imipenem, imipenem/relebactam, isavuconazole, isoniazid, itraconazole, kanamycin, ketoconazole, lefamulin, levofloxacin, lincomycin, linezolid, loracarbef, marbofloxacin, mecillinam, meropenem, meropenem/vaborbactam, metronidazole, micafungin, minocycline, moxifloxacin, mupirocin, nalidixic acid, narasin, neomycin, netilmicin, nitrofurantoin, nitroxoline, norfloxacin, norvancomycin, ofloxacin, omadacycline, orbifloxacin, oritavancin, oxacillin, oxolinic acid, oxytetracycline, pefloxacin, phenoxymethylpenicillin, piperacillin, piperacillin/tazobactam, pirlimycin, posaconazole, pradofloxacin, pristinamycin, pyrazinamide, quinupristin/dalfopristin, retapamulin, rezafungin, rifabutin, rifampicin, roxithromycin, secnidazole, sitafloxacin, spectinomycin, spiramycin, streptomycin, sulbactam, sulfadiazine, sulfamethoxazole, sulfisoxazole, tedizolid, teicoplanin, telavancin, telithromycin, temocillin, terbinafine, tetracycline, thiamphenicol, tiamulin, ticarcillin, ticarcillin/clavulanic acid, tigecycline, tildipirosin, tilmicosin, tobramycin, trimethoprim, trimethoprim/sulfamethoxazole, tulathromycin, tylosin, tylvalosin, vancomycin, viomycin, and voriconazole.
 
-The \verb{compare_*_with_eucast()} functions allow to compare a user range with EUCAST distributions. Use \code{\link[=autoplot]{autoplot()}} on the output to visualise the results.
+For the current list, run \code{\link[=eucast_supported_ab_distributions]{eucast_supported_ab_distributions()}}.
+}
 }
 \examples{
 get_eucast_mic_distribution("cipro")
+
+# not returning as frequency table
 get_eucast_mic_distribution("cipro", as_freq_table = FALSE)
 
+# specify microorganism to only get results for that pathogen
 get_eucast_mic_distribution("cipro", "K. pneumoniae")
+
 get_eucast_disk_distribution("cipro", "K. pneumoniae")
 
 
 # Plotting ----------------------------------------------------------------
 
-library(ggplot2)
-
 mic_data <- get_eucast_mic_distribution("cipro", "K. pneumoniae")
 mics <- rep(mic_data$mic, mic_data$count)
-autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my MICs!")
+ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my MICs!")
 
 disk_data <- get_eucast_disk_distribution("cipro", "K. pneumoniae")
 disks <- rep(disk_data$disk_diffusion, disk_data$count)
-autoplot(disks, ab = "cipro", mo = "K. pneumoniae", title = "Look at my diffusion zones!")
+ggplot2::autoplot(disks, ab = "cipro", mo = "K. pneumoniae", title = "Look at my diffusion zones!")
 
 
 # Comparing With User Values ----------------------------------------------
@@ -72,5 +78,5 @@ autoplot(disks, ab = "cipro", mo = "K. pneumoniae", title = "Look at my diffusio
 my_mic_values <- AMR::random_mic(500)
 comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "K. pneumoniae")
 comparison
-autoplot(comparison)
+ggplot2::autoplot(comparison)
 }
