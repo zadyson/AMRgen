@@ -5,8 +5,7 @@ title: 'AMRgen'
 # Template settings
 template:
   bootstrap: 5
-  bootswatch: cerulean  # Optional: choose a Bootswatch theme
-  light-switch: true    # Enable light/dark mode toggle
+  bootswatch: Yeti  # Optional: choose a Bootswatch theme
 
 # Navbar configuration
 navbar:
