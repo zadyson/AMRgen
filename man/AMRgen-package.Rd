@@ -8,6 +8,14 @@
 \description{
 The AMRgen package provides tools for interpreting antimicrobial resistance (AMR) genes, integrating genomic data with phenotypic antimicrobial susceptibility testing (AST) data, and calculating genotype-phenotype associations. This package extends the functionality of the AMR package, enabling researchers to fetch MIC distribution data from EUCAST, visualise multidrug resistance patterns using UpSet plots, and generate NCBI-compliant antibiograms. Designed for AMR research and surveillance, AMRgen aims to support data-driven decision-making in combating AMR on a global scale.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://interpretAMR.github.io/AMRgen/}
+  \item \url{https://github.com/interpretAMR/AMRgen}
+}
+
+}
 \author{
 \strong{Maintainer}: Matthijs S. Berends \email{m.s.berends@umcg.nl} (\href{https://orcid.org/0000-0001-7620-1800}{ORCID})
 
