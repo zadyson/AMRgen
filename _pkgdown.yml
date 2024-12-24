@@ -10,20 +10,20 @@ template:
 
 # Navbar configuration
 navbar:
-  structure:
-    left:
-      - text: 'Get Started'
-        href: articles/AMRgen.html
-      - text: 'Reference'
-        href: reference/index.html
-      - text: 'Articles'
-        menu:
-          - text: 'Introduction'
-            href: articles/AMRgen.html
-          # Add more articles as needed
-    right:
-      - icon: fab fa-github
-        href: https://github.com/interpretAMR/AMRgen
+  left:
+    - text: 'Get Started'
+      href: 'articles/AMRgen.html'
+    - text: 'Reference'
+      href: 'reference/index.html'
+    - text: 'Articles'
+      menu:
+        - text: 'Introduction'
+          href: 'articles/AMRgen.html'
+        # Add more articles as needed
+  right:
+    - text: "Source Code"
+      icon: "fab fa-github"
+      href: "https://github.com/interpretAMR/AMRgen"
 
 # Reference section grouping
 # reference:
@@ -38,14 +38,7 @@ navbar:
 #       - function3
 #       - function4
 
-# Articles (vignettes) configuration
-# articles:
-#   - title: 'Introduction to AMRgen'
-#     contents:
-#       - AMRgen
-#   # Add more articles as needed
-
 # Footer configuration
 footer:
-  left: '© 2024 interpretAMR-AMRgen Development Team'
+  left: 'Free and Open Source (GPL-2), brought by interpretAMR-AMRgen Development Team'
   right: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'
