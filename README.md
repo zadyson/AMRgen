@@ -85,7 +85,6 @@ optionally:
   - interpret SIR if required (as.sir; requires either a species column, or that all rows are a single species)
 * filter both files to the required sample sets (e.g. filter on species, check common sample identifiers exist)
 * pass filtered genotype & phenotype objects (which have common sample identifiers) to functions for
-- cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV
-- upset plots showing MIC/DD distribution stratified by genotype profile
-- generating binary matrix of SIR vs marker presence/absence suitable for regression modelling
-
+  - cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV
+  - upset plots showing MIC/DD distribution stratified by genotype profile
+  - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling
