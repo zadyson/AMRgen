@@ -64,7 +64,6 @@ optionally:
   
 genotype parsers should be generating all 4 fields
 
-
 ### Definition: 'phenotype' dataframe
 
 required fields:
@@ -73,15 +72,27 @@ required fields:
 
 at least one of:
 - a column of class 'disk' or 'mic'
-- a column of class sir
+- a column of class 'sir'
 
 optionally:
 - a column indicating the species (S3 class mo; to facilitate interpretation)
 
+### function to import NCBI AST file into a suitable 'phenotype' dataframe: import_ncbi_ast
+- input = filepath to a NCBI AST file (e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas%20aeruginosa)
+- rename `#BioSample` column -> new column  'biosample'
+- map key columns to AMR classes:
+  - `Antibiotic` -> as.ab -> new column 'drug_agent' (class ab)
+  - `Scientific name` -> as.mo -> new column 'spp_pheno' (class mo)
+  - `MIC (mg/L)` -> as.mic -> new column 'mic' (class mic)
+  - `Disk diffusion (mm)` -> as.disk -> new column 'disk' (class disk)
+  - `Testing standard` -> new column 'guideline' (character; value = 'CLSI' if specified, otherwise default to 'EUCAST')
+- optionally (on by default), interpret any mic or disk columns using the ab, mo, guideline values - new column 'pheno' (class sir)
+- return = dataframe with the input NCBI AST file contents with the new columns added
+
 ### Expected workflow
 
 * import genotype data -> genotype dataframe
-* import phenotype data -> phenotype dataframe
+* import phenotype data -> phenotype dataframe (e.g. `import_ncbi_ast`)
   - interpret SIR if required (as.sir; requires either a species column, or that all rows are a single species)
 * filter both files to the required sample sets (e.g. filter on species, check common sample identifiers exist)
 * pass filtered genotype & phenotype objects (which have common sample identifiers) to functions for
