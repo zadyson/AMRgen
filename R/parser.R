@@ -1,6 +1,27 @@
 require(AMR)
 require(tidyverse)
 
+#' @title Gene Class and AMR Parsing Functions
+#' @description Functions to create a custom "gene" class and parse AMR data.
+#' @importFrom AMR as.ab
+#' @importFrom tidyverse read_tsv filter add_column separate_longer_delim left_join select mutate
+#' @param x A character vector to be converted to a "gene" class.
+#' @param input_table A file path to the input table containing AMR data.
+#' @param sample_col A character specifying the sample column in the input file.
+#' @param amrfp_drugs A data frame containing AMRFinderPlus drug classes and agents. Defaults to `amrfp_drugs_table`.
+#' @return For `as.gene`, an object of class "gene". For `parse_amrfp`, a data frame with parsed AMR data.
+#' @examples
+#' \dontrun{
+#' # Create a gene object
+#' gene <- as.gene(c("gene1", "gene2"))
+#' print(gene)
+#'
+#' # Parse AMR data
+#' parsed_data <- parse_amrfp("path/to/input_table.tsv", "SampleID")
+#' }
+#' @export
+
+#' @rdname as.gene
 as.gene <- function(x){
   # Check x is a character vector
   if(!is.character(x)) {
@@ -10,15 +31,18 @@ as.gene <- function(x){
   structure(x, class = c("gene", class(x)))
 }
 
-# Define a print method for the "gene" class
+#' @rdname as.gene
+#' @export
 print.gene <- function(x, ...) {
   cat("An object of class 'gene':\n")
   print(unclass(x), ...)
 }
 
-amrfp_drugs <- read_tsv("amrfp_drug_classes_agents.tsv")
+amrfp_drugs_table <- read_tsv("amrfp_drug_classes_agents.tsv")
 
-parse_amrfp <- function(input_table, amrfp_drugs){
+#' @rdname parse_amrfp
+#' @export
+parse_amrfp <- function(input_table, sample_col, amrfp_drugs=amrfp_drugs_table){
   # read in the table
   in_table <- read_tsv(input_table)
   # filter to only include AMR elements
@@ -36,12 +60,13 @@ parse_amrfp <- function(input_table, amrfp_drugs){
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
   in_table_subclass_split <- in_table_gene %>% separate_longer_delim(Subclass, "/")
   
-  
   # make two new columns - drug_class and drug_agent, where we control the vocab for the AMRFinderPlus Subclass column
   # into something that is comparable with the drugs in the AMR package
-  in_table_ab <- in_table_subclass_split %>% left_join(., amrfp_drugs, by=c("Subclass"="AFP_Subclass"))
-  
-  # turn the drug agent column into the ab class with as.ab
+  in_table_ab <- in_table_subclass_split %>% left_join(., amrfp_drugs[,c("AFP_Subclass", "drug_agent", "drug_class")], by=c("Subclass"="AFP_Subclass")) %>%
+    select(all_of(sample_col), marker, drug_agent, drug_class, everything())
+
+  # convert drug_agent into the "ab" class (will leave NAs as is)
+  in_table_ab <- in_table_ab %>% mutate(drug_agent = as.ab(drug_agent))
   
   return(in_table_ab)
 }
