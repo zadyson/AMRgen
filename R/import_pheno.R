@@ -4,13 +4,13 @@
 #' the data, and optionally interprets the results based on MIC or disk diffusion data.
 #' It assumes that the input file is a delimited text file (e.g., CSV, TSV) and
 #' parses relevant columns (antibiotic names, species names, MIC or disk data) into 
-#' suitable classes using the AMR package. It also uses the AMR package to determine 
-#' susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines
+#' suitable classes using the AMR package. It optionally can use the AMR package to  
+#' determine susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines.
 #'
 #' @param file A string representing the path to the delimited file containing the AST data 
 #'    in NCBI antibiogram format. These files can be downloaded from the NCBI AST browser, 
 #'    e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas%20aeruginosa
-#' @param interpret A logical value (default is TRUE). If `TRUE`, the function will interpret 
+#' @param interpret A logical value (default is FALSE). If `TRUE`, the function will interpret 
 #'   the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion 
 #'   values, and either EUCAST or CLSI testing standard (as indicated in the `Testing standard`
 #'   column of the input file, if blank EUCAST will be used by default). If `FALSE`, no 
@@ -30,11 +30,11 @@
 #'
 #' @examples
 #' # Example usage
-#' ast_data <- import_ncbi_ast("path/to/ast_data.tsv", interpret = TRUE)
+#' ast_data <- import_ncbi_ast("path/to/ast_data.tsv", interpret = F)
 #' head(ast_data)
 #'
 #' @export
-import_ncbi_ast <- function(file, interpret=T) {
+import_ncbi_ast <- function(file, interpret=F) {
   
   ast <- read_delim(file) %>% rename(biosample=`#BioSample`) %>% 
     mutate(spp_pheno=as.mo(`Scientific name`), .after=biosample) %>%

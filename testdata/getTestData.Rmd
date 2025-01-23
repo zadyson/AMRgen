@@ -11,6 +11,8 @@ amrfp_ecoli <- "/Users/ipmbkhot/Library/CloudStorage/GoogleDrive-drkatholt@gmail
 ncbi_ecoli <- "/Users/ipmbkhot/Documents/GitHub/ecoli/AST/Ecoli_AST_NCBI.tsv.gz"
 ```
 
+
+## find biosamples with CLSI MIC data for ciprofloxacin, imipenem and meropenem
 ```{r }
 ast <- read_tsv(ncbi_ecoli)
 
@@ -25,6 +27,7 @@ length(unique(atb_mini$Name))
 
 ```
 
+## read in AMRfinderplus data for these biosamples
 ```{r }
 f <- function(x, pos) subset(x, Name %in% ast_cip_imi_mero_biosamples)
   
@@ -35,11 +38,20 @@ atb_mini <- atb %>% filter(Name %in% ast_cip_imi_mero_biosamples)
 
 ```
 
+# write out all, useful for testing e.g. MIC violin plot code
 ```{r}
 write_tsv(atb_mini, file="Ecoli_AMRfinderplus.tsv")
 write_tsv(ast_mini, file="Ecoli_AST_NCBI.tsv")
 ```
 
+# write out first 50 samples, useful for testing e.g. parsers
+```{r}
+biosample50 <- ast_cip_imi_mero_biosamples[1:50]
+write_tsv(atb_mini %>% filter(Name %in% biosample50), file="Ecoli_AMRfinderplus_n50.tsv")
+write_tsv(ast_mini %>% filter(`#BioSample` %in% biosample50), file="Ecoli_AST_NCBI_n50.tsv")
+```
+
+# test
 ``` {r}
 
 ```
