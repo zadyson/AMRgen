@@ -22,9 +22,14 @@ compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, p
 
   # Overlapping values
   overlapping_values <- intersect(pheno_sample_ids, geno_sample_ids)
+  
+  geno_matched <- geno_data %>% filter(get(geno_sample_col) %in% overlapping_values)
+  pheno_matched <- pheno_data %>% filter(get(pheno_sample_col) %in% overlapping_values)
 
   return(list(pheno_unique = unique_in_pheno, 
     geno_unique = unique_in_geno, 
-    overlap_ids = overlapping_values))
+    overlap_ids = overlapping_values,
+    geno_matched = geno_matched,
+    pheno_matched = pheno_matched))
 
 }
