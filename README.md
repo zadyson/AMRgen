@@ -99,3 +99,12 @@ optionally:
   - cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV
   - upset plots showing MIC/DD distribution stratified by genotype profile
   - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling
+  - 
+
+# Example workflow
+load(AMRgen)
+
+import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv") # import example E. coli AST data from NCBI
+
+parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name") # import example E. coli AMRfinderplus data
+
