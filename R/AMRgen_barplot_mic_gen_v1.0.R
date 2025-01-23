@@ -14,7 +14,7 @@
 #' or group the data by different pathogens.
 #' 
 #' @param measure_method A string specifying the method used to measure antimicrobial resistance.
-#' The default is 'MIC' for Minimum Inhibitory Concentration, the other option is 'DISK' for Disk Diffusion'.
+#' The default is 'mic' for Minimum Inhibitory Concentration, the other option is 'disk' for Disk Diffusion'.
 #' 
 #' @param breakpoint_source A string representing the source for breakpoint data. By default, it is set 
 #' to the EUCAST standard from two years ago.
@@ -60,21 +60,32 @@
 #' @import AMR
 #' @export
 #' 
-AMRgen_barplot_mic_gen <- function(pheno_data, geno_data, 
+AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
+                                   sample_col_name = NULL, pheno_sample_col = NULL, geno_sample_col = NULL, # default is null and assume first col in each, otherwise user 
+                                   # provides specifics or a single name if it's the same in both
                                    pathogen_mo,
+                                   abs_to_plot, # list of antibiotics you want to plot
                                    
-                                   measure_method = 'MIC',
+                                   measure_method = 'mic',
                                    breakpoint_source = paste('EUCAST', as.numeric(format(Sys.Date(), "%Y"))-2),
-                                   breakpoint_type = 'human',
+                                   breakpoint_type = 'ECOFF',
                                    color_by = 'gene', #alt.: 'class'
                                    
                                    plot_title = "Frequency distribution of MIC Value for different genotypes",
                                    leg_pos = 'bottom',
-                                   ncol_leg = max(2, round(length(unique(geno_data$`Gene symbol`))/10))
+                                   ncol_leg = max(2, round(length(unique(geno_data$marker))/10))
                                    ){
   # todo: 
   # what about measurement signs? (ignoring for now)
   # add a lot more parameters (ggplot2)
+
+  #TODO (JH):
+  # - fix sample ID column matching (provide as argument to function, or assume the first column and use that name)
+
+  # - fix name of columns in pheno (should be lowercase mic or disk)
+  # - references to "Antibiotic" should now be "drug_agent" as this is the new name of this col, which is automatically ab class
+
+  source("helpers.R")
 
   # 1. get breakpoint data ----
   if (toupper(breakpoint_source) %in% clinical_breakpoints$guideline) {
@@ -93,12 +104,15 @@ AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
     breakpoint_type <- 'human'
   }
   
-  if(!measure_method %in% c('MIC', 'DISK')){
-    stop('Please choose one of the methods "MIC" or "DISK" for method.')
+  if(!measure_method %in% c('mic', 'disk')){
+    stop('Please choose one of the methods "mic" or "disk" for method.')
   }
-  
-  ab_bp <- data.frame('Antibiotic' = unique(pheno_data$Antibiotic)) %>%
-    mutate(ab = as.character(as.ab(Antibiotic)))
+
+  # get unique antibiotics in pheno file
+  ab_bp <- data.frame('ab' = unique(pheno_data$drug_agent))
+
+  # select only those we want to plot
+  ab_bp <- ab_bp %>% filter(ab %in% abs_to_plot)
            
   clinical_breakpoints_here <- clinical_breakpoints %>%
     filter(type == breakpoint_type,
@@ -112,36 +126,56 @@ AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
                 select(ab, breakpoint_S, breakpoint_R, disk_dose),
               by = 'ab')
   
+  ## NEED TO RETURN A WARNING HERE IF THERE ARE NO GUIDELINES FOR THE CHOSEN DRUGS
+  
   # 2. prep data ----
-  merged_data <- pheno_data %>%
-    inner_join(geno_data, 
-               by = c("BioSample" = "Name")) %>% # Adjust key columns if necessary
-    # decide on variable to be plotted
-    mutate(plot_var = ifelse(measure_method == 'MIC', `MIC (mg/L)`, `Disk diffusion (mm)`))
+  # get the column names to merge on - if provided use those, otherwise use first col as default
+  sample_id_results <- compare_geno_pheno_id(geno_data, pheno_data, geno_sample_col, pheno_sample_col)
 
-  # just for testing:
-    # %>% slice_head(n=10000)
+  # filter data to get only samples in both
+  pheno_data_overlap <- pheno_data %>% filter(!!sym(pheno_sample_col) %in% sample_id_results$overlap_ids)
+  geno_data_overlap <- geno_data %>% filter(!!sym(geno_sample_col) %in% sample_id_results$overlap_ids)
+
+  # we want to select only pheno data and geno data matching our chosen Abs
+  # HOWEVER - I think we want to also include the drug_class in the pheno data, because otherwise we're going to miss entries where we have no agent, but we do have the class
+  ab_groups_plot <- antibiotics %>% filter(ab %in% abs_to_plot) %>% pull(group)
+
+  pheno_data_overlap <- pheno_data_overlap %>% filter(ab %in% abs_to_plot)
+  geno_data_overlap <- geno_data_overlap %>% filter(drug_agent %in% abs_to_plot | drug_class %in% ab_groups_plot)
+
+  # now we want to colour bars by combos of genes in each sample, so first need to
+  # list the full set of markers for a drug in each genome
+  geno_data_markers <- geno_data_overlap %>% 
+    group_by(Name, drug_class) %>% 
+    summarise(markers = paste(marker, collapse = ", "), .groups="drop")
+
+  # merge with the pheno data (we can now as we have one row per sample!!)
+  # only merge on rows where the drug class matches
+  merged_data <- pheno_data_overlap %>%
+    mutate(drug_class = ab_group(drug_agent), .after=drug_agent) %>%
+    left_join(geno_data_markers, 
+      by = c(setNames(geno_sample_col, pheno_sample_col), "drug_class"))
+  
+  # now we want to plot the frequency of a sample that is resistant to a drug
+  # note that geom_bar will autocount
+  ggplot(pheno_data_overlap, aes(x=mic)) + 
+    geom_bar() + 
+    facet_wrap(~drug_agent)
   
   # todo add disk breakpoint
   mic_summary <- merged_data %>%
-    group_by(Antibiotic, plot_var, `Gene symbol`) %>%
-    summarise(Frequency = n(),
-              .groups = "drop") %>% # Count occurrences of MIC values per gene
-    left_join(ab_bp, by=join_by('Antibiotic')) %>%
-    left_join(geno_data %>% select(`Gene symbol`, Class), 
-              by = "Gene symbol") %>%
+    left_join(ab_bp, join_by("drug_agent" == "ab")) %>%
     mutate(fill_col = case_when(
-      color_by == 'class' ~ ifelse(is.na(Class), 'NA', Class), 
-      TRUE ~`Gene symbol`))
+      color_by == 'class' ~ ifelse(is.na(drug_class), 'NA', drug_class), 
+      TRUE ~ markers))
   
   #3. plot ----
-  ggplot(mic_summary, aes(x = plot_var, y = Frequency, fill = fill_col)) +
-    geom_bar(stat = "identity", position = "stack",
-             width = 0.6) +  # Use stack for stacking bars
-    facet_wrap(~ Antibiotic, scales = "free", ncol = NULL) +  # Create a panel for each antibiotic
+  ggplot(mic_summary, aes_string(x = measure_method, fill = "fill_col")) +
+    geom_bar() +  # Use stack for stacking bars
+    facet_wrap(~ drug_agent, scales = "free", ncol = NULL) +  # Create a panel for each antibiotic
     theme_minimal() +
     #exchange to our own color palette?
-    scale_fill_viridis_d(option = "turbo") +  # Use "turbo" or other options like "viridis", "plasma"
+    #scale_fill_viridis_d(option = "turbo") +  # Use "turbo" or other options like "viridis", "plasma"
     labs(
       title = plot_title,
       x = "MIC (mg/L)",
