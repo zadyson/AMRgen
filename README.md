@@ -89,7 +89,7 @@ optionally:
 - optionally (on by default), interpret any mic or disk columns using the ab, mo, guideline values - new column 'pheno' (class sir)
 - return = dataframe with the input NCBI AST file contents with the new columns added
 
-### Expected workflow
+### Expected workflow (target for dev)
 
 * import genotype data -> genotype dataframe
 * import phenotype data -> phenotype dataframe (e.g. `import_ncbi_ast`)
@@ -101,10 +101,11 @@ optionally:
   - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling
   - 
 
-# Example workflow
+# Working examples
 load(AMRgen)
 
-import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv") # import example E. coli AST data from NCBI
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv") # import example E. coli AST data from NCBI
 
-parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name") # import example E. coli AMRfinderplus data
+geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name") # import example E. coli AMRfinderplus data
 
+overlap <- compare_geno_pheno_id(geno,pheno) # get subsets of each table for samples present in both
