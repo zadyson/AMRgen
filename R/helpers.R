@@ -38,3 +38,29 @@ compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, p
     pheno_matched = pheno_matched))
 
 }
+
+
+
+
+process_input <- function(input) {
+  
+  # Check if the input is a file path (string)
+  if (is.character(input) && file.exists(input)) {
+    message("Input is a file path, reading the file.")
+    data <- read_tsv(input)
+  }
+  
+  # Check if the input is already a dataframe
+  else if (is.data.frame(input)) {
+    message("Input is already a dataframe.")
+    data <- input
+  }
+  
+  # If the input is neither a file nor a dataframe, stop with an error
+  else {
+    stop("Input must be either a valid file path or a dataframe.")
+  }
+  
+  # Return the dataframe
+  return(data)
+}
