@@ -121,10 +121,23 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
                        as.sir(get(sir_col))=="I" ~ 1,
                        as.sir(get(sir_col))=="S" ~ 0,
                        TRUE ~ NA)) %>%
-    select(id, R, NWT)
+    select(id, R, NWT) 
   
-  colnames(pheno_binary)[2] <- paste0(ab_name(antibiotic),"_R")
-  colnames(pheno_binary)[3] <- paste0(ab_name(antibiotic),"_NWT")
+  pheno_binary_rows_unfiltered <- nrow(pheno_binary)
+
+  # take single representative row per sample
+  pheno_binary <- pheno_binary %>%
+    arrange(id, -R, -NWT) %>%
+    group_by(id) %>%
+    slice_head(n = 1) %>% 
+    ungroup()
+  
+  if (nrow(pheno_binary) < pheno_binary_rows_unfiltered) {
+    print("Some samples had multiple phenotype rows, taking the most resistant only")
+  }
+  
+  #colnames(pheno_binary)[2] <- paste0(ab_name(antibiotic),"_R")
+  #colnames(pheno_binary)[3] <- paste0(ab_name(antibiotic),"_NWT")
   
   # check there are some non-NA values for phenotype call
   if (sum(!is.na(pheno_binary[,2])) == 0) {
