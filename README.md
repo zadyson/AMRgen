@@ -135,6 +135,12 @@ pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv")
 # import larger example E. coli AMRfinderplus data
 geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv", "Name")
 
+# get binary matrix of MICs for E. coli and gene determinants related to ciprofloxacin
+ec_cip_bin<- getBinMat(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
+
+# plot basic upset plot
+AMRGen_Upset(ec_cip_bin, min_set_size=2, order="mic")
+
 # get solo markers for a specified drug and associated class/es, calculate and plot PPV
 soloPPV_mero <- solo_ppv_analysis(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
 soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
