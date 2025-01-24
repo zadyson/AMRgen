@@ -34,6 +34,9 @@
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains
 #'   the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), 
 #'   "I" (intermediate), or "S" (susceptible).
+#'
+#' @param keep_assay_values A logical specifying whether to include columns with the raw phenotype assay data.
+#'   Assumes there are columns labelled 'mic' and 'disk'; these will be added to the output table.
 #' 
 #' @return A data frame where each row represents a sample and each column represents a genetic marker
 #'   related to the specified antibiotic's drug class. The binary values in the matrix indicate the presence
@@ -59,7 +62,7 @@
 #' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
 #' 
 #' @export
-getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list,
+getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_assay_values=F,
                          geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
   
   # check we have a drug_agent column with class ab
@@ -137,6 +140,19 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     geno_binary <- geno_binary %>%select(-c("NA"))
   }
   
+  # add MIC / disk values if specified
+  if (keep_assay_values) {
+    if ("mic" %in% colnames(pheno_matched)) {
+      geno_binary <- pheno_matched %>% select(id, mic) %>% full_join(geno_binary)
+    }
+    else {print("No mic column found")}
+    if ("disk" %in% colnames(pheno_matched)) {
+      geno_binary <- pheno_matched %>% select(id, disk) %>% full_join(geno_binary)
+    }
+    else {print("No mic column found")}
+  }
+  
   return(geno_binary)
   
 }
+
