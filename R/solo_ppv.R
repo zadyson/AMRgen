@@ -99,17 +99,19 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                           sir_col=sir_col)
   
   # get solo markers
-  marker_counts <- amr_binary %>% select(-id, -R, -NWT) %>% rowSums()
+  marker_counts <- amr_binary %>% select(-id, -pheno, -R, -NWT) %>% rowSums()
   solo_binary <- amr_binary %>% mutate(solo=marker_counts==1) %>% 
     filter(solo) %>% 
-    pivot_longer(!c(id, R, NWT, solo)) %>% 
-    filter(value==1) 
+    pivot_longer(!c(id, pheno, R, NWT, solo)) %>% 
+    filter(value==1) %>% 
+    filter(!is.na(pheno))
   
   if (nrow(solo_binary)==0) { stop("No solo markers found") }
   
   # summarise numerator, denominator, proportion, 95% CI - for R and NWT
-  solo_stats_R <- solo_binary %>% group_by(name) %>% 
-    summarise(x=sum(R), 
+  solo_stats_R <- solo_binary %>% 
+    group_by(name) %>% 
+    summarise(x=sum(R, na.rm=T), 
               n=n(), 
               p=x/n,
               se=sqrt(p*(1-p)/n), 
@@ -117,7 +119,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
               ci.upper=min(1,p+1.96*se)) %>%
     mutate(category="R")
 
-  solo_stats_NWT <- solo_binary %>% group_by(name) %>% 
+  solo_stats_NWT <- solo_binary %>% 
+    group_by(name) %>% 
     summarise(x=sum(NWT), 
               n=n(), 
               p=x/n,
@@ -143,20 +146,13 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     labs(y="", x="PPV", col="Category") + 
     scale_colour_manual(values=plot_cols) + xlim(0,1)
   
-  # assume identifiers are in first column of pheno_table if not specified
-  if (is.null(pheno_sample_col)) { pheno_sample_col <- colnames(pheno_table)[1]}
-  
-  solo_pheno_plot <- pheno_table %>% 
-    filter(drug_agent==as.ab(antibiotic)) %>% 
-    rename(id=any_of(pheno_sample_col)) %>% 
-    mutate(sir=as.sir(get(sir_col))) %>%
-    select(sir, id) %>% 
-    inner_join(solo_binary) %>%
-    ggplot(aes(x=name, fill=sir)) + 
+  solo_pheno_plot <- solo_binary %>%
+    ggplot(aes(x=name, fill=pheno)) + 
     geom_bar(stat="count", position="fill") + 
     scale_fill_manual(values=plot_cols) + 
     coord_flip() + 
     geom_text(aes(label=..count..), stat="count", position=position_fill(vjust = .5), size=3) + 
+    scale_x_discrete(solo_stats$name) +
     theme_light() + labs(x="", y="Proportion", fill="Phenotype")
   
   header <- paste("Solo markers for class:", paste0(drug_class_list, collapse=", ")) 
