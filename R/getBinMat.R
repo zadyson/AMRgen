@@ -59,11 +59,20 @@
 #' geno_table <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
 #' pheno_table <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 #' 
+#' # binary R/NWT phenotypes only
 #' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
+#' 
+#' # return AST assay phenotype values (default = mic, disk)
+#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T)
+#' 
+#' # return MIC phenotype values only
+#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
+#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "MIC (mg/L)")
 #' 
 #' @export
 getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_assay_values=F,
-                         geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
+                      keep_assay_values_from=c("mic", "disk"), 
+                      geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
   
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
@@ -139,17 +148,13 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
   if ("NA" %in% colnames(geno_binary)) {
     geno_binary <- geno_binary %>%select(-c("NA"))
   }
-  
+
   # add MIC / disk values if specified
   if (keep_assay_values) {
-    if ("mic" %in% colnames(pheno_matched)) {
-      geno_binary <- pheno_matched %>% select(id, mic) %>% full_join(geno_binary)
+    if (sum(keep_assay_values_from %in% colnames(pheno_matched))>0) {
+      geno_binary <- pheno_matched %>% select(id, any_of(keep_assay_values_from)) %>% full_join(geno_binary)
     }
-    else {print("No mic column found")}
-    if ("disk" %in% colnames(pheno_matched)) {
-      geno_binary <- pheno_matched %>% select(id, disk) %>% full_join(geno_binary)
-    }
-    else {print("No mic column found")}
+    else {print(paste("No specified assay columns found:", keep_assay_values_from))}
   }
   
   return(geno_binary)
