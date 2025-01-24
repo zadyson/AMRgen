@@ -73,7 +73,7 @@ AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
                                    
                                    plot_title = "Frequency distribution of values for different genotypes",
                                    leg_pos = 'bottom',
-                                   ncol_leg = max(2, round(length(unique(geno_data$marker))/10))
+                                   ncol_leg = min(2, round(length(unique(geno_data$marker))/10))
                                    ){
   # todo: 
   # add a lot more parameters (ggplot2)
@@ -113,7 +113,7 @@ AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
   clinical_breakpoints_here <- clinical_breakpoints %>%
     filter(type == breakpoint_type,
            guideline == breakpoint_source,
-           method == measure_method,
+           method == toupper(measure_method),
            mo == pathogen_mo,
            ab %in% ab_bp$ab)
   
@@ -182,10 +182,10 @@ AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
       axis.text.x = element_text(hjust = 1),
       strip.text = element_text(size = 10, face = "bold") # Customize panel titles
     ) +
-    guides(fill = guide_legend(ncol = ncol_leg)) + # Arrange legend items into 4 columns
-    geom_vline(data = ab_bp, aes(xintercept = `breakpoint_S`), 
+    guides(fill = guide_legend(ncol = ncol_leg)) + # Arrange legend items into columns
+    geom_vline(data = ab_bp, aes(xintercept = breakpoint_S), 
                color = "black", linetype = "dashed") +  # Add breakpoint_S lines
-    geom_vline(data = ab_bp, aes(xintercept = `breakpoint_R`), 
+    geom_vline(data = ab_bp, aes(xintercept = breakpoint_R), 
                color = "black", linetype = "dashed")   # Add breakpoint_R lines
 }
 
