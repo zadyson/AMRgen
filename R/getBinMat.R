@@ -70,6 +70,8 @@
 #' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "MIC (mg/L)")
 #' 
 #' @export
+
+
 getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_assay_values=F,
                       keep_assay_values_from=c("mic", "disk"), 
                       geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
@@ -92,10 +94,10 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
   }
   
   # check we have some geno hits for markers relevant to the drug class/es
-  if (!("drug_class" %in% colnames(geno))) {
+  if (!("drug_class" %in% colnames(geno_table))) {
     stop("input",geno_table,"must have a column labelled `drug_class`")
   }
-  if (sum(drug_class_list %in% geno$drug_class)==0) {
+  if (sum(drug_class_list %in% geno_table$drug_class)==0) {
     stop(paste("No markers matching drug class", drug_class_list, "were identified in input geno_table"))
   }
   

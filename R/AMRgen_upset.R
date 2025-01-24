@@ -31,7 +31,7 @@
 #' @examples
 #' \dontrun{
 #' # Example usage
-#' data <- getBinMatMIC(my_data) # Example input data from `getBinMatMIC` function
+#' data <- getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic") # Example input data from `getBinMat` function, has mic, R/NWT, and gene lists
 #' AMRGen_Upset(data, min_set_size = 3, order = "mic")
 #' }
 #'
@@ -53,11 +53,19 @@ AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
   col <- colnames(binmat_orig) # get column names 
   # Extract gene names only - not "resistance", "MIC" or "DD" values, or microorganism or antibiotic names
   # might need to change this if want to be more flexible on input? or input this list? 
-  genes <- col[-c(which(grepl("res",col)),which(grepl("MIC",col)),which(grepl("Disk",col)),
-                  which(grepl("mo", col)), which(grepl("ab", col)))] # gene names
+  
+  # extract only the gene column names - need to exclude mic, disk, R, NWT (standard col names)
+  # and the id column which will be the first col, doesn't matter what it's called
+  # remaining columns will be the genes
+  cols_to_remove <- c("mic", "disk", "R", "NWT")
+  genes <- col[-1]
+
+  # gene names
+  genes <- setdiff(genes, cols_to_remove)
+
   # Add in a combination column 
   binmat_wide <- binmat_orig %>% 
-    filter(!is.na(`MIC (mg/L)`)) %>% 
+    filter(!is.na(mic)) %>% # make this optionally disk also
     unite("combination_id", genes[1]:genes[length(genes)], remove = FALSE)  # add in combinations 
   # Make matrix longer 
   binmat <- binmat_wide %>% pivot_longer(cols = genes[1]:genes[length(genes)], names_to = "genes")
@@ -75,16 +83,17 @@ AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
   ### MIC plot - dot plot. X axis = combination. Y axis = MIC #####
   mic_plot <- binmat %>% 
     filter(combination_id %in% comb_enough_strains) %>% 
-    group_by(combination_id, `MIC (mg/L)`, resistant) %>%
+    group_by(combination_id, mic, R) %>%
     summarise(n = n()) # count how many at each MIC, keep resistant for colour
   
-  ## Extract cutoff from AMR package to plot hline 
-  cut_dat <- binmat_orig %>%
-    dplyr::select(ab, mo) %>%
-    dplyr::distinct() %>%
-    dplyr::left_join(AMR::clinical_breakpoints) %>%
+  ## TODO: currently broken as ab and mo not in the binary matrix
+  ## Extract cutoff from AMR package to plot hline
+  #cut_dat <- binmat_orig %>%
+  #  dplyr::select(ab, mo) %>%
+  #  dplyr::distinct() %>%
+  #  dplyr::left_join(AMR::clinical_breakpoints) %>%
     # Magic values that ideally would not be hard coded
-    dplyr::filter(method == "MIC", host == "human", guideline == "EUCAST 2024") 
+  #  dplyr::filter(method == "MIC", host == "human", guideline == "EUCAST 2024") 
   
   ### Gene prevalence plot 
   gene.prev <- binmat %>% 
@@ -146,7 +155,7 @@ AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
     binmat$combination_id <- factor(binmat$combination_id, levels = ordered_comb_order)}
   # Do by # median mic in combination (only want each id once)
   if(order == "mic"){
-    mic_medians <- binmat_wide %>% group_by(combination_id) %>% summarise(median = median(`MIC (mg/L)`))
+    mic_medians <- binmat_wide %>% group_by(combination_id) %>% summarise(median = median(mic))
     ordered_comb_order <- mic_medians %>% arrange(median) %>% pull(combination_id)
     mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
     bar_plot$combination_id <- factor(bar_plot$combination_id, levels = ordered_comb_order)
@@ -157,13 +166,14 @@ AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
   ##### Plots ###
   ### AMR package colours
   colours_SIR <- c("#3CAEA3", "#F6D55C", "#ED553B")
-  names(colours_SIR) <- c("S", "I", "R")
+  # currently only 0/1
+  #names(colours_SIR) <- c("S", "I", "R")
   
   ### MIC plot  
-  g1 <- ggplot(data = mic_plot, aes(combination_id, `MIC (mg/L)`)) +
-    geom_point(aes(size = n, colour = resistant), show.legend = TRUE) +
-    geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_S)), colour = colours_SIR["S"]) +
-    geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_R)), colour = colours_SIR["R"]) +
+  g1 <- ggplot(data = mic_plot, aes(combination_id, mic)) +
+    geom_point(aes(size = n, colour = as.factor(R)), show.legend = TRUE) +
+    #geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_S)), colour = colours_SIR["S"]) +
+    #geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_R)), colour = colours_SIR["R"]) +
     theme_bw() +
     scale_y_mic() +
     ylab("Phenotype (MIC, mg/L)") +
