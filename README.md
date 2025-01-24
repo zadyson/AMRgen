@@ -45,6 +45,8 @@ remotes::install_github("interpretAMR/AMRgen")
 
 _Will follow shortly_
 
+For now see working examples at the bottom of this page (but note this is still bleeding edge, and geared towards developing functions)
+
 ## Contributions
 
 Contributions are welcome! If you encounter issues or wish to suggest new features, please open an issue or submit a pull request.
