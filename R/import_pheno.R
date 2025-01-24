@@ -39,7 +39,10 @@ import_ncbi_ast <- function(file, interpret=F) {
   ast <- read_delim(file) %>% rename(biosample=`#BioSample`) %>% 
     mutate(spp_pheno=as.mo(`Scientific name`), .after=biosample) %>%
     mutate(drug_agent=as.ab(Antibiotic), .after=spp_pheno) %>%
-    mutate(mic=as.mic(`MIC (mg/L)`), .after=drug_agent) %>%
+    #mutate(mic=as.mic(`MIC (mg/L)`), .after=drug_agent) %>%
+    mutate(mic=paste0(`Measurement sign`, `MIC (mg/L)`), .after=drug_agent) %>% 
+    mutate(mic=gsub("==","",mic)) %>%
+    mutate(mic=as.mic(mic)) %>%
     mutate(disk=as.disk(`Disk diffusion (mm)`), .after=mic) %>%
     mutate(guideline=if_else(is.na(`Testing standard`), "EUCAST", `Testing standard`), .after=disk) # interpret as EUCAST if not specified as CLSI
 
