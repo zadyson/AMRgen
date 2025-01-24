@@ -113,10 +113,13 @@ optionally:
 ```
 load(AMRgen)
 
-# import example E. coli AST data from NCBI (without re-interpreting resistance)
+# import small example E. coli AST data from NCBI (without re-interpreting resistance)
 pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 
-# import example E. coli AMRfinderplus data
+# import small example E. coli AST data from NCBI, and re-interpret resistance into new column 'pheno' (WARNING: phenotype interpretation can take a few minutes)
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T)
+
+# import small example E. coli AMRfinderplus data
 geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
 
 # get subsets of each table for samples present in both
@@ -126,10 +129,14 @@ overlap <- compare_geno_pheno_id(geno,pheno)
 mero_vs_blaGenes <- getBinMat(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
 cipro_vs_quinoloneMarkers <- getBinMat(geno, pheno, "Ciprofloxacin", c("Quinolones"), sir_col="Resistance phenotype")
 
-# import example E. coli AST data from NCBI, and re-interpret resistance into new column 'pheno' (WARNING: phenotype interpretation can take a few minutes)
-pheno2 <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T)
-mero_vs_blaGenes2 <- getBinMat(geno, pheno2, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="pheno")
-cipro_vs_quinoloneMarkers2 <- getBinMat(geno, pheno2, "Ciprofloxacin", c("Quinolones"), sir_col="pheno")
+# import larger example E. coli AST data from NCBI (without re-interpreting resistance)
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv")
 
+# import larger example E. coli AMRfinderplus data
+geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv", "Name")
+
+# get solo markers for a specified drug and associated class/es, calculate and plot PPV
+soloPPV_mero <- solo_ppv_analysis(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
+soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
 
 ```
