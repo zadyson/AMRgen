@@ -3,7 +3,7 @@
 #report the number of overlaps and uniques
 #return copies of geno and pheno data frames that each contain the overlapping samples only
 
-compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, pheno_sample_col=NULL){
+compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, pheno_sample_col=NULL, rename_id_cols=F){
   if (is.null(geno_sample_col)){
     geno_sample_col <- colnames(geno_data)[1]
   }
@@ -25,6 +25,11 @@ compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, p
   
   geno_matched <- geno_data %>% filter(get(geno_sample_col) %in% overlapping_values)
   pheno_matched <- pheno_data %>% filter(get(pheno_sample_col) %in% overlapping_values)
+  
+  if (rename_id_cols) {
+    geno_matched <- geno_matched %>% rename(id=any_of(geno_sample_col))
+    pheno_matched <- pheno_matched %>% rename(id=any_of(pheno_sample_col))
+  }
 
   return(list(pheno_unique = unique_in_pheno, 
     geno_unique = unique_in_geno, 
