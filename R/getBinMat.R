@@ -72,8 +72,8 @@
 #' @export
 
 
-getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_assay_values=F,
-                      keep_assay_values_from=c("mic", "disk"), 
+getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR=T,
+                      keep_assay_values=F, keep_assay_values_from=c("mic", "disk"), 
                       geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
   
   # check we have a drug_agent column with class ab
@@ -170,6 +170,14 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
       geno_binary <- pheno_matched %>% select(id, any_of(keep_assay_values_from)) %>% full_join(geno_binary)
     }
     else {print(paste("No specified assay columns found:", keep_assay_values_from))}
+  }
+  
+  # add SIR values unless switched off
+  if (keep_SIR) {
+    geno_binary <- pheno_matched %>% select(id, any_of(sir_col)) %>% 
+      mutate(pheno=as.sir(get(sir_col))) %>%
+      select(id, pheno) %>%
+      full_join(geno_binary)
   }
   
   return(geno_binary)
