@@ -27,7 +27,15 @@ This package is developed in collaboration with the ESGEM-AMR Working Group and 
 To install and explore the package, follow the instructions below:
 
 ### Installation
+Note that this package requires the latest version of the `AMR` package (still in beta).
 
+Install the latest version of the `AMR` package with:
+```r
+install.packages("remotes") # if you haven't already
+remotes::install_github("msberends/AMR")
+```
+
+Then install this package
 ``` r
 # Install from GitHub
 remotes::install_github("interpretAMR/AMRgen")
