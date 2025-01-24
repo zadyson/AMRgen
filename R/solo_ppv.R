@@ -86,6 +86,12 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               plot_cols=c("R"="IndianRed", "I"="orange", "S"="lightgrey",
                                           "NWT"="navy")) {
   
+  # check there is a SIR column specified
+  if (is.null(sir_col)) {stop("Please specify a column with S/I/R values, via the sir_col parameter.")}
+  if (!(sir_col %in% colnames(pheno_table))) {
+    stop(paste0("Column '", sir_col,"' not found in input phenotype data. Please specify a valid column with S/I/R values, via the sir_col parameter."))
+  }
+  
   # get binary matrix
   amr_binary <- getBinMat(geno_table, pheno_table, antibiotic=antibiotic, 
                           drug_class_list=drug_class_list, 
@@ -157,8 +163,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   
   combined_plot <- solo_pheno_plot + 
     ppv_plot + 
-    plot_layout(axes="collect", guides="collect") + 
-    plot_annotation(title=header, subtitle=paste("vs phenotype for drug:", antibiotic))
+    patchwork::plot_layout(axes="collect", guides="collect") + 
+    patchwork::plot_annotation(title=header, subtitle=paste("vs phenotype for drug:", antibiotic))
   
   return(list(solo_stats=solo_stats, combined_plot=combined_plot, solo_binary=solo_binary, amr_binary=amr_binary))
   
