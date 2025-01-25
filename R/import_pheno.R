@@ -2,11 +2,12 @@
 #'
 #' This function imports an antibiotic susceptibility testing (AST) dataset, processes
 #' the data, and optionally interprets the results based on MIC or disk diffusion data.
-#' It assumes that the input file is a delimited text file (e.g., CSV, TSV) and
+#' It assumes that the input file is a tab-delimited text file (e.g., TSV) and
 #' parses relevant columns (antibiotic names, species names, MIC or disk data) into 
 #' suitable classes using the AMR package. It optionally can use the AMR package to  
-#' determine susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines. If expected
-#' columns are not found warnings will be given, and interpretation may not be possible.
+#' determine susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human 
+#' breakpoints and/or ECOFF). If expected columns are not found warnings will be given, 
+#' and interpretation may not be possible.
 #'
 #' @param input A string representing a dataframe, or a path to a tab-delimited file,
 #'    containing the AST data in NCBI antibiogram format. These files can be downloaded 
@@ -17,9 +18,23 @@
 #' 
 #' @param interpret A logical value (default is FALSE). If `TRUE`, the function will interpret 
 #'   the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion 
-#'   values, and either EUCAST or CLSI testing standard (as indicated in the `Testing standard`
-#'   column of the input file, if blank EUCAST will be used by default). If `FALSE`, no 
-#'   interpretation is performed.
+#'   values, against human breakpoints from either EUCAST or CLSI testing standard (as indicated 
+#'   in the `Testing standard` column of the input file, if blank the value of the default_guideline 
+#'   parameter will be used by default). If `FALSE`, no interpretation is performed.
+#'   
+#' @param ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret 
+#'   the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion 
+#'   values, against epidemiological cut-off (ECOFF) values. If `FALSE`, no interpretation is 
+#'   performed.
+#'   
+#' @param default_guideline A string (default is "EUCAST"). Default guideline to use for 
+#'   interpretation via as.sir. Allowed values are 'EUCAST' or 'CLSI'. If the input file
+#'   contains a column `Testing standard`, or if interpret or ecoff are set to `TRUE`, a
+#'   new column `guideline` will be created to use in the interpretation step. Values are
+#'   populated from those in `Testing standard`, however rows with missing/NA values or 
+#'   non-allowed values will be coerced to the value specified by 'default_guideline'. 
+#'   If there is no `Testing standard` column, all rows will be interpreted using the 
+#'   default_guideline.
 #'
 #' @return A data frame with the processed AST data, including additional columns:
 #'   \itemize{
@@ -28,8 +43,9 @@
 #'     \item `drug_agent`: The antibiotic used in the test, formatted using the `as.ab` function.
 #'     \item `mic`: The minimum inhibitory concentration (MIC) value, formatted using the `as.mic` function.
 #'     \item `disk`: The disk diffusion measurement (in mm), formatted using the `as.disk` function.
-#'     \item `guideline`: The guideline used for interpretation (either EUCAST or CLSI).
-#'     \item `pheno`: The interpreted phenotype (SIR) based on the MIC or disk diffusion data.
+#'     \item `guideline`: The guideline used for interpretation (either EUCAST or CLSI; taken from input column otherwise forced to parameter default_guideline).
+#'     \item `pheno`: The phenotype interpreted against the specified breakpoint standard, based on the MIC or disk diffusion data.
+#'     \item `ecoff`: The wildtype/nonwildtype status interpreted against the ECOFF, based on the MIC or disk diffusion data.
 #'   }
 #'
 #'
@@ -39,7 +55,7 @@
 #' head(ast_data)
 #'
 #' @export
-import_ncbi_ast <- function(input, sample_col="#BioSample", interpret=F) {
+import_ncbi_ast <- function(input, sample_col="#BioSample", interpret=F, ecoff=F, default_guideline="EUCAST") {
   
   ast <- process_input(input)
   
@@ -52,9 +68,16 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", interpret=F) {
   
   # parse guideline column
   if ("Testing standard" %in% colnames(ast)) {
-    ast <- ast %>% mutate(guideline=if_else(is.na(`Testing standard`), "EUCAST", `Testing standard`), .after=id) # interpret as EUCAST if not specified as CLSI
+    ast <- ast %>% mutate(guideline=if_else(`Testing standard` %in% c("CLSI", "EUCAST"), 
+                                            `Testing standard`, default_guideline), .after=id)
   }
-  else {print("Warning: Expected column 'Testing standard' not found in input")}
+  else {
+    print("Warning: Expected column 'Testing standard' not found in input")
+    if (interpret | ecoff) {
+      print(paste("Specified default standard", default_guideline, "will be used for interpretation"))
+      ast <- ast %>% mutate(guideline=default_guideline, .after=id)
+    }
+  }
  
   # parse disk column
   if ("Disk diffusion (mm)" %in% colnames(ast)) {
@@ -89,22 +112,38 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", interpret=F) {
   }
   else {print("Warning: Expected column 'Scientific name' not found in input")}
  
-  if (interpret) {
-    if (all(c("spp_pheno", "drug_agent", "guideline") %in% colnames(ast))) {
+  if (interpret | ecoff) {
+    if (all(c("spp_pheno", "drug_agent") %in% colnames(ast))) {
       if (!("mic" %in% colnames(ast)) & !("disk" %in% colnames(ast))) {
         print("Could not interpret phenotypes, no mic or disk columns found")
       }
       else {
         if (!("mic" %in% colnames(ast))) {ast <- ast %>% mutate(mic=NA)}
         if (!("disk" %in% colnames(ast))) {ast <- ast %>% mutate(disk=NA)}
-        ast <- ast %>% rowwise() %>% 
-          mutate(pheno_MIC=if_else(!is.na(mic), 
-                               as.sir(mic, mo=spp_pheno, ab=drug_agent, guideline=guideline),
-                               NA)) %>%
-          mutate(pheno_disk=if_else(!is.na(disk), 
-                                   as.sir(disk, mo=spp_pheno, ab=drug_agent, guideline=guideline),
-                                   NA)) %>%
-          unite(pheno, pheno_MIC:pheno_disk, na.rm=T)
+        if (interpret) {
+          ast <- ast %>% rowwise() %>% 
+            mutate(pheno_MIC=if_else(!is.na(mic), 
+                                     as.sir(mic, mo=spp_pheno, ab=drug_agent, guideline=guideline),
+                                     NA)) %>%
+            mutate(pheno_disk=if_else(!is.na(disk), 
+                                      as.sir(disk, mo=spp_pheno, ab=drug_agent, guideline=guideline),
+                                      NA)) %>%
+            unite(pheno, pheno_MIC:pheno_disk, na.rm=T) %>%
+            mutate(pheno=as.sir(pheno)) %>%
+            relocate(pheno, .after=drug_agent)
+        }
+        if (ecoff) {
+          ast <- ast %>% rowwise() %>% 
+            mutate(ecoff_MIC=if_else(!is.na(mic), 
+                                     as.sir(mic, mo=spp_pheno, ab=drug_agent, guideline=guideline, breakpoint_type="ECOFF"),
+                                     NA)) %>%
+            mutate(ecoff_disk=if_else(!is.na(disk), 
+                                      as.sir(disk, mo=spp_pheno, ab=drug_agent, guideline=guideline, breakpoint_type="ECOFF"),
+                                      NA)) %>%
+            unite(ecoff, ecoff_MIC:ecoff_disk, na.rm=T) %>%
+            mutate(ecoff=as.sir(ecoff)) %>%
+            relocate(ecoff, .after=drug_agent)
+        }
       }
     }
   }
