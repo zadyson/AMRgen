@@ -96,20 +96,20 @@ optionally:
   - `MIC (mg/L)` -> as.mic -> new column 'mic' (class mic)
   - `Disk diffusion (mm)` -> as.disk -> new column 'disk' (class disk)
   - `Testing standard` -> new column 'guideline' (character; value = 'CLSI' if specified, otherwise default to 'EUCAST')
-- optionally (on by default), interpret any mic or disk columns using the ab, mo, guideline values - new column 'pheno' (class sir)
+- optionally (off by default), interpret any mic or disk columns using the ab, mo, guideline values - new column 'pheno' (class sir)
 - return = dataframe with the input NCBI AST file contents with the new columns added
 
 ### Expected workflow (target for dev)
 
-* import genotype data -> genotype dataframe
+* import genotype data -> genotype dataframe (e.g. `parse_amrfp`)
 * import phenotype data -> phenotype dataframe (e.g. `import_ncbi_ast`)
   - interpret SIR if required (as.sir; requires either a species column, or that all rows are a single species)
-* filter both files to the required sample sets (e.g. filter on species, check common sample identifiers exist)
+* optionally: filter both files to the desired sample sets (e.g. filter on species, check common sample identifiers exist)
 * pass filtered genotype & phenotype objects (which have common sample identifiers) to functions for
-  - cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV
-  - upset plots showing MIC/DD distribution stratified by genotype profile
-  - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling
-  - 
+  - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling (`getBinMat`)
+  - cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV (`solo_ppv_analysis`)
+  - upset plots showing MIC/DD distribution stratified by genotype profile (`AMRGen_Upset`)
+
 
 # Working examples
 ```
