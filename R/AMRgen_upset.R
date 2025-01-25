@@ -57,7 +57,7 @@ AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
   # extract only the gene column names - need to exclude mic, disk, R, NWT (standard col names)
   # and the id column which will be the first col, doesn't matter what it's called
   # remaining columns will be the genes
-  cols_to_remove <- c("mic", "disk", "R", "NWT")
+  cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno")
   genes <- col[-1]
 
   # gene names
