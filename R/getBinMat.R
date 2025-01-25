@@ -14,7 +14,8 @@
 #' 
 #' @param pheno_table A data frame containing phenotype data, which must include a column `drug_agent`
 #'   (with the antibiotic information) and a column with the resistance interpretation (S/I/R, colname 
-#'   specified via `sir_col`).
+#'   specified via `sir_col`) and optionally a column wih the ECOFF interpretation (WT/NWT, colname
+#'   specified via `ecoff_col`).
 #' 
 #' @param antibiotic A character string specifying the antibiotic of interest to filter phenotype data.
 #'   The value must match one of the entries in the `drug_agent` column of `pheno_table`.
@@ -34,6 +35,10 @@
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains
 #'   the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), 
 #'   "I" (intermediate), or "S" (susceptible).
+#'   
+#' @param ecoff_col A character string specifying the column name in `pheno_table` that contains
+#'   the ECOFF interpretation of phenotype. The values should be interpretable as "WT" (wildtype), 
+#'   or "NWT" (nonwildtype).
 #'
 #' @param keep_assay_values A logical specifying whether to include columns with the raw phenotype assay data.
 #'   Assumes there are columns labelled 'mic' and 'disk'; these will be added to the output table.
@@ -41,7 +46,9 @@
 #' @return A data frame where each row represents a sample and each column represents a genetic marker
 #'   related to the specified antibiotic's drug class. The binary values in the matrix indicate the presence
 #'   (1) or absence (0) of each marker for each sample, along with resistance status columns for the
-#'   specified antibiotic (`R` for resistant, `NWT` for non-wild type).
+#'   specified antibiotic (`R` for resistant defined from the `sir_col` (1=R, 0=I/S); `NWT` for 
+#'   nonwildtype, defined by the `ecoff_col` if provided (1=NWT, 0=WT), and otherwise defined from the 
+#'   `sir_col` (1=I/R, 0=S)).
 #' 
 #' @details This function performs several steps:
 #' - Verifies that the `pheno_table` contains a `drug_agent` column and converts it to class `ab` if necessary.
@@ -74,7 +81,8 @@
 
 getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR=T,
                       keep_assay_values=F, keep_assay_values_from=c("mic", "disk"), 
-                      geno_sample_col=NULL, pheno_sample_col=NULL, sir_col=NULL) {
+                      geno_sample_col=NULL, pheno_sample_col=NULL, 
+                      sir_col="pheno", ecoff_col="ecoff") {
   
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
@@ -90,7 +98,7 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
     pheno_table <- pheno_table %>% filter(drug_agent==as.ab(antibiotic))
   }
   else {
-    stop("antibiotic", antibiotic, "was not found in input", pheno_table)
+    stop("antibiotic ", antibiotic, " was not found in input: ", pheno_table)
   }
   
   # check we have some geno hits for markers relevant to the drug class/es
@@ -114,16 +122,30 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
   # get interpreted phenotype as binary (based on colname provided by 'sir_col')
   # to do: check we have interpretation data for this pheno, and optionally interpret from mic/disk
   pheno_binary <- pheno_matched %>% 
-    select(id, any_of(sir_col)) %>%
+    select(id, any_of(c(sir_col, ecoff_col))) %>%
     mutate(R=case_when(as.sir(get(sir_col))=="R" ~ 1,
                        as.sir(get(sir_col))=="I" ~ 0,
                        as.sir(get(sir_col))=="S" ~ 0,
                        TRUE ~ NA)) %>%
     mutate(NWT=case_when(as.sir(get(sir_col))=="R" ~ 1,
+                         as.sir(get(sir_col))=="I" ~ 1,
+                         as.sir(get(sir_col))=="S" ~ 0,
+                         TRUE ~ NA))
+  
+  # replace NWT with ecoff-based definition if available
+  if (!is.null(ecoff_col)) {
+    if (ecoff_col %in% colnames(pheno_binary)) {
+      print(paste("Defining NWT using ecoff column provided:", ecoff_col))
+      pheno_binary <- pheno_binary %>%
+        mutate(NWT=case_when(as.sir(get(sir_col))=="R" ~ 1,
                        as.sir(get(sir_col))=="I" ~ 1,
                        as.sir(get(sir_col))=="S" ~ 0,
-                       TRUE ~ NA)) %>%
-    select(id, R, NWT) 
+                       TRUE ~ NA)) 
+    }
+    else {print ("Defining NWT as I/R vs 0, as no ECOFF column defined")}
+  }
+  
+  pheno_binary <- pheno_binary %>% select(id, R, NWT)
   
   pheno_binary_rows_unfiltered <- nrow(pheno_binary)
 
@@ -137,9 +159,6 @@ getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep
   if (nrow(pheno_binary) < pheno_binary_rows_unfiltered) {
     print("Some samples had multiple phenotype rows, taking the most resistant only")
   }
-  
-  #colnames(pheno_binary)[2] <- paste0(ab_name(antibiotic),"_R")
-  #colnames(pheno_binary)[3] <- paste0(ab_name(antibiotic),"_NWT")
   
   # check there are some non-NA values for phenotype call
   if (sum(!is.na(pheno_binary[,2])) == 0) {
