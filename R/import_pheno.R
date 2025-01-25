@@ -24,8 +24,9 @@
 #'   
 #' @param ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret 
 #'   the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion 
-#'   values, against epidemiological cut-off (ECOFF) values. If `FALSE`, no interpretation is 
-#'   performed.
+#'   values, against epidemiological cut-off (ECOFF) values. These will be reported in 
+#'   a new column 'ecoff', coded as 'NWT' (nonwildtype) or 'WT' (wildtype). If `FALSE`, 
+#'   no ECOFF interpretation is performed.
 #'   
 #' @param default_guideline A string (default is "EUCAST"). Default guideline to use for 
 #'   interpretation via as.sir. Allowed values are 'EUCAST' or 'CLSI'. If the input file
@@ -44,8 +45,8 @@
 #'     \item `mic`: The minimum inhibitory concentration (MIC) value, formatted using the `as.mic` function.
 #'     \item `disk`: The disk diffusion measurement (in mm), formatted using the `as.disk` function.
 #'     \item `guideline`: The guideline used for interpretation (either EUCAST or CLSI; taken from input column otherwise forced to parameter default_guideline).
-#'     \item `pheno`: The phenotype interpreted against the specified breakpoint standard, based on the MIC or disk diffusion data.
-#'     \item `ecoff`: The wildtype/nonwildtype status interpreted against the ECOFF, based on the MIC or disk diffusion data.
+#'     \item `pheno`: The phenotype interpreted against the specified breakpoint standard (as S/I/R), based on the MIC or disk diffusion data.
+#'     \item `ecoff`: The wildtype/nonwildtype status interpreted against the ECOFF (as WT/NWT), based on the MIC or disk diffusion data.
 #'   }
 #'
 #'
@@ -141,7 +142,7 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", interpret=F, ecoff=F
                                       as.sir(disk, mo=spp_pheno, ab=drug_agent, guideline=guideline, breakpoint_type="ECOFF"),
                                       NA)) %>%
             unite(ecoff, ecoff_MIC:ecoff_disk, na.rm=T) %>%
-            mutate(ecoff=as.sir(ecoff)) %>%
+            mutate(ecoff=case_when(ecoff=="R" ~ "NWT", ecoff=="S" ~ "WT", TRUE ~ NA)) %>%
             relocate(ecoff, .after=drug_agent)
         }
       }
