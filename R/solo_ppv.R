@@ -59,8 +59,8 @@ require(patchwork)
 #' @importFrom patchwork plot_layout plot_annotation
 #'
 #' @examples
-#' geno_table <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv", "Name")
-#' pheno_table <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv")
+#' geno_table <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
+#' pheno_table <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
 #' 
 #' soloPPV_cipro <- solo_ppv_analysis(geno_table = geno_table, 
 #'                             pheno_table = pheno_table, 

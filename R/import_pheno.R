@@ -52,7 +52,7 @@
 #'
 #' @examples
 #' # Example usage
-#' ast_data <- import_ncbi_ast("path/to/ast_data.tsv")
+#' pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 #' head(ast_data)
 #'
 #' @export
