@@ -119,7 +119,7 @@ load(AMRgen)
 pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 
 # import small example E. coli AST data from NCBI, and re-interpret resistance into new column 'pheno' (WARNING: phenotype interpretation can take a few minutes)
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T)
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T, ecoff=T)
 
 # import small example E. coli AMRfinderplus data
 geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
