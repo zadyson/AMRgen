@@ -51,7 +51,8 @@ write_tsv(atb_mini %>% filter(Name %in% biosample50), file="Ecoli_AMRfinderplus_
 write_tsv(ast_mini %>% filter(`#BioSample` %in% biosample50), file="Ecoli_AST_NCBI_n50.tsv")
 ```
 
-# test
+# import using import_ncbi_ast and write out all, useful for testing PPV etc
 ``` {r}
-
+ecoli_interpret <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv", interpret=T, ecoff=T)
+write_tsv(ecoli_interpret, "testdata/Ecoli_AST_NCBI_reinterpreted.tsv")
 ```
