@@ -118,7 +118,8 @@ load(AMRgen)
 # import small example E. coli AST data from NCBI (without re-interpreting resistance)
 pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 
-# import small example E. coli AST data from NCBI, and re-interpret resistance into new column 'pheno' (WARNING: phenotype interpretation can take a few minutes)
+# import small example E. coli AST data from NCBI, and re-interpret resistance into new column 'pheno'
+#   and interpret wt/nwt into new column 'ecoff' (WARNING: phenotype interpretation can take a few minutes)
 pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T, ecoff=T)
 
 # import small example E. coli AMRfinderplus data
@@ -127,24 +128,29 @@ geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
 # get subsets of each table for samples present in both
 overlap <- compare_geno_pheno_id(geno,pheno)
 
-# get binary matrix for R/NWT for a given drug (using "Resistance phenotype" from NCBI), and presence/absence for markers for relevant drug class/es
+# get binary matrix for R and NWT for a given drug (using "Resistance phenotype" from NCBI), and presence/absence for markers for relevant drug class/es
 mero_vs_blaGenes <- getBinMat(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
 cipro_vs_quinoloneMarkers <- getBinMat(geno, pheno, "Ciprofloxacin", c("Quinolones"), sir_col="Resistance phenotype")
 
 # import larger example E. coli AST data from NCBI (without re-interpreting resistance)
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv")
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
 
 # import larger example E. coli AMRfinderplus data
-geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv", "Name")
+geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
 
-# get binary matrix of MICs for E. coli and gene determinants related to ciprofloxacin
+# get binary matrix of gene determinants related to ciprofloxacin and add the raw cipro MIC; then create upset plot with the output
 ec_cip_bin<- getBinMat(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
-
-# plot basic upset plot
 AMRGen_Upset(ec_cip_bin, min_set_size=2, order="mic")
 
-# get solo markers for a specified drug and associated class/es, calculate and plot PPV
+# get solo markers for a specified drug and associated class/es, calculate and plot PPV (using NCBI interpretation)
 soloPPV_mero <- solo_ppv_analysis(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
 soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
 
+# repeat the above but reinterpret the phenotypes vs current breakpoints and ECOFFs first, to define R and NWT variables
+# (for this example, we can save time using file that was already 'reinterpreted' using: import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv", interpret=T, ecoff=T)
+pheno <- read_tsv("testdata/Ecoli_AST_NCBI_reinterpreted.tsv.gz") %>%
+    mutate(drug_agent=as.ab(drug_agent), spp_pheno=as.mo(spp_pheno), mic=as.mic(mic), disk=as.disk(disk), pheno=as.sir(pheno))
+geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
+soloPPV_mero <- solo_ppv_analysis(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
+soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
 ```
