@@ -153,4 +153,10 @@ pheno <- read_tsv("testdata/Ecoli_AST_NCBI_reinterpreted.tsv.gz") %>%
 geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
 soloPPV_mero <- solo_ppv_analysis(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
 soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
+
+
+# use complex upset
+# get binary matrix of gene determinants related to ciprofloxacin and add the raw cipro MIC; then create upset plot with the output, using pheno and geno matrix using the re-interpreted pheno option
+ec_cip_bin<- getBinMat(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
+upset_plot(ec_cip_bin)
 ```
