@@ -3,7 +3,7 @@ require(ComplexUpset)
 amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic', 
                       remove_NAs = TRUE, gene_determinants = NULL, colour_by='pheno',
                       plot_breakpoints=FALSE, organism=NULL, break_guide = "EUCAST 2024", 
-                      break_type="ECOFF", drug=NULL, colour_values = c("#66c2a5", "#fdae61", "#d53e4f")) {
+                      break_type="ECOFF", drug=NULL, colour_values = c(S="#66c2a5", I="#fdae61", R="#d53e4f")) {
   
   # mic_disk must be either 'mic' or 'disk'
   if (! mic_disk %in% c('mic', 'disk')){
@@ -96,6 +96,19 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
     scale_y <- NULL
   }
   
+  # check the colour palette matches the pheno values, otherwise create a new one
+  col_vals <- names(table(upset_data[[colour_by]])[table(upset_data[[colour_by]])>0])
+  if (!all(col_vals %in% names(colour_values))) {
+    print(paste("Warning: not all values of", colour_by, ":", paste(col_vals, collapse=","), 
+          "are included in the colour vector `colour_values`:", paste(names(colour_values), collapse=",")))
+    print("Defaulting to standard colours")
+    #colour_values <-= rainbow(length(col_vals))
+    colour_values <- na.omit(colour_values[col_vals])
+    to_add <- col_vals[!(col_vals %in% names(colour_values))]
+    colour_values <- c(colour_values, topo.colors(length(to_add)))
+    names(colour_values) <- col_vals
+  }
+  
   # now plot
   plot <- upset(upset_data, genes, name="genetic determinant", min_size=min_set_size, width_ratio = 0.1,
   annotations = list(
@@ -109,6 +122,5 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
       theme(legend.title = element_text(face="bold"))
   )))
 
-  print(break_r, break_s)
   return(plot)
 }
