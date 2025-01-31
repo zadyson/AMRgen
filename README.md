@@ -93,7 +93,7 @@ soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug
 soloPPV_cipro$solo_stats
 
 # plot PPV summary:
-soloPPV_cipro$combinedplot
+soloPPV_cipro$combined_plot
 
 # get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)
 cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
@@ -117,14 +117,14 @@ pheno <- read_tsv("testdata/Ecoli_AST_NCBI_reinterpreted.tsv.gz") %>%
 geno <- import_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
 
 # do positive predictive value (PPV) analysis for quinolone resistance markers vs ciprofloxacin resistance/NWT
-soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
+soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
 
 soloPPV_cipro$solo_stats
 
-soloPPV_cipro$combinedplot
+soloPPV_cipro$combined_plot
 
 # get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)
-cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
+cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
 
 # do upset plot of MIC vs genotype marker combinations (using AMRgen function, not requiring complexUpset)
 amr_upset(cip_bin, min_set_size=2, order="mic")
