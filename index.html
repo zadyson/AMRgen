@@ -169,7 +169,7 @@
 <span></span>
 <span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">solo_stats</span></span>
 <span></span>
-<span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">combinedplot</span></span>
+<span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">combined_plot</span></span>
 <span></span>
 <span><span class="co"># get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)</span></span>
 <span><span class="va">cip_bin</span><span class="op">&lt;-</span> <span class="fu">get_binary_matrix</span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"Resistance phenotype"</span>, keep_assay_values<span class="op">=</span><span class="cn">T</span>, keep_assay_values_from <span class="op">=</span> <span class="st">"mic"</span><span class="op">)</span></span>
