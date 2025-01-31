@@ -55,4 +55,7 @@ write_tsv(ast_mini %>% filter(`#BioSample` %in% biosample50), file="Ecoli_AST_NC
 ``` {r}
 ecoli_interpret <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv", interpret=T, ecoff=T)
 write_tsv(ecoli_interpret, "testdata/Ecoli_AST_NCBI_reinterpreted.tsv")
+
+# check for differences in interpretation vs input file
+ecoli_interpret %>% group_by(pheno, `Resistance phenotype`, `Testing standard`) %>% count()
 ```
