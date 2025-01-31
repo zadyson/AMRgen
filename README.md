@@ -106,7 +106,7 @@ optionally:
   - interpret SIR if required (as.sir; requires either a species column, or that all rows are a single species)
 * optionally: filter both files to the desired sample sets (e.g. filter on species, check common sample identifiers exist)
 * pass filtered genotype & phenotype objects (which have common sample identifiers) to functions for
-  - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling (`getBinMat`)
+  - generating binary matrix of SIR vs marker presence/absence suitable for regression modelling (`get_binary_matrix`)
   - cross-tabulating SIR vs marker presence/absence, calculating & plotting PPV (`solo_ppv_analysis`)
   - upset plots showing MIC/DD distribution stratified by genotype profile (`AMRGen_Upset`)
 
@@ -129,8 +129,8 @@ geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
 overlap <- compare_geno_pheno_id(geno,pheno)
 
 # get binary matrix for R and NWT for a given drug (using "Resistance phenotype" from NCBI), and presence/absence for markers for relevant drug class/es
-mero_vs_blaGenes <- getBinMat(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
-cipro_vs_quinoloneMarkers <- getBinMat(geno, pheno, "Ciprofloxacin", c("Quinolones"), sir_col="Resistance phenotype")
+mero_vs_blaGenes <- get_binary_matrix(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
+cipro_vs_quinoloneMarkers <- get_binary_matrix(geno, pheno, "Ciprofloxacin", c("Quinolones"), sir_col="Resistance phenotype")
 
 # import larger example E. coli AST data from NCBI (without re-interpreting resistance)
 pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
@@ -139,7 +139,7 @@ pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
 geno <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
 
 # get binary matrix of gene determinants related to ciprofloxacin and add the raw cipro MIC; then create upset plot with the output
-ec_cip_bin<- getBinMat(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
+ec_cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
 AMRGen_Upset(ec_cip_bin, min_set_size=2, order="mic")
 
 # get solo markers for a specified drug and associated class/es, calculate and plot PPV (using NCBI interpretation)
@@ -157,6 +157,6 @@ soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug
 
 # use complex upset
 # get binary matrix of gene determinants related to ciprofloxacin and add the raw cipro MIC; then create upset plot with the output, using pheno and geno matrix using the re-interpreted pheno option
-ec_cip_bin<- getBinMat(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
+ec_cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
 upset_plot(ec_cip_bin)
 ```
