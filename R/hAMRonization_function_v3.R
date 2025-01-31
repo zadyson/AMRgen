@@ -71,34 +71,3 @@ harmonize_data <- function(user_software_name,
   # return harmonized data frame
   return(py$hamronized_output_df)
 }
-
-# test code amrfinder plus
-# note both amrfinderplus test files appear malformed according to hamronize 
-# and produce errors but the code works
-user_software_name <- "amrfinderplus"
-user_software_version <- "3.12.8"
-user_input_filename <- "/Users/lshzd1/Desktop/ATB_Achromobacter_AFP.tsv"
-user_database_version <- "2024-01-31.1"
-
-test_data <- harmonize_data(user_software_name, user_software_version, 
-                            user_database_version, user_input_filename)
-
-
-# test code rgi - same arguments as for amrfinder plus
-user_software_name <- "rgi"
-user_software_version <- "version x"
-user_input_filename <- "/Users/lshzd1/Desktop/2025-01-14_11:06:52.908_KPN2009.fasta.txt"
-user_database_version <- "database y"
-
-test_data <- harmonize_data(user_software_name, user_software_version, 
-                            user_database_version, user_input_filename)
-
-
-# test code - resfinder - must be json (hamronize can't do txt file)
-user_software_name <- "resfinder"
-user_software_version <- "4.6.0"
-user_input_filename <- "/Users/lshzd1/Desktop/KPN2214.json"
-user_database_version <- "2024-08-06"
-
-test_data <- harmonize_data(user_software_name, user_software_version, 
-                            user_database_version, user_input_filename)
