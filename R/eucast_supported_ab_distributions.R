@@ -16,8 +16,12 @@ eucast_supported_ab_distributions <- function(...) {
     if (interactive()) message("Retrieving list of antimicrobials from ", font_url("https://mic.eucast.org", "mic.eucast.org"), "...", appendLF = FALSE)
     url <- "https://mic.eucast.org/search/?search[method]=mic"
     page <- read_html(url)
-    select_list <- page %>% html_element("#search_antibiotic") %>% html_children()
-    select_values <- select_list %>% html_attrs() %>% unlist()
+    select_list <- page %>%
+      html_element("#search_antibiotic") %>%
+      html_children()
+    select_values <- select_list %>%
+      html_attrs() %>%
+      unlist()
     select_names <- select_list %>% html_text2()
     select_names <- select_names[!grepl("...", names(select_values), fixed = TRUE)]
     select_names_AMR <- as.character(as.ab(select_names, flag_multiple_results = FALSE, info = FALSE, fast_mode = TRUE))

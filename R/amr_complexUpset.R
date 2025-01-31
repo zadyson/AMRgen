@@ -1,15 +1,38 @@
-require(ComplexUpset)
-
-amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic', 
-                      remove_NAs = TRUE, gene_determinants = NULL, colour_by='pheno',
-                      plot_breakpoints=FALSE, organism=NULL, break_guide = "EUCAST 2024", 
-                      break_type="ECOFF", drug=NULL, colour_values = c(S="#66c2a5", I="#fdae61", R="#d53e4f")) {
-  
+#' Create an Upset plot for AMR data
+#'
+#' This function generates an Upset plot using a binary matrix of genetic determinants and antimicrobial resistance (AMR) data. Optionally, MIC or disk diffusion breakpoints can be overlaid on the plot.
+#' @param binary_matrix A binary matrix where rows represent samples and columns represent genetic determinants or phenotypic resistance data.
+#' @param min_set_size The minimum size of a set to be included in the plot. Default is 10.
+#' @param mic_disk A character string specifying whether to use 'mic' or 'disk' for the y-axis. Must be either `"mic"` or `"disk"`. Default is `"mic"`.
+#' @param remove_NAs Logical. If `TRUE`, removes rows with missing values in the selected `mic_disk` column. Default is `TRUE`.
+#' @param gene_determinants A character vector specifying which genetic determinants to include. If `NULL`, all genes are used. Default is `NULL`.
+#' @param colour_by A character string specifying the column used for colour mapping in the plot. Default is `"pheno"`.
+#' @param plot_breakpoints Logical. If `TRUE`, overlays MIC or disk diffusion breakpoints on the plot. Default is `FALSE`.
+#' @param organism A character string specifying the organism, used when plotting breakpoints.
+#' @param break_guide A character string specifying the breakpoint guideline (e.g., `"EUCAST 2024"`). Default is `"EUCAST 2024"`.
+#' @param break_type A character string specifying the breakpoint type (e.g., `"ECOFF"`). Default is `"ECOFF"`.
+#' @param drug A character string specifying the antimicrobial agent to be analysed.
+#' @param colour_values A named vector specifying colours for different resistance categories (`S`, `I`, `R`). Default is `c(S="#66c2a5", I="#fdae61", R="#d53e4f")`.
+#' @importFrom AMR as.mo as.ab as.mic
+#' @importFrom dplyr mutate across filter select rename
+#' @importFrom tidyr separate_longer_delim
+#' @importFrom ggplot2 ggplot aes geom_count scale_colour_manual labs theme element_text geom_hline
+#' @importFrom ComplexUpset upset
+#' @return A `ggplot` object displaying the Upset plot.
+#' @export
+#' @examples
+#' # Example usage:
+#' # binary_matrix <- your_data
+#' # amr_complexUpset(binary_matrix)
+amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
+                             remove_NAs = TRUE, gene_determinants = NULL, colour_by = "pheno",
+                             plot_breakpoints = FALSE, organism = NULL, break_guide = "EUCAST 2024",
+                             break_type = "ECOFF", drug = NULL, colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")) {
   # mic_disk must be either 'mic' or 'disk'
-  if (! mic_disk %in% c('mic', 'disk')){
+  if (!mic_disk %in% c("mic", "disk")) {
     stop("mic_disk must be either 'mic' or 'disk'. Please select one of these values to continue.")
   }
-  
+
   # Convert organism and antibiotic to mo and ab if they are provided
   if (!is.null(organism)) {
     organism <- as.mo(organism)
@@ -17,16 +40,16 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
   if (!is.null(drug)) {
     drug <- as.ab(drug)
   }
-  
+
   # select gene determinants to plot
-  if(is.null(gene_determinants)){
+  if (is.null(gene_determinants)) {
     col <- colnames(binary_matrix)
     cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno")
     genes <- col[-1]
     genes <- setdiff(genes, cols_to_remove)
   }
   # otherwise set to the vector provided
-  else{
+  else {
     genes <- gene_determinants
   }
 
@@ -34,7 +57,7 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
   upset_data <- binary_matrix %>% mutate(across(genes, as.logical))
 
   # rename first column to 'sample' for the first column, to avoid issues with duplicate column names, if col1 is "id"
-  if(colnames(upset_data)[1] == "id"){
+  if (colnames(upset_data)[1] == "id") {
     upset_data <- upset_data %>% rename(sample = id)
   }
 
@@ -45,15 +68,16 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
       stop("When plot_breakpoints is TRUE, all of the following arguments must have values: organism, guideline, type, drug.")
     }
     # grab the method to filter by depending on whether we're using mic or disk
-    if (mic_disk == 'mic'){
+    if (mic_disk == "mic") {
       method_value <- "MIC"
+    } else {
+      method_value <- "DISK"
     }
-    else{ method_value <- "DISK" }
     # extract the breakpoints
-    breakpoint_table <- AMR::clinical_breakpoints %>% 
+    breakpoint_table <- AMR::clinical_breakpoints %>%
       filter(ab == drug, mo == organism, guideline == break_guide, type == break_type, method == method_value)
     # if the table is empty, then return an error
-    if(nrow(breakpoint_table) == 0){
+    if (nrow(breakpoint_table) == 0) {
       warning("No breakpoints available for bug/drug combination. Will not plot breakpoint lines on upset, continuing...")
     }
     # otherwise grab the values, and create the hlines
@@ -61,66 +85,68 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic',
       break_r <- breakpoint_table %>% pull(breakpoint_R)
       break_s <- breakpoint_table %>% pull(breakpoint_S)
       # convert to mic values if needed
-      if (mic_disk == 'mic'){
+      if (mic_disk == "mic") {
         break_r <- as.mic(break_r)
         break_s <- as.mic(break_s)
       }
-      if (break_r == break_s){
+      if (break_r == break_s) {
         warning("Breakpoint value is the same for R and S, only plotting one line")
-        break_r_line <- geom_hline(yintercept = break_r, linetype = "dashed", alpha = 0.6, colour="black")
+        break_r_line <- geom_hline(yintercept = break_r, linetype = "dashed", alpha = 0.6, colour = "black")
         break_s_line <- NULL
-      }
-      else{
-        break_r_line <- geom_hline(yintercept = as.mic(break_r), linetype = "dashed", alpha=0.6, colour="black")
-        break_s_line <- geom_hline(yintercept = as.mic(break_s), linetype = "dashed", alpha = 0.6, colour="black")
+      } else {
+        break_r_line <- geom_hline(yintercept = as.mic(break_r), linetype = "dashed", alpha = 0.6, colour = "black")
+        break_s_line <- geom_hline(yintercept = as.mic(break_s), linetype = "dashed", alpha = 0.6, colour = "black")
       }
     }
-  }
-  else {
+  } else {
     break_r_line <- NULL
     break_s_line <- NULL
   }
-    
+
   # remove NAs if required
-  if (remove_NAs){
+  if (remove_NAs) {
     upset_data <- upset_data %>% filter(!is.na(!!sym(mic_disk)))
   }
-    
+
   # get the name of the y axis
-  if(mic_disk == 'mic'){
+  if (mic_disk == "mic") {
     y_axis_name <- "MIC (mg/L)"
     scale_y <- scale_y_mic()
-  }
-  else{
+  } else {
     y_axis_name <- "Disk (mm)"
     scale_y <- NULL
   }
-  
+
   # check the colour palette matches the pheno values, otherwise create a new one
-  col_vals <- names(table(upset_data[[colour_by]])[table(upset_data[[colour_by]])>0])
+  col_vals <- names(table(upset_data[[colour_by]])[table(upset_data[[colour_by]]) > 0])
   if (!all(col_vals %in% names(colour_values))) {
-    print(paste("Warning: not all values of", colour_by, ":", paste(col_vals, collapse=","), 
-          "are included in the colour vector `colour_values`:", paste(names(colour_values), collapse=",")))
+    print(paste(
+      "Warning: not all values of", colour_by, ":", paste(col_vals, collapse = ","),
+      "are included in the colour vector `colour_values`:", paste(names(colour_values), collapse = ",")
+    ))
     print("Defaulting to standard colours")
-    #colour_values <-= rainbow(length(col_vals))
-    colour_values <- na.omit(colour_values[col_vals])
+    # colour_values <-= rainbow(length(col_vals))
+    colour_values <- stats::na.omit(colour_values[col_vals])
     to_add <- col_vals[!(col_vals %in% names(colour_values))]
-    colour_values <- c(colour_values, topo.colors(length(to_add)))
+    colour_values <- c(colour_values, grDevices::topo.colors(length(to_add)))
     names(colour_values) <- col_vals
   }
-  
+
   # now plot
-  plot <- upset(upset_data, genes, name="genetic determinant", min_size=min_set_size, width_ratio = 0.1,
-  annotations = list(
-    y_axis_name=(ggplot(mapping=aes(y=!!sym(mic_disk), colour=as.factor(!!sym(colour_by)))) + 
-      geom_count() +
-      break_r_line + # these values will be NULL if plot breakpoints isn't set
-      break_s_line +
-      scale_colour_manual(values=colour_values) +
-      scale_y +
-      labs(colour=colour_by, size="Number of\nisolates") +
-      theme(legend.title = element_text(face="bold"))
-  )))
+  plot <- upset(upset_data, genes,
+    name = "genetic determinant", min_size = min_set_size, width_ratio = 0.1,
+    annotations = list(
+      y_axis_name = (ggplot(mapping = aes(y = !!sym(mic_disk), colour = as.factor(!!sym(colour_by)))) +
+        geom_count() +
+        break_r_line + # these values will be NULL if plot breakpoints isn't set
+        break_s_line +
+        scale_colour_manual(values = colour_values) +
+        scale_y +
+        labs(colour = colour_by, size = "Number of\nisolates") +
+        theme(legend.title = element_text(face = "bold"))
+      )
+    )
+  )
 
   return(plot)
 }

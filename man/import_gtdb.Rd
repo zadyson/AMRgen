@@ -20,6 +20,11 @@ tbl Data frame containing GTDB output with AMR-parsed microorganism code (gtdb.m
 Import GTDB output (from file or data frame) and parse the species name into a microorganism recognised by AMR package. AMR mo code and species name will be added to the data frame.
 }
 \examples{
-import_gtdb(tbl = data.frame(Species = c("Pseudomonas_E piscis","Haemophilus_D parainfluenzae_A", "Acinetobacter calcoaceticus_C")))
-
+\dontrun{
+import_gtdb(tbl = data.frame(Species = c(
+  "Pseudomonas_E piscis",
+  "Haemophilus_D parainfluenzae_A",
+  "Acinetobacter calcoaceticus_C"
+)))
+}
 }

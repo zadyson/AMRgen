@@ -24,3 +24,4 @@
 ^\.lintr$
 ^tests/testthat/_snaps$
 ^CRAN-SUBMISSION$
+^data-raw$

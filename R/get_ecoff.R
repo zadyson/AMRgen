@@ -14,8 +14,12 @@ eucast_supported_ab_distributions <- function(...) {
     if (interactive()) message("Retrieving list of antimicrobials from ", font_url("https://mic.eucast.org", "mic.eucast.org"), "...", appendLF = FALSE)
     url <- "https://mic.eucast.org/search/?search[method]=mic"
     page <- read_html(url)
-    select_list <- page %>% html_element("#search_antibiotic") %>% html_children()
-    select_values <- select_list %>% html_attrs() %>% unlist()
+    select_list <- page %>%
+      html_element("#search_antibiotic") %>%
+      html_children()
+    select_values <- select_list %>%
+      html_attrs() %>%
+      unlist()
     select_names <- select_list %>% html_text2()
     select_names <- select_names[!grepl("...", names(select_values), fixed = TRUE)]
     select_names_AMR <- as.character(as.ab(select_names, flag_multiple_results = FALSE, info = FALSE, fast_mode = TRUE))
@@ -52,9 +56,13 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     mo_coerced <- as.mo(mo)
   }
   if (ab != ab_coerced) {
-    if (interactive()) message("Returning antimicrobial wild type distributions for ",
-                               ab_name(ab_coerced, language = NULL, tolower = TRUE), " (", ab_coerced, ", ", ab_atc(ab_coerced, only_first = TRUE), ")",
-                               ifelse(!is.null(mo_coerced), paste0(" in ", font_italic(suppressWarnings(mo_name(mo_coerced, language = NULL, keep_synonyms = TRUE)))), ""))
+    if (interactive()) {
+      message(
+        "Returning antimicrobial wild type distributions for ",
+        ab_name(ab_coerced, language = NULL, tolower = TRUE), " (", ab_coerced, ", ", ab_atc(ab_coerced, only_first = TRUE), ")",
+        ifelse(!is.null(mo_coerced), paste0(" in ", font_italic(suppressWarnings(mo_name(mo_coerced, language = NULL, keep_synonyms = TRUE)))), "")
+      )
+    }
   }
   ab <- ab_coerced
   ab_index <- names(AMRgen_env$eucast_ab_select_list)[AMRgen_env$eucast_ab_select_list == ab]
@@ -65,8 +73,10 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     html_table()
   colnames(tbl)[1] <- "microorganism"
   tbl <- tbl %>%
-    mutate(microorganism_code = suppressWarnings(as.mo(microorganism, language = NULL, keep_synonyms = TRUE, info = FALSE)),
-                  .after = 1)
+    mutate(
+      microorganism_code = suppressWarnings(as.mo(microorganism, language = NULL, keep_synonyms = TRUE, info = FALSE)),
+      .after = 1
+    )
 
   if (!is.null(mo)) {
     mo <- as.mo(mo)
@@ -87,8 +97,9 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     tbl <- tbl %>%
       select(matches("^([0-9.]+|microorganism|microorganism_code)$")) %>%
       pivot_longer(-matches("^(microorganism|microorganism_code)$"),
-                          names_to = ifelse(method == "mic", "mic", "disk_diffusion"),
-                          values_to = "count")
+        names_to = ifelse(method == "mic", "mic", "disk_diffusion"),
+        values_to = "count"
+      )
     if (method == "mic") {
       tbl$mic <- as.mic(tbl$mic)
     } else {
@@ -108,4 +119,3 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
 get_ecoff <- function(ab, mo = NULL) {
 
 }
-

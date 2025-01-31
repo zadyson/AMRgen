@@ -4,42 +4,70 @@
 \alias{import_ncbi_ast}
 \title{Import and process AST data from an NCBI file}
 \usage{
-import_ncbi_ast(file, interpret = T)
+import_ncbi_ast(
+  input,
+  sample_col = "#BioSample",
+  interpret = F,
+  ecoff = F,
+  default_guideline = "EUCAST"
+)
 }
 \arguments{
-\item{file}{A string representing the path to the delimited file containing the AST data
-in NCBI antibiogram format. These files can be downloaded from the NCBI AST browser,
-e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas\%20aeruginosa}
+\item{input}{A string representing a dataframe, or a path to a tab-delimited file,
+containing the AST data in NCBI antibiogram format. These files can be downloaded
+fromNCBI AST browser, e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas\%20aeruginosa}
 
-\item{interpret}{A logical value (default is TRUE). If \code{TRUE}, the function will interpret
+\item{sample_col}{A string indicating the name of the column with sample identifiers.
+If \code{NULL}, assume this is '#BioSample'.}
+
+\item{interpret}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret
 the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion
-values, and either EUCAST or CLSI testing standard (as indicated in the \verb{Testing standard}
-column of the input file, if blank EUCAST will be used by default). If \code{FALSE}, no
-interpretation is performed.}
+values, against human breakpoints from either EUCAST or CLSI testing standard (as indicated
+in the \verb{Testing standard} column of the input file, if blank the value of the default_guideline
+parameter will be used by default). If \code{FALSE}, no interpretation is performed.}
+
+\item{ecoff}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret
+the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion
+values, against epidemiological cut-off (ECOFF) values. These will be reported in
+a new column 'ecoff', coded as 'NWT' (nonwildtype) or 'WT' (wildtype). If \code{FALSE},
+no ECOFF interpretation is performed.}
+
+\item{default_guideline}{A string (default is "EUCAST"). Default guideline to use for
+interpretation via as.sir. Allowed values are 'EUCAST' or 'CLSI'. If the input file
+contains a column \verb{Testing standard}, or if interpret or ecoff are set to \code{TRUE}, a
+new column \code{guideline} will be created to use in the interpretation step. Values are
+populated from those in \verb{Testing standard}, however rows with missing/NA values or
+non-allowed values will be coerced to the value specified by 'default_guideline'.
+If there is no \verb{Testing standard} column, all rows will be interpreted using the
+default_guideline.}
 }
 \value{
 A data frame with the processed AST data, including additional columns:
 \itemize{
-\item \code{biosample}: The biological sample identifier (renamed from \verb{#BioSample}).
+\item \code{id}: The biological sample identifier (renamed from \verb{#BioSample} or specified column).
 \item \code{spp_pheno}: The species phenotype, formatted using the \code{as.mo} function.
 \item \code{drug_agent}: The antibiotic used in the test, formatted using the \code{as.ab} function.
 \item \code{mic}: The minimum inhibitory concentration (MIC) value, formatted using the \code{as.mic} function.
 \item \code{disk}: The disk diffusion measurement (in mm), formatted using the \code{as.disk} function.
-\item \code{guideline}: The guideline used for interpretation (either EUCAST or CLSI).
-\item \code{pheno}: The interpreted phenotype (SIR) based on the MIC or disk diffusion data.
+\item \code{guideline}: The guideline used for interpretation (either EUCAST or CLSI; taken from input column otherwise forced to parameter default_guideline).
+\item \code{pheno}: The phenotype interpreted against the specified breakpoint standard (as S/I/R), based on the MIC or disk diffusion data.
+\item \code{ecoff}: The wildtype/nonwildtype status interpreted against the ECOFF (as WT/NWT), based on the MIC or disk diffusion data.
 }
 }
 \description{
 This function imports an antibiotic susceptibility testing (AST) dataset, processes
 the data, and optionally interprets the results based on MIC or disk diffusion data.
-It assumes that the input file is a delimited text file (e.g., CSV, TSV) and
+It assumes that the input file is a tab-delimited text file (e.g., TSV) and
 parses relevant columns (antibiotic names, species names, MIC or disk data) into
-suitable classes using the AMR package. It also uses the AMR package to determine
-susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines
+suitable classes using the AMR package. It optionally can use the AMR package to
+determine susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human
+breakpoints and/or ECOFF). If expected columns are not found warnings will be given,
+and interpretation may not be possible.
 }
 \examples{
 # Example usage
-ast_data <- import_ncbi_ast("path/to/ast_data.tsv", interpret = TRUE)
+\dontrun{
+pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 head(ast_data)
-
+}
 }

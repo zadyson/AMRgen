@@ -1,13 +1,13 @@
-#input = pheno data frame, name of the ID column (otherwise take first column, or try to find 'sample' or 'biosample'; same for geno data frame
-#compare the sample IDs, make a list of unique entries that appear in both
-#report the number of overlaps and uniques
-#return copies of geno and pheno data frames that each contain the overlapping samples only
+# input = pheno data frame, name of the ID column (otherwise take first column, or try to find 'sample' or 'biosample'; same for geno data frame
+# compare the sample IDs, make a list of unique entries that appear in both
+# report the number of overlaps and uniques
+# return copies of geno and pheno data frames that each contain the overlapping samples only
 
-compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, pheno_sample_col=NULL, rename_id_cols=F){
-  if (is.null(geno_sample_col)){
+compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL, pheno_sample_col = NULL, rename_id_cols = F) {
+  if (is.null(geno_sample_col)) {
     geno_sample_col <- colnames(geno_data)[1]
   }
-  if(is.null(pheno_sample_col)){
+  if (is.null(pheno_sample_col)) {
     pheno_sample_col <- colnames(pheno_data)[1]
   }
 
@@ -15,52 +15,52 @@ compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col=NULL, p
   geno_sample_ids <- unique(pull(geno_data, geno_sample_col))
   pheno_sample_ids <- unique(pull(pheno_data, pheno_sample_col))
 
-  # compare the two 
+  # compare the two
   # Unique values in pheno and geno
   unique_in_pheno <- setdiff(pheno_sample_ids, geno_sample_ids)
   unique_in_geno <- setdiff(geno_sample_ids, pheno_sample_ids)
 
   # Overlapping values
   overlapping_values <- intersect(pheno_sample_ids, geno_sample_ids)
-  
+
   geno_matched <- geno_data %>% filter(get(geno_sample_col) %in% overlapping_values)
   pheno_matched <- pheno_data %>% filter(get(pheno_sample_col) %in% overlapping_values)
-  
+
   if (rename_id_cols) {
-    geno_matched <- geno_matched %>% rename(id=any_of(geno_sample_col))
-    pheno_matched <- pheno_matched %>% rename(id=any_of(pheno_sample_col))
+    geno_matched <- geno_matched %>% rename(id = any_of(geno_sample_col))
+    pheno_matched <- pheno_matched %>% rename(id = any_of(pheno_sample_col))
   }
 
-  return(list(pheno_unique = unique_in_pheno, 
-    geno_unique = unique_in_geno, 
+  return(list(
+    pheno_unique = unique_in_pheno,
+    geno_unique = unique_in_geno,
     overlap_ids = overlapping_values,
     geno_matched = geno_matched,
-    pheno_matched = pheno_matched))
-
+    pheno_matched = pheno_matched
+  ))
 }
 
 
 
 
 process_input <- function(input) {
-  
   # Check if the input is a file path (string)
   if (is.character(input) && file.exists(input)) {
     message("Input is a file path, reading the file.")
     data <- read_tsv(input)
   }
-  
+
   # Check if the input is already a dataframe
   else if (is.data.frame(input)) {
     message("Input is already a dataframe.")
     data <- input
   }
-  
+
   # If the input is neither a file nor a dataframe, stop with an error
   else {
     stop("Input must be either a valid file path or a dataframe.")
   }
-  
+
   # Return the dataframe
   return(data)
 }

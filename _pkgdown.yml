@@ -5,21 +5,18 @@ title: 'AMRgen'
 # Template settings
 template:
   bootstrap: 5
-  bootswatch: cerulean  # Optional: choose a Bootswatch theme
-  light-switch: true    # Enable light/dark mode toggle
+  bootswatch: "united"
 
 # Navbar configuration
 navbar:
+  title: "AMRgen"
   left:
-    - text: 'Get Started'
-      href: 'articles/AMRgen.html'
+    - text: "Home"
+      icon: "fa-home"
+      href: "index.html"
     - text: 'Reference'
-      href: 'reference/index.html'
-    - text: 'Articles'
-      menu:
-        - text: 'Introduction'
-          href: 'articles/AMRgen.html'
-        # Add more articles as needed
+      icon: "fa-book-open"
+      href: "reference/index.html"
   right:
     - text: "Source Code"
       icon: "fab fa-github"
@@ -40,5 +37,9 @@ navbar:
 
 # Footer configuration
 footer:
-  left: 'Free and Open Source (GPL-2), brought by interpretAMR-AMRgen Development Team'
-  right: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'
+  structure:
+    left: [devtext]
+    right: [logo]
+  components:
+    devtext: 'Free and Open Source (GPL-2), brought by interpretAMR-AMRgen Development Team'
+    logo: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'

@@ -69,9 +69,13 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     mo_coerced <- as.mo(mo)
   }
   if (ab != ab_coerced) {
-    if (interactive()) message("Returning antimicrobial wild type distributions for ",
-                               ab_name(ab_coerced, language = NULL, tolower = TRUE), " (", ab_coerced, ", ", ab_atc(ab_coerced, only_first = TRUE), ")",
-                               ifelse(!is.null(mo_coerced), paste0(" in ", font_italic(suppressWarnings(mo_name(mo_coerced, language = NULL, keep_synonyms = TRUE)))), ""))
+    if (interactive()) {
+      message(
+        "Returning antimicrobial wild type distributions for ",
+        ab_name(ab_coerced, language = NULL, tolower = TRUE), " (", ab_coerced, ", ", ab_atc(ab_coerced, only_first = TRUE), ")",
+        ifelse(!is.null(mo_coerced), paste0(" in ", font_italic(suppressWarnings(mo_name(mo_coerced, language = NULL, keep_synonyms = TRUE)))), "")
+      )
+    }
   }
   ab <- ab_coerced
   ab_index <- names(AMRgen_env$eucast_ab_select_list)[AMRgen_env$eucast_ab_select_list == ab]
@@ -82,8 +86,10 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     html_table()
   colnames(tbl)[1] <- "microorganism"
   tbl <- tbl %>%
-    mutate(microorganism_code = suppressWarnings(as.mo(microorganism, language = NULL, keep_synonyms = TRUE, info = FALSE)),
-                  .after = 1)
+    mutate(
+      microorganism_code = suppressWarnings(as.mo(microorganism, language = NULL, keep_synonyms = TRUE, info = FALSE)),
+      .after = 1
+    )
 
   if (!is.null(mo)) {
     mo <- as.mo(mo)
@@ -104,8 +110,9 @@ get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_t
     tbl <- tbl %>%
       select(matches("^([0-9.]+|microorganism|microorganism_code)$")) %>%
       pivot_longer(-matches("^(microorganism|microorganism_code)$"),
-                          names_to = ifelse(method == "mic", "mic", "disk_diffusion"),
-                          values_to = "count")
+        names_to = ifelse(method == "mic", "mic", "disk_diffusion"),
+        values_to = "count"
+      )
     if (method == "mic") {
       tbl$mic <- as.mic(tbl$mic)
     } else {
@@ -205,12 +212,14 @@ print.compare_eucast <- function(x, ...) {
 #' @export
 autoplot.compare_eucast <- function(object, ...) {
   long <- object |>
-    mutate(User = user / sum(user),
-           EUCAST = eucast / sum(eucast)) |>
+    mutate(
+      User = user / sum(user),
+      EUCAST = eucast / sum(eucast)
+    ) |>
     select(-user, -eucast) |>
     pivot_longer(-value, names_to = "Source", values_to = "count")
   ggplot(long, aes(x = value, y = count, fill = Source)) +
     geom_col(position = "dodge") +
     labs(x = "Measurement Value", y = "Density") # +
-    # scale_x_mic(keep_operators = "none")
+  # scale_x_mic(keep_operators = "none")
 }
