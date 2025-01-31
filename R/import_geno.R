@@ -9,7 +9,7 @@ require(tidyverse)
 #' @param input_table A file path to the input table containing AMR data.
 #' @param sample_col A character specifying the sample column in the input file.
 #' @param amrfp_drugs A data frame containing AMRFinderPlus drug classes and agents. Defaults to `amrfp_drugs_table`.
-#' @return For `as.gene`, an object of class "gene". For `parse_amrfp`, a data frame with parsed AMR data.
+#' @return For `as.gene`, an object of class "gene". For `import_amrfp`, a data frame with parsed AMR data.
 #' @examples
 #' \dontrun{
 #' # Create a gene object
@@ -17,7 +17,7 @@ require(tidyverse)
 #' print(gene)
 #'
 #' # Parse AMR data
-#' parsed_data <- parse_amrfp("path/to/input_table.tsv", "SampleID")
+#' parsed_data <- import_amrfp("path/to/input_table.tsv", "SampleID")
 #' }
 #' @export
 
@@ -40,9 +40,9 @@ print.gene <- function(x, ...) {
 
 amrfp_drugs_table <- read_tsv("amrfp_drug_classes_agents.tsv")
 
-#' @rdname parse_amrfp
+#' @rdname import_amrfp
 #' @export
-parse_amrfp <- function(input_table, sample_col, amrfp_drugs=amrfp_drugs_table){
+import_amrfp <- function(input_table, sample_col, amrfp_drugs=amrfp_drugs_table){
   # read in the table
   in_table <- read_tsv(input_table)
   # filter to only include AMR elements

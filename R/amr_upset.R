@@ -1,6 +1,6 @@
-### Function to generate "AMRgen_upset"
+### Function to generate "amr_upset"
 
-#' AMRGen_Upset: Generate a series of plots for AMR gene and combination analysis
+#' amr_upset: Generate a series of plots for AMR gene and combination analysis
 #'
 #' This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence
 #' from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for
@@ -32,7 +32,7 @@
 #' \dontrun{
 #' # Example usage
 #' data <- get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic") # Example input data from `get_binary_matrix` function, has mic, R/NWT, and gene lists
-#' AMRGen_Upset(data, min_set_size = 3, order = "mic")
+#' amr_upset(data, min_set_size = 3, order = "mic")
 #' }
 #'
 #' @import dplyr
@@ -42,7 +42,7 @@
 #' @importFrom AMR as.mic
 #' @import patchwork
 
-AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
+amr_upset <- function(binmat_orig, min_set_size = 2, order = ""){
   ## Inputs
   # takes in binmat = output from get_binary_matrix function (in function.R on datacuration git)
   # takes in order <- single value. Default = decreasing frequency. 

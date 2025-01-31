@@ -1,6 +1,6 @@
 require(ComplexUpset)
 
-upset_plot <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic', 
+amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = 'mic', 
                       remove_NAs = TRUE, gene_determinants = NULL, colour_by='pheno',
                       plot_breakpoints=FALSE, organism=NULL, break_guide = "EUCAST 2024", 
                       break_type="ECOFF", drug=NULL, colour_values = c("#66c2a5", "#fdae61", "#d53e4f")) {
