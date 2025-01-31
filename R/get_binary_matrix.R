@@ -67,19 +67,19 @@
 #' pheno_table <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
 #' 
 #' # binary R/NWT phenotypes only
-#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
+#' get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
 #' 
 #' # return AST assay phenotype values (default = mic, disk)
-#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T)
+#' get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T)
 #' 
 #' # return MIC phenotype values only
-#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
-#' getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "MIC (mg/L)")
+#' get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
+#' get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "MIC (mg/L)")
 #' 
 #' @export
 
 
-getBinMat <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR=T,
+get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR=T,
                       keep_assay_values=F, keep_assay_values_from=c("mic", "disk"), 
                       geno_sample_col=NULL, pheno_sample_col=NULL, 
                       sir_col="pheno", ecoff_col="ecoff") {

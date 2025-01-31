@@ -6,7 +6,7 @@
 #' from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for
 #' the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence.
 #'
-#' @param binmat_orig A data frame containing the original binary matrix output from the `getBinMatMIC` function,
+#' @param binmat_orig A data frame containing the original binary matrix output from the `get_binary_matrix` function,
 #'        with columns representing genes, resistance, MIC values, and metadata such as microorganism and antibiotic
 #'        information. This needs to be updated / standardised in future versions of AMRgen. 
 #' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots.
@@ -31,7 +31,7 @@
 #' @examples
 #' \dontrun{
 #' # Example usage
-#' data <- getBinMat(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic") # Example input data from `getBinMat` function, has mic, R/NWT, and gene lists
+#' data <- get_binary_matrix(geno_table, pheno_table, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic") # Example input data from `get_binary_matrix` function, has mic, R/NWT, and gene lists
 #' AMRGen_Upset(data, min_set_size = 3, order = "mic")
 #' }
 #'
@@ -44,7 +44,7 @@
 
 AMRGen_Upset <- function(binmat_orig, min_set_size = 2, order = ""){
   ## Inputs
-  # takes in binmat = output from getBinMatMIC function (in function.R on datacuration git)
+  # takes in binmat = output from get_binary_matrix function (in function.R on datacuration git)
   # takes in order <- single value. Default = decreasing frequency. 
   #         "genes" = # genes. "mic" = median mic 
   # default min set size is 2 (greater than or equal to this)

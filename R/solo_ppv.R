@@ -93,7 +93,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
   
   # get binary matrix
-  amr_binary <- getBinMat(geno_table, pheno_table, antibiotic=antibiotic, 
+  amr_binary <- get_binary_matrix(geno_table, pheno_table, antibiotic=antibiotic, 
                           drug_class_list=drug_class_list, 
                           geno_sample_col=geno_sample_col, pheno_sample_col=pheno_sample_col, 
                           sir_col=sir_col)
