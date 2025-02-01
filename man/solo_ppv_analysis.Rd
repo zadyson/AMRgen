@@ -68,29 +68,22 @@ resistance phenotypes, and PPV (with 95\% confidence interval) for each marker.
 }
 \examples{
 \dontrun{
-geno_table <- parse_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
-pheno_table <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
+# import genotype data
+geno_table <- import_amrfp(ecoli_geno_raw, "Name")
+
+# example phenotype data
+head(ecoli_ast)
 
 soloPPV_cipro <- solo_ppv_analysis(
   geno_table = geno_table,
-  pheno_table = pheno_table,
+  pheno_table = ecoli_ast,
   antibiotic = "Ciprofloxacin",
   drug_class_list = c("Quinolones"),
-  sir_col = "Resistance phenotype"
-)
-
-soloPPV_mero <- solo_ppv_analysis(
-  geno_table = geno_table,
-  pheno_table = pheno_table,
-  antibiotic = "Meropenem",
-  drug_class_list = c("Carbapenems", "Cephalosporins"),
   sir_col = "Resistance phenotype"
 )
 
 # View the results
 soloPPV_cipro$solo_stats
 soloPPV_cipro$combined_plot
-soloPPV_mero$solo_stats
-soloPPV_mero$combined_plot
 }
 }

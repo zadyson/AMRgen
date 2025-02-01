@@ -52,6 +52,15 @@ This function generates an Upset plot using a binary matrix of genetic determina
 }
 \examples{
 # Example usage:
-# binary_matrix <- your_data
-# amr_complexUpset(binary_matrix)
+cip_bin<- get_binary_matrix(import_amrfp(ecoli_geno_raw, "Name"), 
+              ecoli_ast, 
+              antibiotic="Ciprofloxacin", 
+              drug_class_list=c("Quinolones"), 
+              sir_col="pheno", 
+              keep_assay_values=TRUE, 
+              keep_assay_values_from = "mic"
+           )
+
+amr_complexUpset(cip_bin)
+
 }

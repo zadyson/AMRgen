@@ -65,11 +65,17 @@ print.gene <- function(x, ...) {
 #' @importFrom tidyr separate_longer_delim
 #' @importFrom tibble add_column
 #'
-#' @export
-#'
 #' @examples
 #' # Example usage:
-#' # processed_data <- import_amrfp("path/to/amrfinderplus_results.tsv", sample_col = "Sample_ID")
+#' \dontrun{
+#' # small example E. coli AMRfinderplus data
+#' ecoli_geno_raw
+#' 
+#' # import first few rows of this data frame and parse it as AMRfp data
+#' geno <- import_amrfp(ecoli_geno_raw %>% head(n=10), "Name")
+#' geno
+#' }
+#' @export
 import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_table) {
   
   in_table <- process_input(input_table)

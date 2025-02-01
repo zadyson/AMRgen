@@ -19,11 +19,20 @@
 #' @importFrom ggplot2 ggplot aes geom_count scale_colour_manual labs theme element_text geom_hline
 #' @importFrom ComplexUpset upset
 #' @return A `ggplot` object displaying the Upset plot.
-#' @export
 #' @examples
 #' # Example usage:
-#' # binary_matrix <- your_data
-#' # amr_complexUpset(binary_matrix)
+#' cip_bin<- get_binary_matrix(import_amrfp(ecoli_geno_raw, "Name"), 
+#'               ecoli_ast, 
+#'               antibiotic="Ciprofloxacin", 
+#'               drug_class_list=c("Quinolones"), 
+#'               sir_col="pheno", 
+#'               keep_assay_values=TRUE, 
+#'               keep_assay_values_from = "mic"
+#'            )
+#' 
+#' amr_complexUpset(cip_bin)
+#' 
+#' @export
 amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
                              remove_NAs = TRUE, gene_determinants = NULL, colour_by = "pheno",
                              plot_breakpoints = FALSE, organism = NULL, break_guide = "EUCAST 2024",

@@ -67,7 +67,15 @@ and interpretation may not be possible.
 \examples{
 # Example usage
 \dontrun{
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
-head(ast_data)
+# small example E. coli AST data from NCBI
+ecoli_ast_raw
+
+# import without re-interpreting resistance
+pheno <- import_ncbi_ast(ecoli_ast_raw)
+head(pheno)
+
+# import and re-interpret resistance (S/I/R) and ECOFF (WT/NWT) using AMR package
+pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
+head(pheno)
 }
 }

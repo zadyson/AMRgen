@@ -32,16 +32,16 @@
 #' \dontrun{
 #' # Example usage
 #'
-#' # Example input data from `get_binary_matrix` function, has mic, R/NWT, and gene lists
-#' data <- get_binary_matrix(geno_table,
-#'   pheno_table,
-#'   antibiotic = "Ciprofloxacin",
-#'   drug_class_list = c("Quinolones"),
-#'   sir_col = "Resistance phenotype",
-#'   keep_assay_values = TRUE,
-#'   keep_assay_values_from = "mic"
-#' )
-#' amr_upset(data, min_set_size = 3, order = "mic")
+#' cip_bin<- get_binary_matrix(import_amrfp(ecoli_geno_raw, "Name"), 
+#'               ecoli_ast, 
+#'               antibiotic="Ciprofloxacin", 
+#'               drug_class_list=c("Quinolones"), 
+#'               sir_col="pheno", 
+#'               keep_assay_values=TRUE, 
+#'               keep_assay_values_from = "mic"
+#'            )
+#' 
+#' amr_upset(cip_bin, min_set_size = 3, order = "mic")
 #' }
 #'
 #' @import dplyr
