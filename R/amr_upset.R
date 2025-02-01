@@ -230,9 +230,9 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank())
   
-  final_plot <- plot_spacer() + g1
-  final_plot <- final_plot + g4 + g3 + plot_layout(ncol = 2, widths = c(1, 4), guides="collect")
-  if (plot_set_size) { final_plot <- final_plot + plot_spacer() + g2  + plot_layout(heights=c(2,2,1))}
+  final_plot <- patchwork::plot_spacer() + g1
+  final_plot <- final_plot + g4 + g3 + patchwork::plot_layout(ncol = 2, widths = c(1, 4), guides="collect")
+  if (plot_set_size) { final_plot <- final_plot + patchwork::plot_spacer() + g2  + patchwork::plot_layout(heights=c(2,2,1))}
   
   print(final_plot)
 }

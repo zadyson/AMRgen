@@ -4,10 +4,10 @@
 \alias{amr_upset}
 \title{amr_upset: Generate a series of plots for AMR gene and combination analysis}
 \usage{
-amr_upset(binmat_orig, min_set_size = 2, order = "")
+amr_upset(binary_matrix, min_set_size = 2, order = "", plot_set_size = F)
 }
 \arguments{
-\item{binmat_orig}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function,
+\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function,
 with columns representing genes, resistance, MIC values, and metadata such as microorganism and antibiotic
 information. This needs to be updated / standardised in future versions of AMRgen.}
 
@@ -32,7 +32,7 @@ from a given binary matrix. It creates several plots, including MIC distribution
 the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence.
 }
 \details{
-This function processes the provided binary matrix (\code{binmat_orig}), which is expected to contain data on gene
+This function processes the provided binary matrix (\code{binary_matrix}), which is expected to contain data on gene
 combinations found in the strain, MIC for that strain (e.g., resistance or susceptibility) and
 corresponding MIC values for different genes.
 The function also includes an analysis of gene prevalence and an ordering option for visualizing combinations
