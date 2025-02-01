@@ -8,14 +8,9 @@ ecoli_ast_raw <- ecoli_ast %>% select(-c(spp_pheno:guideline)) %>% rename(`#BioS
 
 # set of AMRfinderplus (v3.12.8, DB 2024-01-31.1) genotype results sourced from AllTheBacteria
 # for the same biosamples as ecoli_ast
-# provided for testing solo_ppv_analysis and amr_upset functions
-ecoli_geno <- read_tsv("ecoli_geno.tsv.gz")
+# provided for testing import_amrfp, solo_ppv_analysis and amr_upset functions
+ecoli_geno_raw <- read_tsv("ecoli_geno.tsv.gz")
 
-# dataframe that mimics a raw import of AMRfinderplus tab-delim file
-# provided for testing import_amrfp
-ecoli_geno_raw <- ecoli_geno %>% select(-c(marker:drug_class))
-
-usethis::use_data(ecoli_ast, internal = TRUE)
-usethis::use_data(ecoli_ast_raw, internal = TRUE)
-usethis::use_data(ecoli_geno, internal = TRUE)
-usethis::use_data(ecoli_geno_raw, internal = TRUE)
+usethis::use_data(ecoli_ast, internal = F, overwrite = TRUE)
+usethis::use_data(ecoli_ast_raw, internal = F, overwrite = TRUE)
+usethis::use_data(ecoli_geno_raw, internal = F, overwrite = TRUE)
