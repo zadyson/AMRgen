@@ -50,8 +50,8 @@
 #' @importFrom forcats fct_rev
 #' @importFrom AMR as.mic
 #' @import patchwork
-
-
+#' 
+#' @export
 amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size=F){
   ## Inputs
   # takes in binary_matrix = output from get_binary_matrix function
