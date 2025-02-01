@@ -52,19 +52,18 @@ library(AMRgen)
 ### Import pheno data (from NCBI AST) and geno data (AMRfinderplus output), and compare geno/pheno for drugs of interest
 
 ```
-# import small example E. coli AST data from NCBI (without re-interpreting resistance)
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv")
+# small example E. coli AST data from NCBI
+ecoli_ast_raw
 
-# import small example E. coli AMRfinderplus data
-geno <- import_amrfp("testdata/Ecoli_AMRfinderplus_n50.tsv", "Name")
+# import without re-interpreting resistance
+pheno <- import_ncbi_ast(ecoli_ast_raw)
 
-# get matrix combining data on phenotype (binary R and NWT for a drug) and genotype (binary presence/absence for markers for relevant drug class/es)
+# small example E. coli AMRfinderplus data
+ecoli_geno_raw
 
-# 1: meropenem phenotype vs carbapenem/cephalosporin genetic markers
-mero_vs_blaGenes <- get_binary_matrix(geno, pheno, antibiotic="Meropenem", drug_class_list=c("Carbapenems", "Cephalosporins"), sir_col="Resistance phenotype")
+# import AMRfinderplus data
+geno <- import_amrfp(ecoli_geno_raw %>% head(n=10), "Name")
 
-# 2: ciprofloxacin phenotype vs quinolone genetic markers
-cipro_vs_quinoloneMarkers <- get_binary_matrix(geno, pheno, "Ciprofloxacin", c("Quinolones"), sir_col="Resistance phenotype")
 ```
 
 
@@ -73,21 +72,21 @@ cipro_vs_quinoloneMarkers <- get_binary_matrix(geno, pheno, "Ciprofloxacin", c("
 _**(WARNING: phenotype interpretation can take a few minutes)**_
 
 ```
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI_n50.tsv", interpret = T, ecoff=T)
+pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
 ```
 
 ### Investigate ciprofloxacin resistance vs quinolone genotype markers, via solo PPV and upset plots
-_(Using the resistance interpretations as imported from NCBI AST file, not reinterpreted from assay values)_
 
 ```
-# import larger example E. coli AST data from NCBI (without re-interpreting resistance)
-pheno <- import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv.gz")
+# larger example E. coli AST data from NCBI, already imported (with import_ncbi_ast) and re-interpreted (with as.sir)
+ecoli_ast
 
-# import larger example E. coli AMRfinderplus data
-geno <- import_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
+# import matching AMRfinderplus data
+ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 # find genomes with just one quinolone resistance marker, then estimate and plot positive predictive value (PPV) for ciprofloxacin resistance/NWT
-soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype")
+# (using phenotypes interpreted with AMR package; alternatively set sir_col="Resistance phenotype" to use the classifications from the raw NCBI AST file)
+soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
 
 # view PPV summary statistics:
 soloPPV_cipro$solo_stats
@@ -96,41 +95,14 @@ soloPPV_cipro$solo_stats
 soloPPV_cipro$combined_plot
 
 # get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)
-cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="Resistance phenotype", keep_assay_values=T, keep_assay_values_from = "mic")
-
-# do upset plot of MIC vs genotype marker combinations (using AMRgen function, not requiring complexUpset)
-amr_upset(cip_bin, min_set_size=2, order="mic")
+cip_bin<- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
 
 # do upset plot of MIC vs genotype marker combinations (using complexUpset)
 amr_complexUpset(cip_bin)
-```
 
-### Investigate ciprofloxacin resistance vs quinolone genotype markers, via solo PPV and upset plots
-_(Using phenotypes reinterpreted from assay values in the NCBI AST file; note these have been pre-computed to save time for this example)_
-
-```
-# import E. coli AST data from NCBI (R and NWT variables have been pre-computed from the raw NCBI AST file using: import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv", interpret=T, ecoff=T)
-pheno <- read_tsv("testdata/Ecoli_AST_NCBI_reinterpreted.tsv.gz") %>%
-    mutate(drug_agent=as.ab(drug_agent), spp_pheno=as.mo(spp_pheno), mic=as.mic(mic), disk=as.disk(disk), pheno=as.sir(pheno))
-
-# import AMRfinderplus data
-geno <- import_amrfp("testdata/Ecoli_AMRfinderplus.tsv.gz", "Name")
-
-# do positive predictive value (PPV) analysis for quinolone resistance markers vs ciprofloxacin resistance/NWT
-soloPPV_cipro <- solo_ppv_analysis(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
-
-soloPPV_cipro$solo_stats
-
-soloPPV_cipro$combined_plot
-
-# get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)
-cip_bin<- get_binary_matrix(geno, pheno, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
-
+## BROKEN
 # do upset plot of MIC vs genotype marker combinations (using AMRgen function, not requiring complexUpset)
 amr_upset(cip_bin, min_set_size=2, order="mic")
-
-# do upset plot of MIC vs genotype marker combinations (using complexUpset)
-amr_complexUpset(cip_bin)
 ```
 
 ## Contributions
