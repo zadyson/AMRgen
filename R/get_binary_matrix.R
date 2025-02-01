@@ -121,10 +121,10 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               sir_col = "pheno", ecoff_col = "ecoff") {
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
-    stop(paste("input", pheno_table, "must have a column labelled `drug_agent`"))
+    stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
   }
   if (!is.ab(pheno_table$drug_agent)) {
-    print(paste("converting", pheno_table, "column `drug_agent` to class `ab`"))
+    print(paste("converting", deparse(substitute(pheno_table)), "column `drug_agent` to class `ab`"))
     pheno_table <- pheno_table %>% mutate(drug_agent = as.ab(drug_agent))
   }
 
@@ -132,15 +132,15 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   if (as.ab(antibiotic) %in% pheno_table$drug_agent) {
     pheno_table <- pheno_table %>% filter(drug_agent == as.ab(antibiotic))
   } else {
-    stop("antibiotic ", antibiotic, " was not found in input: ", pheno_table)
+    stop(paste("antibiotic ", antibiotic, " was not found in input: ", pheno_table))
   }
 
   # check we have some geno hits for markers relevant to the drug class/es
   if (!("drug_class" %in% colnames(geno_table))) {
-    stop("input", geno_table, "must have a column labelled `drug_class`")
+    stop(paste("input", geno_table, "must have a column labelled `drug_class`"))
   }
   if (sum(drug_class_list %in% geno_table$drug_class) == 0) {
-    stop(paste("No markers matching drug class", drug_class_list, "were identified in input geno_table"))
+    stop(paste("No markers matching drug class", paste(drug_class_list, collapse=","), "were identified in input geno_table"))
   }
 
   # subset pheno & geno dataframes to those samples with overlap
@@ -203,7 +203,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # check there are some non-NA values for phenotype call
   if (sum(!is.na(pheno_binary[, 2])) == 0) {
-    stop(paste("No samples with both genotype data and non-NA phenotype interpretation values for", antibiotic, "in input", pheno_table))
+    stop(paste("No samples with both genotype data and non-NA phenotype interpretation values for", antibiotic, "in input", deparse(substitute(pheno_table))))
   }
 
   # extract list of relevant drug markers
