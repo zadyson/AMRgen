@@ -71,9 +71,10 @@ print.gene <- function(x, ...) {
 #' # Example usage:
 #' # processed_data <- import_amrfp("path/to/amrfinderplus_results.tsv", sample_col = "Sample_ID")
 import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_table) {
-  # read in the table
-  in_table <- read_tsv(input_table)
-  # filter to only include AMR elements
+  
+  in_table <- process_input(input_table)
+
+    # filter to only include AMR elements
   in_table_filter <- in_table %>% filter(`Element type` == "AMR")
 
   # create the gene class for the gene column
