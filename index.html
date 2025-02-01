@@ -99,38 +99,36 @@
 <div class="section level3">
 <h3 id="import-pheno-data-from-ncbi-ast-and-geno-data-amrfinderplus-output-and-compare-genopheno-for-drugs-of-interest">Import pheno data (from NCBI AST) and geno data (AMRfinderplus output), and compare geno/pheno for drugs of interest<a class="anchor" aria-label="anchor" href="#import-pheno-data-from-ncbi-ast-and-geno-data-amrfinderplus-output-and-compare-genopheno-for-drugs-of-interest"></a>
 </h3>
-<pre><code><span><span class="co"># import small example E. coli AST data from NCBI (without re-interpreting resistance)</span></span>
-<span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_ncbi_ast.html">import_ncbi_ast</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AST_NCBI_n50.tsv"</span><span class="op">)</span></span>
+<pre><code><span><span class="co"># small example E. coli AST data from NCBI</span></span>
+<span><span class="va">ecoli_ast_raw</span></span>
 <span></span>
-<span><span class="co"># import small example E. coli AMRfinderplus data</span></span>
-<span><span class="va">geno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_amrfp.html">import_amrfp</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AMRfinderplus_n50.tsv"</span>, <span class="st">"Name"</span><span class="op">)</span></span>
+<span><span class="co"># import without re-interpreting resistance</span></span>
+<span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_ncbi_ast.html">import_ncbi_ast</a></span><span class="op">(</span><span class="va">ecoli_ast_raw</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># get matrix combining data on phenotype (binary R and NWT for a drug) and genotype (binary presence/absence for markers for relevant drug class/es)</span></span>
+<span><span class="co"># small example E. coli AMRfinderplus data</span></span>
+<span><span class="va">ecoli_geno_raw</span></span>
 <span></span>
-<span><span class="co"># 1: meropenem phenotype vs carbapenem/cephalosporin genetic markers</span></span>
-<span><span class="va">mero_vs_blaGenes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_binary_matrix.html">get_binary_matrix</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Meropenem"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Carbapenems"</span>, <span class="st">"Cephalosporins"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"Resistance phenotype"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 2: ciprofloxacin phenotype vs quinolone genetic markers</span></span>
-<span><span class="va">cipro_vs_quinoloneMarkers</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_binary_matrix.html">get_binary_matrix</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, <span class="st">"Ciprofloxacin"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"Resistance phenotype"</span><span class="op">)</span></span></code></pre>
+<span><span class="co"># import AMRfinderplus data</span></span>
+<span><span class="va">geno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_amrfp.html">import_amrfp</a></span><span class="op">(</span><span class="va">ecoli_geno_raw</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">10</span><span class="op">)</span>, <span class="st">"Name"</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="import-small-example-e-coli-ast-data-from-ncbi-and-re-interpret-resistance-and-ecoff-using-amr-package">Import small example E. coli AST data from NCBI, and re-interpret resistance and ECOFF using AMR package<a class="anchor" aria-label="anchor" href="#import-small-example-e-coli-ast-data-from-ncbi-and-re-interpret-resistance-and-ecoff-using-amr-package"></a>
 </h3>
 <p><em><strong>(WARNING: phenotype interpretation can take a few minutes)</strong></em></p>
-<pre><code><span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_ncbi_ast.html">import_ncbi_ast</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AST_NCBI_n50.tsv"</span>, interpret <span class="op">=</span> <span class="cn">T</span>, ecoff<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_ncbi_ast.html">import_ncbi_ast</a></span><span class="op">(</span><span class="va">ecoli_ast_raw</span>, interpret <span class="op">=</span> <span class="cn">T</span>, ecoff<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="investigate-ciprofloxacin-resistance-vs-quinolone-genotype-markers-via-solo-ppv-and-upset-plots">Investigate ciprofloxacin resistance vs quinolone genotype markers, via solo PPV and upset plots<a class="anchor" aria-label="anchor" href="#investigate-ciprofloxacin-resistance-vs-quinolone-genotype-markers-via-solo-ppv-and-upset-plots"></a>
 </h3>
-<p><em>(Using the resistance interpretations as imported from NCBI AST file, not reinterpreted from assay values)</em></p>
-<pre><code><span><span class="co"># import larger example E. coli AST data from NCBI (without re-interpreting resistance)</span></span>
-<span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_ncbi_ast.html">import_ncbi_ast</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AST_NCBI.tsv.gz"</span><span class="op">)</span></span>
+<pre><code><span><span class="co"># larger example E. coli AST data from NCBI, already imported (with import_ncbi_ast) and re-interpreted (with as.sir)</span></span>
+<span><span class="va">ecoli_ast</span></span>
 <span></span>
-<span><span class="co"># import larger example E. coli AMRfinderplus data</span></span>
-<span><span class="va">geno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_amrfp.html">import_amrfp</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AMRfinderplus.tsv.gz"</span>, <span class="st">"Name"</span><span class="op">)</span></span>
+<span><span class="co"># import matching AMRfinderplus data</span></span>
+<span><span class="va">ecoli_geno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_amrfp.html">import_amrfp</a></span><span class="op">(</span><span class="va">ecoli_geno_raw</span>, <span class="st">"Name"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># find genomes with just one quinolone resistance marker, then estimate and plot positive predictive value (PPV) for ciprofloxacin resistance/NWT</span></span>
-<span><span class="va">soloPPV_cipro</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/solo_ppv_analysis.html">solo_ppv_analysis</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"Resistance phenotype"</span><span class="op">)</span></span>
+<span><span class="co"># (using phenotypes interpreted with AMR package; alternatively set sir_col="Resistance phenotype" to use the classifications from the raw NCBI AST file)</span></span>
+<span><span class="va">soloPPV_cipro</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/solo_ppv_analysis.html">solo_ppv_analysis</a></span><span class="op">(</span><span class="va">ecoli_geno</span>, <span class="va">ecoli_ast</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"pheno"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># view PPV summary statistics:</span></span>
 <span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">solo_stats</span></span>
@@ -139,40 +137,14 @@
 <span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">combined_plot</span></span>
 <span></span>
 <span><span class="co"># get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)</span></span>
-<span><span class="va">cip_bin</span><span class="op">&lt;-</span> <span class="fu"><a href="reference/get_binary_matrix.html">get_binary_matrix</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"Resistance phenotype"</span>, keep_assay_values<span class="op">=</span><span class="cn">T</span>, keep_assay_values_from <span class="op">=</span> <span class="st">"mic"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># do upset plot of MIC vs genotype marker combinations (using AMRgen function, not requiring complexUpset)</span></span>
-<span><span class="fu"><a href="reference/amr_upset.html">amr_upset</a></span><span class="op">(</span><span class="va">cip_bin</span>, min_set_size<span class="op">=</span><span class="fl">2</span>, order<span class="op">=</span><span class="st">"mic"</span><span class="op">)</span></span>
+<span><span class="va">cip_bin</span><span class="op">&lt;-</span> <span class="fu"><a href="reference/get_binary_matrix.html">get_binary_matrix</a></span><span class="op">(</span><span class="va">ecoli_geno</span>, <span class="va">ecoli_ast</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"pheno"</span>, keep_assay_values<span class="op">=</span><span class="cn">T</span>, keep_assay_values_from <span class="op">=</span> <span class="st">"mic"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># do upset plot of MIC vs genotype marker combinations (using complexUpset)</span></span>
-<span><span class="fu"><a href="reference/amr_complexUpset.html">amr_complexUpset</a></span><span class="op">(</span><span class="va">cip_bin</span><span class="op">)</span></span></code></pre>
-</div>
-<div class="section level3">
-<h3 id="investigate-ciprofloxacin-resistance-vs-quinolone-genotype-markers-via-solo-ppv-and-upset-plots-1">Investigate ciprofloxacin resistance vs quinolone genotype markers, via solo PPV and upset plots<a class="anchor" aria-label="anchor" href="#investigate-ciprofloxacin-resistance-vs-quinolone-genotype-markers-via-solo-ppv-and-upset-plots-1"></a>
-</h3>
-<p><em>(Using phenotypes reinterpreted from assay values in the NCBI AST file; note these have been pre-computed to save time for this example)</em></p>
-<pre><code><span><span class="co"># import E. coli AST data from NCBI (R and NWT variables have been pre-computed from the raw NCBI AST file using: import_ncbi_ast("testdata/Ecoli_AST_NCBI.tsv", interpret=T, ecoff=T)</span></span>
-<span><span class="va">pheno</span> <span class="op">&lt;-</span> <span class="fu">read_tsv</span><span class="op">(</span><span class="st">"testdata/Ecoli_AST_NCBI_reinterpreted.tsv.gz"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>    <span class="fu">mutate</span><span class="op">(</span>drug_agent<span class="op">=</span><span class="fu">as.ab</span><span class="op">(</span><span class="va">drug_agent</span><span class="op">)</span>, spp_pheno<span class="op">=</span><span class="fu">as.mo</span><span class="op">(</span><span class="va">spp_pheno</span><span class="op">)</span>, mic<span class="op">=</span><span class="fu">as.mic</span><span class="op">(</span><span class="va">mic</span><span class="op">)</span>, disk<span class="op">=</span><span class="fu">as.disk</span><span class="op">(</span><span class="va">disk</span><span class="op">)</span>, pheno<span class="op">=</span><span class="fu">as.sir</span><span class="op">(</span><span class="va">pheno</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/amr_complexUpset.html">amr_complexUpset</a></span><span class="op">(</span><span class="va">cip_bin</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># import AMRfinderplus data</span></span>
-<span><span class="va">geno</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/import_amrfp.html">import_amrfp</a></span><span class="op">(</span><span class="st">"testdata/Ecoli_AMRfinderplus.tsv.gz"</span>, <span class="st">"Name"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># do positive predictive value (PPV) analysis for quinolone resistance markers vs ciprofloxacin resistance/NWT</span></span>
-<span><span class="va">soloPPV_cipro</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/solo_ppv_analysis.html">solo_ppv_analysis</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"pheno"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">solo_stats</span></span>
-<span></span>
-<span><span class="va">soloPPV_cipro</span><span class="op">$</span><span class="va">combined_plot</span></span>
-<span></span>
-<span><span class="co"># get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)</span></span>
-<span><span class="va">cip_bin</span><span class="op">&lt;-</span> <span class="fu"><a href="reference/get_binary_matrix.html">get_binary_matrix</a></span><span class="op">(</span><span class="va">geno</span>, <span class="va">pheno</span>, antibiotic<span class="op">=</span><span class="st">"Ciprofloxacin"</span>, drug_class_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Quinolones"</span><span class="op">)</span>, sir_col<span class="op">=</span><span class="st">"pheno"</span>, keep_assay_values<span class="op">=</span><span class="cn">T</span>, keep_assay_values_from <span class="op">=</span> <span class="st">"mic"</span><span class="op">)</span></span>
-<span></span>
+<span><span class="co">## BROKEN</span></span>
 <span><span class="co"># do upset plot of MIC vs genotype marker combinations (using AMRgen function, not requiring complexUpset)</span></span>
-<span><span class="fu"><a href="reference/amr_upset.html">amr_upset</a></span><span class="op">(</span><span class="va">cip_bin</span>, min_set_size<span class="op">=</span><span class="fl">2</span>, order<span class="op">=</span><span class="st">"mic"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># do upset plot of MIC vs genotype marker combinations (using complexUpset)</span></span>
-<span><span class="fu"><a href="reference/amr_complexUpset.html">amr_complexUpset</a></span><span class="op">(</span><span class="va">cip_bin</span><span class="op">)</span></span></code></pre>
+<span><span class="fu"><a href="reference/amr_upset.html">amr_upset</a></span><span class="op">(</span><span class="va">cip_bin</span>, min_set_size<span class="op">=</span><span class="fl">2</span>, order<span class="op">=</span><span class="st">"mic"</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <div class="section level2">
