@@ -154,11 +154,11 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
         break_s_line +
         scale_colour_manual(values = colour_values) +
         scale_y +
-        labs(colour = colour_by, size = "Number of\nisolates") +
+        labs(y = y_axis_name, colour = colour_by, size = "Number of\nisolates") +
         theme(legend.title = element_text(face = "bold"))
       )
     )
-  )
+  ) + patchwork::plot_layout(heights=c(3,1)) # relative heights of plotting areas
 
   return(plot)
 }
