@@ -1,6 +1,11 @@
 # subset of NCBI AST data that has already been re-interpreted using import_ncbi_ast
 # provided for testing solo_ppv_analysis and amr_upset functions
-ecoli_ast <- read_tsv("ecoli_pheno.tsv.gz")
+ecoli_ast <- read_tsv("ecoli_pheno.tsv.gz") %>% 
+  mutate(drug_agent=as.ab(drug_agent)) %>%
+  mutate(mic=as.mic(mic)) %>%
+  mutate(disk=as.disk(disk)) %>%
+  mutate(spp_pheno=as.mo(spp_pheno)) %>%
+  mutate(pheno=as.sir(pheno))
 
 # small dataframe that mimics a raw import of NCBI AST tab-delim file
 # provided for testing import_ncbi_ast, including re-interpreting (so only 10 rows)

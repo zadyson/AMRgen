@@ -21,8 +21,11 @@
 #' @return A `ggplot` object displaying the Upset plot.
 #' @examples
 #' # Example usage:
-#' cip_bin<- get_binary_matrix(import_amrfp(ecoli_geno_raw, "Name"), 
-#'               ecoli_ast, 
+#' 
+#' ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
+#' 
+#' binary_matrix<- get_binary_matrix(geno_table=ecoli_geno, 
+#'               pheno_table=ecoli_ast, 
 #'               antibiotic="Ciprofloxacin", 
 #'               drug_class_list=c("Quinolones"), 
 #'               sir_col="pheno", 
@@ -30,7 +33,7 @@
 #'               keep_assay_values_from = "mic"
 #'            )
 #' 
-#' amr_complexUpset(cip_bin)
+#' amr_complexUpset(binary_matrix)
 #' 
 #' @export
 amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",

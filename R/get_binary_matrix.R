@@ -118,7 +118,9 @@
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff") {
+                              sir_col = "pheno", ecoff_col = "ecoff") 
+                      {
+  
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
@@ -234,6 +236,12 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
         full_join(geno_binary)
     } else {
       print(paste("No specified assay columns found:", keep_assay_values_from))
+    }
+    if ("mic" %in% colnames(geno_binary)) {
+      geno_binary <- geno_binary %>% mutate(mic=as.mic(mic))
+    }
+    if ("disk" %in% colnames(geno_binary)) {
+      geno_binary <- geno_binary %>% mutate(disk=as.disk(disk))
     }
   }
 
