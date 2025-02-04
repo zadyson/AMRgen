@@ -138,6 +138,13 @@ compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R",
 # organise layout using patchwork
 library(patchwork)
 compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R", title2="NWT", title="R and NWT for Cipro") + plot_layout(guides="collect", axes="collect")
+
+# do logistic regression analysis for ciprofloxacin R and NWT vs quinolone associated markers present in ≥50 samples and do combined plot
+cip_logistic <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=50)
+cip_logistic$plot
+cip_logistic$bin_mat
+cip_logistic$modelR
+cip_logistic$modelNWT
 ```
 
 ### Download and plot reference MIC distribution from eucast.org
