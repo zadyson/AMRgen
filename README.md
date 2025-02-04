@@ -1,6 +1,6 @@
 # AMRgen
 
-R Package for Genetic and Phenotypic Resistance Interpretation
+R Package for Genetic and Phenotypic Resistance Interpretation 
 
 ## Overview
 
@@ -38,20 +38,20 @@ remotes::install_github("msberends/AMR")
 ```
 
 Then install this package
-``` r
+```r
 # Install from GitHub
 remotes::install_github("interpretAMR/AMRgen")
 ```
 
 ## Usage Examples
 
-```
+```r
 library(AMRgen)
 ```
 
 ### Import pheno data (from NCBI AST) and geno data (AMRfinderplus output), and compare geno/pheno for drugs of interest
 
-```
+```r
 # small example E. coli AST data from NCBI
 ecoli_ast_raw
 
@@ -71,13 +71,13 @@ geno <- import_amrfp(ecoli_geno_raw %>% head(n=10), "Name")
 
 _**(WARNING: phenotype interpretation can take a few minutes)**_
 
-```
+```r
 pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
 ```
 
 ### Investigate ciprofloxacin resistance vs quinolone genotype markers, via solo PPV and upset plots
 
-```
+```r
 # larger example E. coli AST data from NCBI, already imported (with import_ncbi_ast) and re-interpreted (with as.sir)
 ecoli_ast
 
@@ -105,9 +105,44 @@ amr_upset(cip_bin, min_set_size=2, order="mic")
 ```
 
 
+### Explore logistic regression models of genotype vs phenotype
+
+```r
+library(logistf)
+
+# get binary matrix
+ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
+cip_bin<- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
+
+# logistic regression model for ciprofloxacin resistance (R vs S/I), predicted from all detected markers associated with quinolone resistance
+model <- logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)))
+model_summary <- logistf_details(model)
+plot_estimates(model_summary)
+
+# include only markers observed in at least 10 samples
+model <- logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>10)))
+model_summary <- logistf_details(model)
+plot_estimates(model_summary, title="Logistic regression on Cipro R")
+
+# predict NWT (defined by ECOFF) rather than R
+model_NWT <- logistf(NWT ~ ., data=cip_bin %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>10)))
+model_NWT_summary <- logistf_details(model_NWT)
+plot_estimates(model_NWT_summary, title="Logistic regression on Cipro NWT")
+
+# compare estimates for R and NWT (on a single plot)
+compare_estimates(model_summary, model_NWT_summary, single_plot = T, title1="R", title2="NWT", title="R and NWT for Cipro")
+
+# compare estimates for R and NWT (two plots, side-by-side)
+compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R", title2="NWT", title="R and NWT for Cipro")
+
+# organise layout using patchwork
+library(patchwork)
+compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R", title2="NWT", title="R and NWT for Cipro") + plot_layout(guides="collect", axes="collect")
+```
+
 ### Download and plot reference MIC distribution from eucast.org
 
-```
+```r
 # get MIC distribution for ciprofloxacin, for all organisms
 get_eucast_mic_distribution("cipro")
 
@@ -126,7 +161,7 @@ ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my 
 
 ### Compare own MIC data vs reference distribution from EUCAST
 
-```
+```r
 my_mic_values <- AMR::random_mic(500)
 comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "K. pneumoniae")
 comparison
@@ -187,7 +222,8 @@ optionally:
   - upset plots showing MIC/DD distribution stratified by genotype profile (`amr_complexUpset` or `amr_upset`)
 
 ### Code for testing harmonize_data - but note the required input files are not in this repo
-```
+
+```r
 # test code amrfinder plus
 # note both amrfinderplus test files appear malformed according to hamronize 
 # and produce errors but the code works
