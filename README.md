@@ -104,6 +104,35 @@ amr_complexUpset(cip_bin)
 amr_upset(cip_bin, min_set_size=2, order="mic")
 ```
 
+
+### Download and plot reference MIC distribution from eucast.org
+
+```
+# get MIC distribution for ciprofloxacin, for all organisms
+get_eucast_mic_distribution("cipro")
+
+# specify microorganism to only get results for that pathogen
+kleb_cip_mic_data <- get_eucast_mic_distribution("cipro", "K. pneumoniae")
+
+# get disk diffusion data instead
+kleb_cip_disk_data <- get_eucast_disk_distribution("cipro", "K. pneumoniae")
+
+# plot the MIC data 
+mics <- rep(kleb_cip_mic_data$mic, kleb_cip_mic_data$count)
+ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my MICs!")
+
+```
+
+
+### Compare own MIC data vs reference distribution from EUCAST
+
+```
+my_mic_values <- AMR::random_mic(500)
+comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "K. pneumoniae")
+comparison
+ggplot2::autoplot(comparison)
+```
+
 ## Contributions
 
 Contributions are welcome! If you encounter issues or wish to suggest new features, please open an issue or submit a pull request.
