@@ -170,7 +170,8 @@ autoplot.model_summary <- function(object, sig = 0.05,
 #' Example
 #' library(logistf)
 #' model <- logistf(R ~ ., data=dat)
-#' logistf_details(model)
+#' model_details <- logistf_details(model)
+#' autoplot(model_details)
 #'
 #' @export
 logistf_details <- function(model) {
@@ -203,7 +204,8 @@ print.model_summary <- function(x, ...) {
 #' 
 #' Example
 #' model <- glm(R ~ ., data=dat, family = binomial(link = "logit"))
-#' glm_details(model)
+#' model_details <- glm_details(model)
+#' autoplot(model_details)
 #' 
 #' @export
 glm_details <- function(model) {
