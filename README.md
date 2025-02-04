@@ -1,6 +1,6 @@
 # AMRgen
 
-R Package for Genetic and Phenotypic Resistance Interpretation
+R Package for Genetic and Phenotypic Resistance Interpretation 
 
 ## Overview
 
