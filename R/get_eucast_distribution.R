@@ -160,9 +160,9 @@ compare_mic_with_eucast <- function(mics, ab, mo = NULL) {
   eucast_mic <- vals |>
     table() |>
     as.data.frame() |>
-    select(eucast = Freq)
+    select(value = vals, eucast = Freq)
   total <- user_mic |>
-    cbind(eucast_mic) |>
+    full_join(eucast_mic) |>
     filter(user + eucast > 0) |>
     as_tibble()
   structure(total, class = c("compare_eucast", class(total)))
@@ -188,9 +188,9 @@ compare_disk_with_eucast <- function(disks, ab, mo = NULL) {
   eucast_disk <- vals |>
     table() |>
     as.data.frame() |>
-    select(eucast = Freq)
+    select(value = vals, eucast = Freq)
   total <- user_disk |>
-    cbind(eucast_disk) |>
+    full_join(eucast_disk) |>
     filter(user + eucast > 0) |>
     as_tibble()
   structure(total, class = c("compare_eucast", class(total)))
