@@ -224,3 +224,40 @@ glm_details <- function(model) {
   
   structure(model_summary, class = c("model_summary", class(model_summary)))
 }
+
+amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
+                         geno_sample_col = NULL, pheno_sample_col = NULL,
+                         sir_col = "pheno", ecoff_col = "ecoff",
+                         maf=10, single_plot=TRUE, sig_colors=c("maroon", "blue4"),
+                         axis_label_size=9) {
+  
+  bin_mat <- get_binary_matrix(geno_table = geno_table, 
+                               pheno_table = pheno_table, 
+                               antibiotic = antibiotic, 
+                               drug_class_list = drug_class_list, 
+                               geno_sample_col = geno_sample_col,
+                               pheno_sample_col = pheno_sample_col,
+                               sir_col = sir_col, 
+                               ecoff_col = ecoff_col) 
+  
+  # update to allow model fitting with glm instead
+  modelR <- logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>maf)))
+  modelR <- logistf_details(modelR)
+  modelNWT <- logistf(NWT ~ ., data=cip_bin %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>maf)))
+  modelNWT <- logistf_details(modelNWT)
+  
+  plot <- compare_estimates(modelR, modelNWT, 
+                            single_plot=single_plot, 
+                            title1="R", title2="NWT", 
+                            sig_colors=sig_colors, axis_label_size=axis_label_size) +
+    
+          ggtitle(label=paste("R and NWT for",antibiotic), 
+                  subtitle=paste("for", paste(drug_class_list, collapse=","), "markers present in at least", maf, "samples"))
+  
+  print(plot)
+  
+  return(list(bin_mat=bin_mat,
+              modelR=modelR,
+              modelNWT=modelNWT,
+              plot=plot))
+}
