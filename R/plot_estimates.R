@@ -139,6 +139,14 @@ compare_estimates <- function(tbl1,
   return(plot)
 }
 
+#' @noRd
+#' @method autoplot model_summary
+#' @export
+autoplot.model_summary <- function(object, ...) {
+  plot_estimates(model_summary)
+}
+  
+  
 
 #' Extract Details from a logistf Model
 #' 
@@ -162,9 +170,16 @@ logistf_details <- function(model) {
                          ci.upper=model$ci.upper, 
                          pval=model$prob) %>%
     as_tibble(rownames="marker")
-  
-  # Return summary tibble
-  return(model_summary)
+
+  structure(model_summary, class = c("model_summary", class(model_summary)))
+}
+
+#' @noRd
+#' @export
+print.model_summary <- function(x, ...) {
+  class(x) <- class(x)[!class(x) == "model_summary"]
+  print(x, ...)
+  message("Use ggplot2::autoplot() on this output to visualise")
 }
 
 #' Extract Details from a Generalized Linear Model
@@ -194,6 +209,5 @@ glm_details <- function(model) {
     select(marker, est, pval) %>% 
     left_join(ci)
   
-  # Return summary tibble
-  return(model_summary)
+  structure(model_summary, class = c("model_summary", class(model_summary)))
 }
