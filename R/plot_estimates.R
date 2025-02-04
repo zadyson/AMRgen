@@ -142,8 +142,19 @@ compare_estimates <- function(tbl1,
 #' @noRd
 #' @method autoplot model_summary
 #' @export
-autoplot.model_summary <- function(object, ...) {
-  plot_estimates(model_summary)
+autoplot.model_summary <- function(object, sig = 0.05, 
+                                   sig_colors=c("grey", "blue4"),
+                                   x_title="Coefficient (95% CI)",
+                                   y_title="Variant", 
+                                   title=NULL,
+                                   axis_label_size=9) {
+  plot_estimates(model_summary,
+                 sig = sig, 
+                 sig_colors=sig_colors,
+                 x_title=x_title,
+                 y_title=y_title, 
+                 title=title,
+                 axis_label_size=axis_label_size)
 }
   
   
