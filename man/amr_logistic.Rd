@@ -58,6 +58,7 @@ A list with three components:
 Performs logistic regression to analyze the relationship between genetic markers and phenotype (R, and NWT) for a specified antibiotic.
 }
 \examples{
+\dontrun{
 # Example usage of the amr_logistic function
 result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), 
                       pheno_table = ecoli_ast, 
@@ -67,5 +68,7 @@ result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"),
 
 # To access the plot:
 print(result$plot)
+
+}
 
 }

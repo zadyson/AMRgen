@@ -1,6 +1,3 @@
-require(AMR)
-require(patchwork)
-
 #' Perform Solo PPV Analysis for AMR Markers
 #'
 #' This function performs a Positive Predictive Value (PPV) analysis for AMR markers
@@ -81,10 +78,11 @@ require(patchwork)
 #' @export
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
+                              keep_assay_values = TRUE,
                               plot_cols = c(
                                 "R" = "IndianRed", "I" = "orange", "S" = "lightgrey",
-                                "NWT" = "navy"
-                              )) {
+                                "NWT" = "navy"),
+                              pd=position_dodge(width = 0.8)) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -98,17 +96,18 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     antibiotic = antibiotic,
     drug_class_list = drug_class_list,
     geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col,
-    sir_col = sir_col
+    sir_col = sir_col, keep_assay_values = keep_assay_values
   )
 
   # get solo markers
   marker_counts <- amr_binary %>%
-    select(-id, -pheno, -R, -NWT) %>%
+    select(-any_of(c("id", "pheno", "R", "NWT", "mic", "disk"))) %>%
     rowSums()
+  
   solo_binary <- amr_binary %>%
     mutate(solo = marker_counts == 1) %>%
     filter(solo) %>%
-    pivot_longer(!c(id, pheno, R, NWT, solo)) %>%
+    pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to="marker") %>%
     filter(value == 1) %>%
     filter(!is.na(pheno))
 
@@ -118,7 +117,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # summarise numerator, denominator, proportion, 95% CI - for R and NWT
   solo_stats_R <- solo_binary %>%
-    group_by(name) %>%
+    group_by(marker) %>%
     summarise(
       x = sum(R, na.rm = T),
       n = n(),
@@ -130,7 +129,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     mutate(category = "R")
 
   solo_stats_NWT <- solo_binary %>%
-    group_by(name) %>%
+    group_by(marker) %>%
     summarise(
       x = sum(NWT),
       n = n(),
@@ -142,30 +141,29 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     mutate(category = "NWT")
 
   solo_stats <- bind_rows(solo_stats_R, solo_stats_NWT) %>%
-    relocate(category, .before = x)
+    relocate(category, .before = x) %>%
+    rename(ppv=p)
 
   # plots
 
-  pd <- position_dodge(width = 0.8) # position dodge for coefficient plots
-
   ppv_plot <- solo_stats %>%
-    ggplot(aes(y = name, group = category, col = category)) +
+    ggplot(aes(y = marker, group = category, col = category)) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +
-    geom_point(aes(x = p), position = pd) +
+    geom_point(aes(x = ppv), position = pd) +
     theme_bw() +
     scale_y_discrete(labels = paste0("(n=", solo_stats$n, ")"), position = "right") +
-    labs(y = "", x = "PPV", col = "Category") +
+    labs(y = "", x = "Solo PPV", col = "Category") +
     scale_colour_manual(values = plot_cols) +
     xlim(0, 1)
 
   solo_pheno_plot <- solo_binary %>%
-    ggplot(aes(x = name, fill = pheno)) +
+    ggplot(aes(x = marker, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
     scale_fill_manual(values = plot_cols) +
     coord_flip() +
     geom_text(aes(label = ..count..), stat = "count", position = position_fill(vjust = .5), size = 3) +
-    scale_x_discrete(solo_stats$name) +
+    scale_x_discrete(solo_stats$marker) +
     theme_light() +
     labs(x = "", y = "Proportion", fill = "Phenotype")
 
@@ -176,5 +174,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     patchwork::plot_layout(axes = "collect", guides = "collect") +
     patchwork::plot_annotation(title = header, subtitle = paste("vs phenotype for drug:", antibiotic))
 
+  print(combined_plot)
+  
   return(list(solo_stats = solo_stats, combined_plot = combined_plot, solo_binary = solo_binary, amr_binary = amr_binary))
 }

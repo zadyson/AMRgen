@@ -93,7 +93,8 @@ compare_estimates <- function(tbl1,
                               x_title="Coefficient (95% CI)",
                               y_title="Variant",
                               axis_label_size=9,
-                              single_plot=TRUE) {
+                              single_plot=TRUE,
+                              pd=position_dodge(width = 0.8)) {
   
   if (!single_plot) {
     plot1 <- plot_estimates(tbl1, 
@@ -124,8 +125,8 @@ compare_estimates <- function(tbl1,
       filter(marker != "(Intercept)") %>%
       ggplot(aes(y = marker)) +
       geom_vline(xintercept = 0) +
-      geom_linerange(aes(xmin = ci.lower, xmax = ci.upper, col=as.factor(group)), position=position_dodge(width=0.8)) +
-      geom_point(aes(x = est,  col=as.factor(group)), position=position_dodge(width=0.8)) +
+      geom_linerange(aes(xmin = ci.lower, xmax = ci.upper, col=as.factor(group)), position=pd) +
+      geom_point(aes(x = est,  col=as.factor(group)), pd) +
       scale_color_manual(values = colors) +
       theme_light() +
       theme(axis.text.x=element_text(size=axis_label_size),
@@ -251,6 +252,7 @@ glm_details <- function(model) {
 #' \item{plot}{A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.}
 #'
 #' @examples
+#' \dontrun{
 #' # Example usage of the amr_logistic function
 #' result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), 
 #'                       pheno_table = ecoli_ast, 
@@ -260,6 +262,8 @@ glm_details <- function(model) {
 #'
 #' # To access the plot:
 #' print(result$plot)
+#'
+#' }
 #'
 #' @import ggplot2
 #' @import dplyr
@@ -283,9 +287,9 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   
   if (glm) {
     print ("Fitting logistic regression models using glm")
-    modelR <- glm(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.) >= maf)), family=binomial(link="logit"))
+    modelR <- glm(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(function(x) sum(x) >= maf), family=binomial(link="logit"))
     modelR <- glm_details(modelR)
-    modelNWT <- glm(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.) >= maf)), family=binomial(link="logit"))
+    modelNWT <- glm(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(function(x) sum(x) >= maf), family=binomial(link="logit"))
     modelNWT <- glm_details(modelNWT)
   }
   else {
@@ -311,4 +315,33 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
               modelR=modelR,
               modelNWT=modelNWT,
               plot=plot))
+}
+
+
+merge_logreg_soloppv <- function(model, solo_stats, title=NULL) {
+  
+  combined <- model %>% 
+    full_join(solo_stats, by="marker", suffix=c(".est",".ppv")) %>%
+    filter(marker != "(Intercept)")
+  
+  plot <- plot_combined_stats(combined, title=paste(title))
+  
+  print(plot)
+  
+  return(list(combined=combined, plot=plot))
+}
+
+plot_combined_stats <- function(combined_stats, sig=0.05, title=NULL) {
+  combined_stats %>% 
+    mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>% 
+    ggplot(aes(y=est, x=ppv, col=as.factor(sig_binary))) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = ci.lower.ppv, xmax = ci.upper.ppv)) +
+    geom_linerange(aes(ymin = ci.lower.est, ymax = ci.upper.est)) +
+    labs(y="Logistic regression coefficient", x="PPV", 
+         col = paste0("logreg p<", sig),
+         title=title) + 
+    geom_hline(yintercept=0) + 
+    geom_vline(xintercept=0.5) + 
+    theme_bw()
 }

@@ -15,7 +15,8 @@ compare_estimates(
   x_title = "Coefficient (95\% CI)",
   y_title = "Variant",
   axis_label_size = 9,
-  single_plot = TRUE
+  single_plot = TRUE,
+  pd = position_dodge(width = 0.8)
 )
 }
 \arguments{

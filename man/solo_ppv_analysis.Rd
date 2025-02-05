@@ -12,7 +12,9 @@ solo_ppv_analysis(
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
   sir_col = NULL,
-  plot_cols = c(R = "IndianRed", I = "orange", S = "lightgrey", NWT = "navy")
+  keep_assay_values = TRUE,
+  plot_cols = c(R = "IndianRed", I = "orange", S = "lightgrey", NWT = "navy"),
+  pd = position_dodge(width = 0.8)
 )
 }
 \arguments{

@@ -16,6 +16,11 @@ amr_complexUpset(
   break_guide = "EUCAST 2024",
   break_type = "ECOFF",
   drug = NULL,
+  sort_intersections_by = "degree",
+  sort_intersections = "ascending",
+  show_intersect_size = TRUE,
+  intersect_counts = TRUE,
+  heights = NULL,
   colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")
 )
 }

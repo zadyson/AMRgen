@@ -17,7 +17,7 @@
 #' @importFrom dplyr mutate across filter select rename
 #' @importFrom tidyr separate_longer_delim
 #' @importFrom ggplot2 ggplot aes geom_count scale_colour_manual labs theme element_text geom_hline
-#' @importFrom ComplexUpset upset
+#' @importFrom ComplexUpset upset intersection_size
 #' @return A `ggplot` object displaying the Upset plot.
 #' @examples
 #' # Example usage:
@@ -39,7 +39,11 @@
 amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
                              remove_NAs = TRUE, gene_determinants = NULL, colour_by = "pheno",
                              plot_breakpoints = FALSE, organism = NULL, break_guide = "EUCAST 2024",
-                             break_type = "ECOFF", drug = NULL, colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")) {
+                             break_type = "ECOFF", drug = NULL, 
+                             sort_intersections_by="degree", sort_intersections="ascending",
+                             show_intersect_size=TRUE, intersect_counts=TRUE,
+                             heights=NULL,
+                             colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")) {
   # mic_disk must be either 'mic' or 'disk'
   if (!mic_disk %in% c("mic", "disk")) {
     stop("mic_disk must be either 'mic' or 'disk'. Please select one of these values to continue.")
@@ -143,12 +147,24 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
     colour_values <- c(colour_values, grDevices::topo.colors(length(to_add)))
     names(colour_values) <- col_vals
   }
+  
+  if (show_intersect_size) {
+    base_annotations=list('Intersection size'=intersection_size(counts=intersect_counts))
+    if (is.null(heights)) {heights=c(2,1)}
+  }
+  else {
+    base_annotations=list()
+    if (is.null(heights)) {heights=c(1,1)}
+  }
 
   # now plot
   plot <- upset(upset_data, genes,
     name = "genetic determinant", min_size = min_set_size, width_ratio = 0.1,
+    sort_intersections_by=sort_intersections_by, sort_intersections=sort_intersections,
+    base_annotations = base_annotations,
     annotations = list(
-      y_axis_name = (ggplot(mapping = aes(y = !!sym(mic_disk), colour = as.factor(!!sym(colour_by)))) +
+      y_axis_name = (
+        ggplot(mapping = aes(y = !!sym(mic_disk), colour = as.factor(!!sym(colour_by)))) +
         geom_count() +
         break_r_line + # these values will be NULL if plot breakpoints isn't set
         break_s_line +
@@ -158,7 +174,7 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
         theme(legend.title = element_text(face = "bold"))
       )
     )
-  ) + patchwork::plot_layout(heights=c(3,1)) # relative heights of plotting areas
+  ) + patchwork::plot_layout(heights=heights) # relative heights of plotting areas
 
   return(plot)
 }
