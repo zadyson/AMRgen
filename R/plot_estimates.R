@@ -126,7 +126,7 @@ compare_estimates <- function(tbl1,
       ggplot(aes(y = marker)) +
       geom_vline(xintercept = 0) +
       geom_linerange(aes(xmin = ci.lower, xmax = ci.upper, col=as.factor(group)), position=pd) +
-      geom_point(aes(x = est,  col=as.factor(group)), pd) +
+      geom_point(aes(x = est,  col=as.factor(group)), position=pd) +
       scale_color_manual(values = colors) +
       theme_light() +
       theme(axis.text.x=element_text(size=axis_label_size),
@@ -252,7 +252,6 @@ glm_details <- function(model) {
 #' \item{plot}{A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.}
 #'
 #' @examples
-#' \dontrun{
 #' # Example usage of the amr_logistic function
 #' result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), 
 #'                       pheno_table = ecoli_ast, 
@@ -263,7 +262,6 @@ glm_details <- function(model) {
 #' # To access the plot:
 #' print(result$plot)
 #'
-#' }
 #'
 #' @import ggplot2
 #' @import dplyr
