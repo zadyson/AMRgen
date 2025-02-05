@@ -1,17 +1,6 @@
 #' Import/Export BioSample Antibiograms
 #'
-#' These functions allow to work with [NCBI BioSample Antibiograms](https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/).
-#' @param x data blah blah
-#' @rdname ncbi_biosample
-#' @export
-#' @examples
-#' # example code
-#'
-import_ncbi_biosample <- function(x) {
-
-}
-
-#' @rdname ncbi_biosample
+#' Output phenotype data to [NCBI BioSample Antibiograms](https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/).
 #' @param data data set containing SIR results
 #' @export
 export_ncbi_biosample <- function(data, file, overwrite = FALSE) {

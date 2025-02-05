@@ -231,6 +231,8 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          maf=10, single_plot=TRUE, sig_colors=c("maroon", "blue4"),
                          axis_label_size=9) {
   
+  require(logistf)
+  
   bin_mat <- get_binary_matrix(geno_table = geno_table, 
                                pheno_table = pheno_table, 
                                antibiotic = antibiotic, 
