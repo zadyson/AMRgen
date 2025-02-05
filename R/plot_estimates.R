@@ -239,6 +239,7 @@ glm_details <- function(model) {
 #' @param sir_col (Optional) A character string specifying the column in `pheno_table` that contains the phenotype values (e.g., resistance/susceptibility). Defaults to `"pheno"`.
 #' @param ecoff_col (Optional) A character string specifying the column in `pheno_table` containing the ECOFF (epidemiological cutoff) values. Defaults to `"ecoff"`.
 #' @param maf (Optional) An integer specifying the minimum allele frequency (MAF) threshold. Markers with a MAF lower than this value will be excluded. Defaults to 10.
+#' @param glm (Optional) Change to TRUE to fit model with glm. Otherwise fit model with logistf (default).
 #' @param single_plot (Optional) A logical value. If `TRUE`, a single plot is produced comparing the estimates for resistance (`R`) and non-resistance (`NWT`). Otherwise, two plots are printed side-by-side. Defaults to `TRUE`.
 #' @param colors (Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to `c("maroon", "blue4")`.
 #' @param axis_label_size (Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.
@@ -255,8 +256,7 @@ glm_details <- function(model) {
 #'                       pheno_table = ecoli_ast, 
 #'                       antibiotic = "Ciprofloxacin", 
 #'                       drug_class_list = c("Quinolones"), 
-#'                       maf = 5, 
-#'                       single_plot = TRUE)
+#'                       maf = 10)
 #'
 #' # To access the plot:
 #' print(result$plot)
@@ -268,7 +268,8 @@ glm_details <- function(model) {
 amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          geno_sample_col = NULL, pheno_sample_col = NULL,
                          sir_col = "pheno", ecoff_col = "ecoff",
-                         maf=10, single_plot=TRUE, colors=c("maroon", "blue4"),
+                         maf=10, glm=FALSE, single_plot=TRUE, 
+                         colors=c("maroon", "blue4"),
                          axis_label_size=9) {
   
   bin_mat <- get_binary_matrix(geno_table = geno_table, 
@@ -280,19 +281,29 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                                sir_col = sir_col, 
                                ecoff_col = ecoff_col) 
   
-  # update to allow model fitting with glm instead
-  modelR <- logistf::logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>maf)))
-  modelR <- logistf_details(modelR)
-  modelNWT <- logistf::logistf(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>maf)))
-  modelNWT <- logistf_details(modelNWT)
+  if (glm) {
+    print ("Fitting logistic regression models using glm")
+    modelR <- glm(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.) >= maf)), family=binomial(link="logit"))
+    modelR <- glm_details(modelR)
+    modelNWT <- glm(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.) >= maf)), family=binomial(link="logit"))
+    modelNWT <- glm_details(modelNWT)
+  }
+  else {
+    print ("Fitting logistic regression models using logistf")
+    modelR <- logistf::logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.) >= maf)))
+    modelR <- logistf_details(modelR)
+    modelNWT <- logistf::logistf(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.) >= maf)))
+    modelNWT <- logistf_details(modelNWT)
+  }
   
   plot <- compare_estimates(modelR, modelNWT, 
                             single_plot=single_plot, 
                             title1="R", title2="NWT", 
-                            colors=colors, axis_label_size=axis_label_size) +
-    
+                            colors=colors, axis_label_size=axis_label_size)
+  if (single_plot) {
           ggtitle(label=paste("R and NWT for",antibiotic), 
                   subtitle=paste("for", paste(drug_class_list, collapse=","), "markers present in at least", maf, "samples"))
+  }
   
   print(plot)
   
