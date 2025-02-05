@@ -91,9 +91,6 @@ soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxa
 # view PPV summary statistics:
 soloPPV_cipro$solo_stats
 
-# plot PPV summary:
-soloPPV_cipro$combined_plot
-
 # get matrix combining data on ciprofloxacin phenotype (MIC, plus binary R and NWT) and genotype (binary presence/absence for quinolone resistance markers)
 cip_bin<- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno", keep_assay_values=T, keep_assay_values_from = "mic")
 
@@ -108,7 +105,6 @@ amr_upset(cip_bin, min_set_size=2, order="mic")
 ### Explore logistic regression models of genotype vs phenotype
 
 ```r
-library(logistf)
 
 # get binary matrix
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
@@ -140,11 +136,45 @@ library(patchwork)
 compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R", title2="NWT", title="R and NWT for Cipro") + plot_layout(guides="collect", axes="collect")
 
 # do logistic regression analysis for ciprofloxacin R and NWT vs quinolone associated markers present in ≥50 samples and do combined plot
-cip_logistic <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=50)
+logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
+
 cip_logistic$plot
 cip_logistic$bin_mat
 cip_logistic$modelR
 cip_logistic$modelNWT
+
+```
+### Explore evidence for geno/pheno association from solo PPV, logistic regression, and upset plots
+
+```r
+ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
+
+soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
+
+logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
+
+# combine solo PPV and logistic regression coefficients
+allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, soloPPV_cipro$solo_stats %>% filter(category=="R"), title="Quinolone markers vs Cip R")
+allstatsNWT <- merge_logreg_soloppv(logistic_cipro$modelNWT, soloPPV_cipro$solo_stats %>% filter(category=="NWT"), title="Quinolone markers vs Cip NWT")
+
+allstatsR$plot + allstatsNWT$plot + plot_layout(guides="collect")
+
+# plots show no markers have solo PPV >50% for R, but many have solo PPV >70% for NWT
+# all these are also significant in logistic regression models 
+# which markers are predictive?
+allstatsNWT$combined %>% filter(ppv>0.5) %>% arrange(-ppv)
+
+# which markers are significant in regression but have low solo PPV (or no solo genomes to provide evidence)?
+allstatsNWT$combined %>% filter(pval<0.05) %>% arrange(-ppv)
+
+# do upset plot of MIC vs genotype marker combinations, ordering combinations by mean MIC
+# shows MIC distribution for solo markers is lower than combinations of markers
+amr_complexUpset(soloPPV_cipro$amr_binary, min_set_size=5, intersect_counts=F)
+
+# using the other upset function
+amr_upset(soloPPV_cipro$amr_binary, min_set_size=2, order="mic")
+
+
 ```
 
 ### Download and plot reference MIC distribution from eucast.org
