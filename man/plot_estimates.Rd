@@ -4,7 +4,15 @@
 \alias{plot_estimates}
 \title{Plot Estimates from a Table of Results}
 \usage{
-plot_estimates(tbl, sig = 0.05)
+plot_estimates(
+  tbl,
+  sig = 0.05,
+  sig_colors = c("grey", "blue4"),
+  x_title = "Coefficient (95\% CI)",
+  y_title = "Variant",
+  title = NULL,
+  axis_label_size = 9
+)
 }
 \arguments{
 \item{tbl}{A data frame or tibble containing the logistic regression results.
@@ -17,8 +25,17 @@ Expected columns are:
 \item \code{est}: The estimated coefficient.
 }}
 
-\item{sig}{A numeric value specifying the significance threshold for p-values.
-Defaults to 0.05.}
+\item{sig}{(optional) The significance threshold for p-values. Defaults to 0.05.}
+
+\item{sig_colors}{(optional) A vector of two colors to represent significant and non-significant estimates.}
+
+\item{x_title}{(optional) The title for the x-axis. Defaults to "Coefficient (95\% CI)".}
+
+\item{y_title}{(optional) The title for the y-axis. Defaults to "Variant".}
+
+\item{title}{(optional) The main title of the plot. If NULL, no title is added.}
+
+\item{axis_label_size}{(optional) The font size of the axis labels. Defaults to 9.}
 }
 \value{
 A ggplot object showing the logistic regression coefficients with confidence

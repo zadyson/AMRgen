@@ -78,7 +78,7 @@ plot_estimates <- function(tbl, sig = 0.05,
 #' @param title2 Title for tbl2 data. If single_plot, this will be the legend label for tbl2 data; otherwise it will be the title for the tbl2 plot.
 #' @param title The main title of the combined plot, if single_plot is TRUE.
 #' @param sig For individual plots, the p-value threshold for data points to highlight as significant. Defaults to 0.05.
-#' @param sig_colors For combined plot, a vector of two colors to represent the two input datasets.
+#' @param colors For combined plot, a vector of two colors to represent the two input datasets.
 #' @param x_title The title for the x-axis. Defaults to "Coefficient (95% CI)".
 #' @param y_title The title for the y-axis. Defaults to "Variant".
 #' @param axis_label_size The font size of the axis labels. Defaults to 9.
@@ -89,7 +89,7 @@ compare_estimates <- function(tbl1,
                               tbl2, 
                               title1=NULL, title2=NULL, title=NULL,
                               sig = 0.05, 
-                              sig_colors=c("maroon", "blue4"),
+                              colors=c("maroon", "blue4"),
                               x_title="Coefficient (95% CI)",
                               y_title="Variant",
                               axis_label_size=9,
@@ -98,7 +98,7 @@ compare_estimates <- function(tbl1,
   if (!single_plot) {
     plot1 <- plot_estimates(tbl1, 
                             sig = sig, 
-                            sig_colors=c("grey", sig_colors[1]),
+                            sig_colors=c("grey", colors[1]),
                             x_title=x_title,
                             y_title=y_title, 
                             title=title1,
@@ -107,7 +107,7 @@ compare_estimates <- function(tbl1,
     
     plot2 <- plot_estimates(tbl2, 
                             sig = sig, 
-                            sig_colors=c("grey", sig_colors[2]),
+                            sig_colors=c("grey", colors[2]),
                             x_title=x_title,
                             y_title=y_title, 
                             title=title2,
@@ -126,7 +126,7 @@ compare_estimates <- function(tbl1,
       geom_vline(xintercept = 0) +
       geom_linerange(aes(xmin = ci.lower, xmax = ci.upper, col=as.factor(group)), position=position_dodge(width=0.8)) +
       geom_point(aes(x = est,  col=as.factor(group)), position=position_dodge(width=0.8)) +
-      scale_color_manual(values = sig_colors) +
+      scale_color_manual(values = colors) +
       theme_light() +
       theme(axis.text.x=element_text(size=axis_label_size),
             axis.text.y=element_text(size=axis_label_size)) +
@@ -206,12 +206,12 @@ print.model_summary <- function(x, ...) {
 #' model <- glm(R ~ ., data=dat, family = binomial(link = "logit"))
 #' model_details <- glm_details(model)
 #' autoplot(model_details)
-#' 
+#' @importFrom stats confint
 #' @export
 glm_details <- function(model) {
   
   # get CI data
-  ci <- confint(model) %>% 
+  ci <- stats::confint(model) %>% 
     as_tibble(rownames="marker") %>%
     rename(ci.lower=`2.5 %`, ci.upper=`97.5 %`)
   
@@ -225,13 +225,51 @@ glm_details <- function(model) {
   structure(model_summary, class = c("model_summary", class(model_summary)))
 }
 
+
+#' AMR Logistic Regression Analysis
+#'
+#' Performs logistic regression to analyze the relationship between genetic markers and phenotype (R, and NWT) for a specified antibiotic.
+#'
+#' @param geno_table A data frame containing the genotype data.
+#' @param pheno_table A data frame containing the phenotypic data.
+#' @param antibiotic A character string specifying the antibiotic to model using logistic regression.
+#' @param drug_class_list A vector of drug class names. Used to subset the relevant markers for analysis.
+#' @param geno_sample_col (Optional) A character string specifying the column in `geno_table` that identifies the sample IDs. Defaults to `NULL`.
+#' @param pheno_sample_col (Optional) A character string specifying the column in `pheno_table` that identifies the sample IDs. Defaults to `NULL`.
+#' @param sir_col (Optional) A character string specifying the column in `pheno_table` that contains the phenotype values (e.g., resistance/susceptibility). Defaults to `"pheno"`.
+#' @param ecoff_col (Optional) A character string specifying the column in `pheno_table` containing the ECOFF (epidemiological cutoff) values. Defaults to `"ecoff"`.
+#' @param maf (Optional) An integer specifying the minimum allele frequency (MAF) threshold. Markers with a MAF lower than this value will be excluded. Defaults to 10.
+#' @param single_plot (Optional) A logical value. If `TRUE`, a single plot is produced comparing the estimates for resistance (`R`) and non-resistance (`NWT`). Otherwise, two plots are printed side-by-side. Defaults to `TRUE`.
+#' @param colors (Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to `c("maroon", "blue4")`.
+#' @param axis_label_size (Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.
+#'
+#' @return A list with three components:
+#' \item{bin_mat}{The binary matrix of genetic data and phenotypic resistance information.}
+#' \item{modelR}{The fitted logistic regression model for resistance (`R`).}
+#' \item{modelNWT}{The fitted logistic regression model for non-resistance (`NWT`).}
+#' \item{plot}{A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.}
+#'
+#' @examples
+#' # Example usage of the amr_logistic function
+#' result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), 
+#'                       pheno_table = ecoli_ast, 
+#'                       antibiotic = "Ciprofloxacin", 
+#'                       drug_class_list = c("Quinolones"), 
+#'                       maf = 5, 
+#'                       single_plot = TRUE)
+#'
+#' # To access the plot:
+#' print(result$plot)
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @import logistf
+#' @export
 amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          geno_sample_col = NULL, pheno_sample_col = NULL,
                          sir_col = "pheno", ecoff_col = "ecoff",
-                         maf=10, single_plot=TRUE, sig_colors=c("maroon", "blue4"),
+                         maf=10, single_plot=TRUE, colors=c("maroon", "blue4"),
                          axis_label_size=9) {
-  
-  require(logistf)
   
   bin_mat <- get_binary_matrix(geno_table = geno_table, 
                                pheno_table = pheno_table, 
@@ -243,15 +281,15 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                                ecoff_col = ecoff_col) 
   
   # update to allow model fitting with glm instead
-  modelR <- logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>maf)))
+  modelR <- logistf::logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>maf)))
   modelR <- logistf_details(modelR)
-  modelNWT <- logistf(NWT ~ ., data=cip_bin %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>maf)))
+  modelNWT <- logistf::logistf(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>maf)))
   modelNWT <- logistf_details(modelNWT)
   
   plot <- compare_estimates(modelR, modelNWT, 
                             single_plot=single_plot, 
                             title1="R", title2="NWT", 
-                            sig_colors=sig_colors, axis_label_size=axis_label_size) +
+                            colors=colors, axis_label_size=axis_label_size) +
     
           ggtitle(label=paste("R and NWT for",antibiotic), 
                   subtitle=paste("for", paste(drug_class_list, collapse=","), "markers present in at least", maf, "samples"))
