@@ -285,16 +285,16 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   
   if (glm) {
     print ("Fitting logistic regression models using glm")
-    modelR <- glm(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(function(x) sum(x) >= maf), family=binomial(link="logit"))
+    modelR <- glm(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select(where(~ sum(., na.rm=T) >= maf)), family=binomial(link="logit"))
     modelR <- glm_details(modelR)
-    modelNWT <- glm(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(function(x) sum(x) >= maf), family=binomial(link="logit"))
+    modelNWT <- glm(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select(where(~ sum(., na.rm=T) >= maf)), family=binomial(link="logit"))
     modelNWT <- glm_details(modelNWT)
   }
   else {
     print ("Fitting logistic regression models using logistf")
-    modelR <- logistf::logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.) >= maf)))
+    modelR <- logistf::logistf(R ~ ., data=bin_mat %>% select(-c(id,pheno,NWT)) %>% select(where(~ sum(., na.rm=T) >= maf)))
     modelR <- logistf_details(modelR)
-    modelNWT <- logistf::logistf(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.) >= maf)))
+    modelNWT <- logistf::logistf(NWT ~ ., data=bin_mat %>% select(-c(id,pheno,R)) %>% select(where(~ sum(., na.rm=T) >= maf)))
     modelNWT <- logistf_details(modelNWT)
   }
   

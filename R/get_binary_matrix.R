@@ -219,6 +219,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     filter(marker %in% markers) %>%
     group_by(id, marker) %>%
     count() %>%
+    mutate(n=if_else(n>1,1,n)) %>% # only count 1 per strain
     ungroup() %>%
     right_join(pheno_binary) %>%
     pivot_wider(names_from = marker, values_from = n, values_fill = 0)

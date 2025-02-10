@@ -97,6 +97,14 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     group_by(combination_id, mic, R) %>%
     summarise(n = n()) # count how many at each MIC, keep resistant for colour
   
+  mic_summary <- binary_matrix %>% 
+    filter(combination_id %in% comb_enough_strains) %>% 
+    group_by(combination_id, R) %>%
+    summarise(median = median(mic), 
+              lower=quantile(mic,0.25),
+              upper=quantile(mic,0.75)) # median MIC to draw a box
+  
+  
   ### Gene prevalence plot 
   gene.prev <- binary_matrix %>% 
     filter(combination_id %in% comb_enough_strains) %>% 
@@ -161,14 +169,16 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
       pull(combination_id)
     mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
     bar_plot$combination_id <- factor(bar_plot$combination_id, levels = ordered_comb_order)
-    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)}
+    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
+  }
   # Do by # median mic in combination (only want each id once)
   if(order == "mic"){
     mic_medians <- binary_matrix_wide %>% group_by(combination_id) %>% summarise(median = median(mic))
     ordered_comb_order <- mic_medians %>% arrange(median) %>% pull(combination_id)
     mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
     bar_plot$combination_id <- factor(bar_plot$combination_id, levels = ordered_comb_order)
-    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)}
+    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
+  }
   
   ##### Plots ###
   ### AMR package colours

@@ -81,16 +81,22 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   in_table <- process_input(input_table)
 
     # filter to only include AMR elements
-  in_table_filter <- in_table %>% filter(`Element type` == "AMR")
+  if ("Element type" %in% colnames(in_table)) {
+    in_table <- in_table %>% filter(`Element type` == "AMR")
+  }
+  else {
+    print ("No `Element type` column found, assuming all rows report AMR markers")
+  }
 
   # create the gene class for the gene column
-  gene_col <- as.gene(in_table_filter$`Gene symbol`)
-
-  # need to do this with hamronized format, note that this will be a combo of gene symbol and then the nt/prot/aa mutation cols if it's not just gene presence/absence
+  if ("Gene symbol" %in% colnames(in_table)) {
+    gene_col <- as.gene(in_table$`Gene symbol`)
+  }
+  else {stop("Expected column `Gene symbol` not found")}
 
   # Find the position of the "Gene symbol" column and insert gene after it (could replace it really)
-  position <- which(names(in_table_filter) == "Gene symbol")
-  in_table_gene <- add_column(in_table_filter, marker = gene_col, .after = position)
+  position <- which(names(in_table) == "Gene symbol")
+  in_table_gene <- add_column(in_table, marker = gene_col, .after = position)
 
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
   in_table_subclass_split <- in_table_gene %>% separate_longer_delim(Subclass, "/")
