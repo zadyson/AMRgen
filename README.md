@@ -199,10 +199,18 @@ ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my 
 ### Compare own MIC data vs reference distribution from EUCAST
 
 ```r
+
+# random test
 my_mic_values <- AMR::random_mic(500)
 comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "K. pneumoniae")
 comparison
 ggplot2::autoplot(comparison)
+
+
+# example E. coli data
+comparison <- compare_mic_with_eucast(ecoli_ast %>% filter(drug_agent=="CIP") %>% pull(mic), ab = "cipro", mo = "E. coli")
+comparison
+ggplot2::autoplot(comparison) + ggtitle("E. coli - Ciprofloxacin")
 ```
 
 ## Contributions
