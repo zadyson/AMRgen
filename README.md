@@ -138,10 +138,10 @@ compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R",
 # do logistic regression analysis for ciprofloxacin R and NWT vs quinolone associated markers present in ≥50 samples and do combined plot
 logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
 
-cip_logistic$plot
-cip_logistic$bin_mat
-cip_logistic$modelR
-cip_logistic$modelNWT
+logistic_cipro$plot
+logistic_cipro$bin_mat
+logistic_cipro$modelR
+logistic_cipro$modelNWT
 
 ```
 ### Explore evidence for geno/pheno association from solo PPV, logistic regression, and upset plots
@@ -199,10 +199,18 @@ ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my 
 ### Compare own MIC data vs reference distribution from EUCAST
 
 ```r
+
+# random test
 my_mic_values <- AMR::random_mic(500)
 comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "K. pneumoniae")
 comparison
 ggplot2::autoplot(comparison)
+
+
+# example E. coli data
+comparison <- compare_mic_with_eucast(ecoli_ast %>% filter(drug_agent=="CIP") %>% pull(mic), ab = "cipro", mo = "E. coli")
+comparison
+ggplot2::autoplot(comparison) + ggtitle("E. coli - Ciprofloxacin")
 ```
 
 ## Contributions
