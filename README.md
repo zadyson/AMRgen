@@ -138,10 +138,10 @@ compare_estimates(model_summary, model_NWT_summary, single_plot = F, title1="R",
 # do logistic regression analysis for ciprofloxacin R and NWT vs quinolone associated markers present in ≥50 samples and do combined plot
 logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
 
-cip_logistic$plot
-cip_logistic$bin_mat
-cip_logistic$modelR
-cip_logistic$modelNWT
+logistic_cipro$plot
+logistic_cipro$bin_mat
+logistic_cipro$modelR
+logistic_cipro$modelNWT
 
 ```
 ### Explore evidence for geno/pheno association from solo PPV, logistic regression, and upset plots
