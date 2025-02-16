@@ -15,12 +15,17 @@
 #'        - "": Default (decreasing frequency of combinations),
 #'        - "genes": Order by the number of genes in each combination,
 #'        - "mic": Order by the median MIC of each combination. Default is decreasing frequency.
+#' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e. 
+#'        number of times each combination of markers is observed). Default is FALSE.
+#' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination,
+#'         the proportion of samples with each phenotype classification (specified by the 'pheno' column in the input file). 
+#'         Default is TRUE.
 #'
-#' @return A grid of plots displaying:
-#'         - A plot for MIC values across combinations (g1),
-#'         - A bar plot showing the percentage of strains in each combination (g2),
-#'         - A dot plot of gene combinations in strains (g3),
-#'         - A gene prevalence plot displaying the set size for each gene (g4).
+#' @return A list containing the following elements:
+#'   \describe{
+#'     \item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
+#'     \item{mic_summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
+#'   }
 #'
 #' @details This function processes the provided binary matrix (`binary_matrix`), which is expected to contain data on gene 
 #'          combinations found in the strain, MIC for that strain (e.g., resistance or susceptibility) and 
@@ -54,7 +59,8 @@
 #' @import patchwork
 #' 
 #' @export
-amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size=F){
+amr_upset <- function(binary_matrix, min_set_size = 2, order = "", 
+                      plot_set_size=FALSE, plot_category=TRUE) {
   ## Inputs
   # takes in binary_matrix = output from get_binary_matrix function
   # takes in order = single value. Default is decreasing frequency. 
@@ -73,7 +79,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
   # gene names
   genes <- setdiff(genes, cols_to_remove)
 
-  # Add in a combination column 
+  # Add in a combination column and filter to samples with MIC data only
   binary_matrix_wide <- binary_matrix %>% 
     filter(!is.na(mic)) %>% # make this optionally disk also
     unite("combination_id", genes[1]:genes[length(genes)], remove = FALSE)  # add in combinations 
@@ -88,6 +94,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     summarise(n = n()) %>%
     mutate(perc = 100 * n / sum(n)) %>% # count number with each combination
     filter(n > 1) # count filter
+  
   # which have enough strains / data
   comb_enough_strains <- bar_plot %>% pull(combination_id)
 
@@ -96,14 +103,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     filter(combination_id %in% comb_enough_strains) %>% 
     group_by(combination_id, mic, R) %>%
     summarise(n = n()) # count how many at each MIC, keep resistant for colour
-  
-  mic_summary <- binary_matrix %>% 
-    filter(combination_id %in% comb_enough_strains) %>% 
-    group_by(combination_id, R) %>%
-    summarise(median = median(mic), 
-              lower=quantile(mic,0.25),
-              upper=quantile(mic,0.75)) # median MIC to draw a box
-  
   
   ### Gene prevalence plot 
   gene.prev <- binary_matrix %>% 
@@ -129,6 +128,8 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     filter(combination_id %in% comb_enough_strains) %>% 
     filter(genes %in% gene.order.desc) %>% 
     mutate(genes = factor(genes, levels = gene.order.desc))
+  
+
   
   ############# Which have lines between in dot plot? 
   ### Point plot - X axis = combination. Y axis = genes. Lines joining genes in same strain ### 
@@ -161,6 +162,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
   mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
   bar_plot$combination_id <- factor(bar_plot$combination_id, levels = ordered_comb_order)
   binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
+  
   # Do by # genes in combination (only want each id once)
   if (order == "genes") {
     ordered_comb_order <- multi_genes_combination_id_all %>%
@@ -193,7 +195,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     # geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_R)), colour = colours_SIR["R"]) +
     theme_bw() +
     scale_y_mic() +
-    ylab("Phenotype (MIC, mg/L)") +
+    ylab("MIC (mg/L)") +
     scale_x_discrete("group") +
     scale_size_continuous("Number of\nisolates") +
     scale_color_manual("Resistance\nclass", values = colours_SIR) +
@@ -214,7 +216,18 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank(),
         axis.ticks.x = element_blank())
-
+  
+  category_plot <- binary_matrix %>% select(id, pheno, combination_id) %>% distinct() %>%
+    ggplot(aes(x=combination_id, fill=pheno)) +
+    geom_bar(stat = "count", position = "fill") +
+    #scale_fill_manual(values = plot_cols) +
+    #geom_text(aes(label = ..count..), stat = "count", position = position_fill(vjust = .5), size = 3) +
+    theme_light() +
+    labs(x = "", y = "Category", fill = "Category") +
+    theme(axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank())
+    
   ### Dot plot of combinations 
   g3 <- binary_matrix %>% 
     mutate(binary_comb=if_else(value>0, 1, 0)) %>%
@@ -223,7 +236,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     theme_bw() + 
     scale_size_continuous(range = c(-1,2)) + 
     scale_x_discrete("group") + 
-    scale_y_discrete("gene") + 
+    scale_y_discrete("Marker") + 
     geom_segment(data = multi_genes_combination_ids,
                  aes(x = combination_id, xend = combination_id, 
                      y = min, yend = max, group = combination_id),
@@ -238,13 +251,54 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "", plot_set_size
     theme_bw() +
     coord_flip() +
     scale_y_reverse("Set size") +
-    theme( # axis.text.y = element_blank(), # keep gene labels for now to make sure they align with other plot
+    theme(axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank())
   
-  final_plot <- patchwork::plot_spacer() + g1
-  final_plot <- final_plot + g4 + g3 + patchwork::plot_layout(ncol = 2, widths = c(1, 4), guides="collect")
-  if (plot_set_size) { final_plot <- final_plot + patchwork::plot_spacer() + g2  + patchwork::plot_layout(heights=c(2,2,1))}
+  # assemble plot
+  final_plot <- patchwork::plot_spacer() + g1 + patchwork::plot_layout(ncol = 2, widths = c(1, 4), guides="collect")
+  if (plot_category) { final_plot <- final_plot + patchwork::plot_spacer() + category_plot }
+  final_plot <- final_plot + g4 + g3
+  if (plot_set_size) { final_plot <- final_plot + patchwork::plot_spacer() + g2 }
+
+  # set relative plotting heights
+  if (plot_category & plot_set_size) {final_plot <- final_plot + patchwork::plot_layout(heights=c(2,1,2,1))}
+  if (plot_category & !plot_set_size) {final_plot <- final_plot + patchwork::plot_layout(heights=c(2,1,2))}
+  if (!plot_category & plot_set_size) {final_plot <- final_plot + patchwork::plot_layout(heights=c(2,2,1))}
   
   print(final_plot)
+  
+  # summary table
+  mic_summary <- binary_matrix_wide %>% 
+    filter(combination_id %in% comb_enough_strains) %>% 
+    group_by(combination_id) %>%
+    summarise(median = median(mic), 
+              lower=stats::quantile(mic,0.25),
+              upper=stats::quantile(mic,0.75),
+              ppv=mean(R, na.rm=T),
+              R=sum(R, na.rm=T),
+              n=n())
+  
+  # get names for mic_summary
+  combination_names <- binary_matrix_wide %>% 
+    select(combination_id, any_of(genes)) %>% 
+    distinct() %>% 
+    filter(combination_id %in% comb_enough_strains)
+  
+  combination_names <- combination_names %>% 
+    mutate(marker_list = apply(., 1, function(row) {
+      paste(names(combination_names)[-1][row[-1] == 1], collapse = ", ")
+    }), .after=combination_id) %>%
+    mutate(marker_count = rowSums(. == 1)) %>%
+    select(combination_id, marker_list, marker_count)
+  
+  mic_summary <- mic_summary %>% 
+    left_join(combination_names) %>%
+    select(-combination_id) %>%
+    mutate(marker_list=if_else(is.na(marker_list), "-", marker_list)) %>%
+    mutate(marker_count=if_else(is.na(marker_count), 0, marker_count)) %>% 
+    relocate(marker_list, .before=median) %>% 
+    relocate(marker_count, .before=median)
+  
+  return(list(plot=final_plot, mic_summary=mic_summary))
 }

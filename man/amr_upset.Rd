@@ -4,7 +4,13 @@
 \alias{amr_upset}
 \title{amr_upset: Generate a series of plots for AMR gene and combination analysis}
 \usage{
-amr_upset(binary_matrix, min_set_size = 2, order = "", plot_set_size = F)
+amr_upset(
+  binary_matrix,
+  min_set_size = 2,
+  order = "",
+  plot_set_size = FALSE,
+  plot_category = TRUE
+)
 }
 \arguments{
 \item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function,
@@ -18,13 +24,20 @@ Default is 2. Only genes with at least this number of occurrences are included i
 - "": Default (decreasing frequency of combinations),
 - "genes": Order by the number of genes in each combination,
 - "mic": Order by the median MIC of each combination. Default is decreasing frequency.}
+
+\item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e.
+number of times each combination of markers is observed). Default is FALSE.}
+
+\item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination,
+the proportion of samples with each phenotype classification (specified by the 'pheno' column in the input file).
+Default is TRUE.}
 }
 \value{
-A grid of plots displaying:
-- A plot for MIC values across combinations (g1),
-- A bar plot showing the percentage of strains in each combination (g2),
-- A dot plot of gene combinations in strains (g3),
-- A gene prevalence plot displaying the set size for each gene (g4).
+A list containing the following elements:
+\describe{
+\item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
+\item{mic_summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
+}
 }
 \description{
 This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence
