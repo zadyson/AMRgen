@@ -111,17 +111,17 @@ ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 cip_bin<- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
 
 # logistic regression model for ciprofloxacin resistance (R vs S/I), predicted from all detected markers associated with quinolone resistance
-model <- logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)))
+model <- logistf::logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)))
 model_summary <- logistf_details(model)
 plot_estimates(model_summary)
 
 # include only markers observed in at least 10 samples
-model <- logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>10)))
+model <- logistf::logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,NWT)) %>% select_if(funs(sum(.)>10)))
 model_summary <- logistf_details(model)
 plot_estimates(model_summary, title="Logistic regression on Cipro R")
 
 # predict NWT (defined by ECOFF) rather than R
-model_NWT <- logistf(NWT ~ ., data=cip_bin %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>10)))
+model_NWT <- logistf::logistf(NWT ~ ., data=cip_bin %>% select(-c(id,pheno,R)) %>% select_if(funs(sum(.)>10)))
 model_NWT_summary <- logistf_details(model_NWT)
 plot_estimates(model_NWT_summary, title="Logistic regression on Cipro NWT")
 
