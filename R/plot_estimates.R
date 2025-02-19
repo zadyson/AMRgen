@@ -315,7 +315,21 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
               plot=plot))
 }
 
-
+#' Merge Logistic Regression and Solo PPV Statistics
+#'
+#' This function merges logistic regression model statistics with solo PPV statistics and creates a combined plot.
+#'
+#' @param model A data frame containing logistic regression model statistics.
+#' @param solo_stats A data frame containing solo PPV statistics.
+#' @param title An optional title for the plot.
+#' @return A list containing the combined data frame and the plot.
+#' @examples
+#' \dontrun{
+#' soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
+#' logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
+#' allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, soloPPV_cipro$solo_stats %>% filter(category=="R"), title="Quinolone markers vs Cip R")
+#' }
+#' @export
 merge_logreg_soloppv <- function(model, solo_stats, title=NULL) {
   
   combined <- model %>% 
@@ -329,6 +343,15 @@ merge_logreg_soloppv <- function(model, solo_stats, title=NULL) {
   return(list(combined=combined, plot=plot))
 }
 
+#' Plot Combined Statistics
+#'
+#' This function creates a plot of combined logistic regression and solo PPV statistics.
+#'
+#' @param combined_stats A data frame containing combined statistics from logistic regression and solo PPV.
+#' @param sig A significance level for the logistic regression p-values. Default is 0.05.
+#' @param title An optional title for the plot.
+#' @return A ggplot2 object representing the combined plot.
+#' @export
 plot_combined_stats <- function(combined_stats, sig=0.05, title=NULL) {
   combined_stats %>% 
     mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>% 
