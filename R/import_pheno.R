@@ -64,6 +64,7 @@
 #' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
 #' head(pheno)
 #' }
+#' @importFrom magrittr %>%
 #' @export
 import_ncbi_ast <- function(input, sample_col = "#BioSample", interpret = F, ecoff = F, default_guideline = "EUCAST") {
   ast <- process_input(input)
