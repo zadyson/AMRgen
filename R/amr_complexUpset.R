@@ -70,7 +70,7 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
   }
 
   # convert gene columns to logical
-  upset_data <- binary_matrix %>% mutate(across(genes, as.logical))
+  upset_data <- binary_matrix %>% mutate(across(all_of(genes), as.logical))
 
   # rename first column to 'sample' for the first column, to avoid issues with duplicate column names, if col1 is "id"
   if (colnames(upset_data)[1] == "id") {
