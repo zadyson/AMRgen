@@ -325,9 +325,11 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 #' @return A list containing the combined data frame and the plot.
 #' @examples
 #' \dontrun{
-#' soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
+#' soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, 
+#'                           antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
 #' logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
-#' allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, soloPPV_cipro$solo_stats %>% filter(category=="R"), title="Quinolone markers vs Cip R")
+#' allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, soloPPV_cipro$solo_stats %>% filter(category=="R"), 
+#'                           title="Quinolone markers vs Cip R")
 #' }
 #' @export
 merge_logreg_soloppv <- function(model, solo_stats, title=NULL) {
