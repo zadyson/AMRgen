@@ -43,10 +43,13 @@ Then install this package
 remotes::install_github("interpretAMR/AMRgen")
 ```
 
+It is best to restart R before running the installation. If you didn't do this and/or you encounter issues with the examples below after install, it may help to also restart after the install and start fresh with the examples below.
+
 ## Usage Examples
 
 ```r
 library(AMRgen)
+library(tidyverse)
 ```
 
 ### Import pheno data (from NCBI AST) and geno data (AMRfinderplus output), and compare geno/pheno for drugs of interest
