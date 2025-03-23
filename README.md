@@ -103,7 +103,7 @@ amr_complexUpset(cip_bin)
 # do upset plot of MIC vs genotype marker combinations, for combinations observed at least 5 times (using AMRgen function, not requiring complexUpset)
 cip_upset <- amr_upset(cip_bin, min_set_size=5, order="mic")
 
-# check the summary information for each marker combination (number of genomes, MIC median and range, number and fraction resistant)
+# check the summary information for each marker combination (number of genomes, MIC median and interquartile range, number and fraction resistant)
 cip_upset$summary
 
 ```
