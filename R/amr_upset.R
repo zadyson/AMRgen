@@ -235,7 +235,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
           legend.position="none")
   if (print_category_counts) {
     category_plot <- category_plot + 
-      geom_text(aes(label = ..count..), stat = "count", position = position_fill(vjust = .5), size = 3)
+      geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3)
   }
     
   ### Dot plot of combinations 

@@ -170,7 +170,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     geom_bar(stat = "count", position = "fill") +
     scale_fill_manual(values = plot_cols) +
     coord_flip() +
-    geom_text(aes(label = ..count..), stat = "count", position = position_fill(vjust = .5), size = 3) +
+    geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
     theme_light() +
     theme(axis.text.x=element_text(size=axis_label_size),
           axis.text.y=element_text(size=axis_label_size)) +
