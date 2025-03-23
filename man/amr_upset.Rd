@@ -49,7 +49,7 @@ with marker combination on the plot (default FALSE).}
 A list containing the following elements:
 \describe{
 \item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
-\item{mic_summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
+\item{summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
 }
 }
 \description{

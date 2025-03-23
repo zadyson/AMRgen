@@ -32,7 +32,7 @@
 #' @return A list containing the following elements:
 #'   \describe{
 #'     \item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
-#'     \item{mic_summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
+#'     \item{summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
 #'   }
 #'
 #' @details This function processes the provided binary matrix (`binary_matrix`), which is expected to contain data on gene 
@@ -278,17 +278,17 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   print(final_plot)
   
   # summary table
-  mic_summary <- binary_matrix_wide %>% 
+  summary <- binary_matrix_wide %>% 
     filter(combination_id %in% comb_enough_strains) %>% 
     group_by(combination_id) %>%
     summarise(median = median(mic), 
-              lower=stats::quantile(mic,0.25),
-              upper=stats::quantile(mic,0.75),
+              q25=stats::quantile(mic,0.25),
+              q75=stats::quantile(mic,0.75),
               ppv=mean(R, na.rm=T),
               R=sum(R, na.rm=T),
               n=n())
   
-  # get names for mic_summary
+  # get names for summary
   combination_names <- binary_matrix_wide %>% 
     select(combination_id, any_of(genes)) %>% 
     distinct() %>% 
@@ -301,7 +301,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     mutate(marker_count = rowSums(. == 1)) %>%
     select(combination_id, marker_list, marker_count)
   
-  mic_summary <- mic_summary %>% 
+  summary <- summary %>% 
     left_join(combination_names) %>%
     select(-combination_id) %>%
     mutate(marker_list=if_else(is.na(marker_list), "-", marker_list)) %>%
@@ -309,5 +309,5 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     relocate(marker_list, .before=median) %>% 
     relocate(marker_count, .before=median)
   
-  return(list(plot=final_plot, mic_summary=mic_summary))
+  return(list(plot=final_plot, summary=summary))
 }
