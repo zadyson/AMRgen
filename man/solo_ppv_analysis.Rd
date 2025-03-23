@@ -13,6 +13,8 @@ solo_ppv_analysis(
   pheno_sample_col = NULL,
   sir_col = NULL,
   keep_assay_values = TRUE,
+  min = 1,
+  axis_label_size = 9,
   plot_cols = c(R = "IndianRed", I = "orange", S = "lightgrey", NWT = "navy"),
   pd = position_dodge(width = 0.8)
 )
@@ -44,6 +46,8 @@ contains identifiers.}
 \item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains
 the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant),
 "I" (intermediate), or "S" (susceptible).}
+
+\item{min}{Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).}
 
 \item{plot_cols}{A named vector of colors for the plot. The names should be the phenotype categories
 (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes.

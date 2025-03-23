@@ -9,13 +9,17 @@ amr_upset(
   min_set_size = 2,
   order = "",
   plot_set_size = FALSE,
-  plot_category = TRUE
+  plot_category = TRUE,
+  print_category_counts = FALSE,
+  print_set_size = FALSE,
+  boxplot_colour = "grey"
 )
 }
 \arguments{
-\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function,
-with columns representing genes, resistance, MIC values, and metadata such as microorganism and antibiotic
-information. This needs to be updated / standardised in future versions of AMRgen.}
+\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function.
+Expected columns are and identifier (column 1, any name); 'pheno' (class sir, with S/I/R categories to colour points),
+'mic' (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, ie
+1=present, 0=absent).}
 
 \item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots.
 Default is 2. Only genes with at least this number of occurrences are included in the plots.}
@@ -31,6 +35,15 @@ number of times each combination of markers is observed). Default is FALSE.}
 \item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination,
 the proportion of samples with each phenotype classification (specified by the 'pheno' column in the input file).
 Default is TRUE.}
+
+\item{print_category_counts}{Logical indicating whether, if plot_category is set to true, to print the number of strains
+in each resistance category, for each marker combination in the plot (default FALSE).}
+
+\item{print_set_size}{Logical indicating whether, if plot_set_size is set to true, to print the number of strains
+with marker combination on the plot (default FALSE).}
+
+\item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination,
+(default "grey").}
 }
 \value{
 A list containing the following elements:
@@ -43,11 +56,11 @@ A list containing the following elements:
 This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence
 from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for
 the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence.
+It also outputs a table summarising the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
 }
 \details{
 This function processes the provided binary matrix (\code{binary_matrix}), which is expected to contain data on gene
-combinations found in the strain, MIC for that strain (e.g., resistance or susceptibility) and
-corresponding MIC values for different genes.
+presence/absence, MIC values, and phenotype calls (S/I/R) (can be generated using \code{get_binary_matrix}).
 The function also includes an analysis of gene prevalence and an ordering option for visualizing combinations
 in different ways.
 }

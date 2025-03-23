@@ -7,11 +7,12 @@
 plot_estimates(
   tbl,
   sig = 0.05,
-  sig_colors = c("grey", "blue4"),
+  sig_colors = c(`FALSE` = "grey", `TRUE` = "blue4"),
   x_title = "Coefficient (95\% CI)",
   y_title = "Variant",
   title = NULL,
-  axis_label_size = 9
+  axis_label_size = 9,
+  marker_order = NULL
 )
 }
 \arguments{

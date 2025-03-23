@@ -36,13 +36,24 @@
 #'
 #' @export
 plot_estimates <- function(tbl, sig = 0.05, 
-                           sig_colors=c("grey", "blue4"),
+                           sig_colors=c(`FALSE`="grey", `TRUE`="blue4"),
                            x_title="Coefficient (95% CI)",
                            y_title="Variant", 
                            title=NULL,
-                           axis_label_size=9) {
+                           axis_label_size=9,
+                           marker_order=NULL) {
+  
+  if (!is.null(sig)) {
+    legend_title <- paste0("p<", sig)
+    legend_position="right"
+    tbl <- tbl %>% mutate(sig_binary = if_else(pval < sig, TRUE, FALSE))
+  }
+  else {legend_title <- ""
+  legend_position="none"
+  tbl <- tbl %>% mutate(sig_binary =TRUE)
+  }
+  
   plot <- tbl %>%
-    mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>%
     filter(marker != "(Intercept)") %>%
     mutate(marker = gsub("`", "", marker)) %>%
     ggplot(aes(y = marker, col = sig_binary)) +
@@ -52,11 +63,16 @@ plot_estimates <- function(tbl, sig = 0.05,
     scale_color_manual(values = sig_colors) +
     theme_light() +
     theme(axis.text.x=element_text(size=axis_label_size),
-          axis.text.y=element_text(size=axis_label_size)) +
+          axis.text.y=element_text(size=axis_label_size),
+          legend.position=legend_position) +
     labs(title = title,
          x = x_title,
          y = y_title,
-         col = paste0("p<", sig))
+         col = legend_title)
+  
+  if (!is.null(marker_order)) {
+    plot <- plot + scale_y_discrete(limits=marker_order)
+  }
 
   return(plot)
 }
@@ -326,10 +342,14 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 #' @examples
 #' \dontrun{
 #' soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, 
-#'                           antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
-#' logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, "Ciprofloxacin", c("Quinolones"), maf=5)
-#' allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, soloPPV_cipro$solo_stats %>% filter(category=="R"), 
-#'                           title="Quinolone markers vs Cip R")
+#'                           antibiotic="Ciprofloxacin", 
+#'                           drug_class_list=c("Quinolones"), 
+#'                           sir_col="pheno")
+#' logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast, 
+#'                           "Ciprofloxacin", c("Quinolones"), maf=5)
+#' allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR, 
+#'                     soloPPV_cipro$solo_stats %>% filter(category=="R"), 
+#'                     title="Quinolone markers vs Cip R")
 #' }
 #' @export
 merge_logreg_soloppv <- function(model, solo_stats, title=NULL) {
@@ -368,3 +388,20 @@ plot_combined_stats <- function(combined_stats, sig=0.05, title=NULL) {
     geom_vline(xintercept=0.5) + 
     theme_bw()
 }
+
+
+plot_solo_logReg <- function(combined_stats, sig=0.05, title=NULL) {
+  combined_stats %>% 
+    mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>% 
+    ggplot(aes(y=est, x=ppv, col=as.factor(sig_binary))) + 
+    geom_point() + 
+    geom_linerange(aes(xmin = ci.lower.ppv, xmax = ci.upper.ppv)) +
+    geom_linerange(aes(ymin = ci.lower.est, ymax = ci.upper.est)) +
+    labs(y="Logistic regression coefficient", x="PPV", 
+         col = paste0("logreg p<", sig),
+         title=title) + 
+    geom_hline(yintercept=0) + 
+    geom_vline(xintercept=0.5) + 
+    theme_bw()
+}
+

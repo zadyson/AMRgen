@@ -37,6 +37,8 @@
 #' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories
 #'   (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes.
 #'   Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
+#'   
+#' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
 #'
 #' @return A list containing the following elements:
 #'   \describe{
@@ -78,7 +80,8 @@
 #' @export
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
-                              keep_assay_values = TRUE,
+                              keep_assay_values = TRUE, min=1,
+                              axis_label_size=9,
                               plot_cols = c(
                                 "R" = "IndianRed", "I" = "orange", "S" = "lightgrey",
                                 "NWT" = "navy"),
@@ -145,26 +148,32 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     rename(ppv=p)
 
   # plots
+  markers_to_plot <- solo_stats$marker[solo_stats$n>=min]
 
   ppv_plot <- solo_stats %>%
+    filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, group = category, col = category)) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +
     geom_point(aes(x = ppv), position = pd) +
     theme_bw() +
-    scale_y_discrete(labels = paste0("(n=", solo_stats$n, ")"), position = "right") +
+    scale_y_discrete(labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
     labs(y = "", x = "Solo PPV", col = "Category") +
     scale_colour_manual(values = plot_cols) +
+    theme(axis.text.x=element_text(size=axis_label_size),
+          axis.text.y=element_text(size=axis_label_size)) +
     xlim(0, 1)
 
   solo_pheno_plot <- solo_binary %>%
+    filter(marker %in% markers_to_plot) %>%
     ggplot(aes(x = marker, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
     scale_fill_manual(values = plot_cols) +
     coord_flip() +
     geom_text(aes(label = ..count..), stat = "count", position = position_fill(vjust = .5), size = 3) +
-    scale_x_discrete(solo_stats$marker) +
     theme_light() +
+    theme(axis.text.x=element_text(size=axis_label_size),
+          axis.text.y=element_text(size=axis_label_size)) +
     labs(x = "", y = "Proportion", fill = "Phenotype")
 
   header <- paste("Solo markers for class:", paste0(drug_class_list, collapse = ", "))
