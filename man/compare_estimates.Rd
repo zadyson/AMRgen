@@ -16,7 +16,8 @@ compare_estimates(
   y_title = "Variant",
   axis_label_size = 9,
   single_plot = TRUE,
-  pd = position_dodge(width = 0.8)
+  pd = position_dodge(width = 0.8),
+  marker_order = NULL
 )
 }
 \arguments{

@@ -111,6 +111,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     mutate(perc = 100 * n / sum(n)) %>% # count number with each combination
     filter(n >= min_set_size) # count filter
   
+  if (nrow(combination_freq)==0) {stop(paste("No marker combinations pass the minimum frequency:", min_set_size))}
   # which have enough strains / data
   comb_enough_strains <- combination_freq %>% pull(combination_id)
 

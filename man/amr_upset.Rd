@@ -12,7 +12,8 @@ amr_upset(
   plot_category = TRUE,
   print_category_counts = FALSE,
   print_set_size = FALSE,
-  boxplot_colour = "grey"
+  boxplot_colour = "grey",
+  assay = "mic"
 )
 }
 \arguments{
@@ -26,8 +27,8 @@ Default is 2. Only genes with at least this number of occurrences are included i
 
 \item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
 - "": Default (decreasing frequency of combinations),
-- "genes": Order by the number of genes in each combination,
-- "mic": Order by the median MIC of each combination. Default is decreasing frequency.}
+- "genes": Order by the number of genes in each combination.
+- "value": Order by the median assay value (MIC or disk zone) for each combination.}
 
 \item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e.
 number of times each combination of markers is observed). Default is FALSE.}
@@ -44,6 +45,10 @@ with marker combination on the plot (default FALSE).}
 
 \item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination,
 (default "grey").}
+
+\item{assay}{A character string indicating whether to plot MIC or disk diffusion data.
+- "mic": Plot MIC data, stored in column 'mic' of class 'mic'.
+- "disk": Plot disk diffusion data, stored in column 'disk' of class 'disk'.}
 }
 \value{
 A list containing the following elements:
@@ -79,7 +84,7 @@ binary_matrix<- get_binary_matrix(geno_table=ecoli_geno,
               keep_assay_values_from = "mic"
            )
 
-amr_upset(binary_matrix, min_set_size = 3, order = "mic")
+amr_upset(binary_matrix, min_set_size = 3, order = "value", assay="mic")
 }
 
 }
