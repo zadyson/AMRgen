@@ -15,8 +15,8 @@
 #'        Default is 2. Only genes with at least this number of occurrences are included in the plots.
 #' @param order A character string indicating the order of the combinations on the x-axis. Options are:
 #'        - "": Default (decreasing frequency of combinations),
-#'        - "genes": Order by the number of genes in each combination,
-#'        - "mic": Order by the median MIC of each combination. Default is decreasing frequency.
+#'        - "genes": Order by the number of genes in each combination.
+#'        - "value": Order by the median assay value (MIC or disk zone) for each combination.
 #' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e. 
 #'        number of times each combination of markers is observed). Default is FALSE.
 #' @param print_set_size Logical indicating whether, if plot_set_size is set to true, to print the number of strains
@@ -28,6 +28,10 @@
 #'        in each resistance category, for each marker combination in the plot (default FALSE).
 #' @param boxplot_colour Colour for lines of the box plots summarising the MIC distribution for each marker combination,
 #'        (default "grey").
+#' @param assay A character string indicating whether to plot MIC or disk diffusion data.
+#'        - "mic": Plot MIC data, stored in column 'mic' of class 'mic'.
+#'        - "disk": Plot disk diffusion data, stored in column 'disk' of class 'disk'.
+
 #'
 #' @return A list containing the following elements:
 #'   \describe{
@@ -55,7 +59,7 @@
 #'               keep_assay_values_from = "mic"
 #'            )
 #' 
-#' amr_upset(binary_matrix, min_set_size = 3, order = "mic")
+#' amr_upset(binary_matrix, min_set_size = 3, order = "value", assay="mic")
 #' }
 #'
 #' @import dplyr
@@ -69,7 +73,7 @@
 amr_upset <- function(binary_matrix, min_set_size = 2, order = "", 
                       plot_set_size=FALSE, plot_category=TRUE, 
                       print_category_counts=FALSE, print_set_size=FALSE,
-                      boxplot_colour="grey") {
+                      boxplot_colour="grey", assay="mic") {
 
   # tidy up binary_matrix
   col <- colnames(binary_matrix) # get column names 
@@ -82,10 +86,19 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
 
   # gene names
   genes <- setdiff(genes, cols_to_remove)
+  
+  # check with have the expected assay column, with data
+  if (!(assay %in% colnames(binary_matrix))) {
+    stop(paste("input", deparse(substitute(binary_matrix)), "must have a column labelled ", assay))
+  }
+  data_rows <- binary_matrix %>% filter(!is.na(get(assay))) %>% nrow()
+  if (data_rows==0) {
+    stop(paste("input", deparse(substitute(binary_matrix)), "has no non-NA values in column ", assay))
+  }
 
-  # Add in a combination column and filter to samples with MIC data only
+  # Add in a combination column and filter to samples with the required assay data (MIC or disk) only
   binary_matrix_wide <- binary_matrix %>% 
-    filter(!is.na(mic)) %>% # make this optionally disk also
+    filter(!is.na(get(assay))) %>%
     unite("combination_id", genes[1]:genes[length(genes)], remove = FALSE)  # add in combinations 
   
   # Make matrix longer 
@@ -102,11 +115,11 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   # which have enough strains / data
   comb_enough_strains <- combination_freq %>% pull(combination_id)
 
-  ### MIC plot - dot plot. X axis = combination. Y axis = MIC #####
-  mic_plot <- binary_matrix %>% 
+  ### data for assay plot - dot plot. X axis = combination. Y axis = MIC or disk zone #####
+  assay_plot <- binary_matrix %>% 
     filter(combination_id %in% comb_enough_strains) %>% 
-    group_by(combination_id, mic, pheno) %>%
-    summarise(n = n()) # count how many at each MIC, keep pheno for colour
+    group_by(combination_id, get(assay), pheno) %>%
+    summarise(n = n())  # count how many at each assay value, keep pheno for colour
   
   ### Gene prevalence plot (amongst strains with marker combinations exceeding the minimum set size)
   gene.prev <- binary_matrix %>% 
@@ -166,7 +179,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   ordered_comb_order <- combination_freq %>%
     arrange(desc(perc)) %>%
     pull(combination_id)
-  mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
+  assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
   combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
   binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
   
@@ -176,30 +189,34 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       arrange(u) %>%
       filter(row_number() == 1) %>%
       pull(combination_id)
-    mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
+    assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
     combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
     binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
   }
-  # Do by # median mic in combination (only want each id once)
-  if(order == "mic"){
-    mic_medians <- binary_matrix_wide %>% group_by(combination_id) %>% summarise(median = median(mic))
-    ordered_comb_order <- mic_medians %>% arrange(median) %>% pull(combination_id)
-    mic_plot$combination_id <- factor(mic_plot$combination_id, levels = ordered_comb_order)
+  # Do by # median assay value in combination (only want each id once)
+  if(order == "value"){
+    if (assay=="mic") {
+      mic_medians <- binary_matrix_wide %>% group_by(combination_id) %>% summarise(median = median(mic))
+      ordered_comb_order <- mic_medians %>% arrange(median) %>% pull(combination_id)
+    }
+    else {
+      disk_medians <- binary_matrix_wide %>% group_by(combination_id) %>% summarise(median = median(as.double(disk)))
+      ordered_comb_order <- disk_medians %>% arrange(-median) %>% pull(combination_id)
+    }
+    assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
     combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
     binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
   }
   
   ##### Plots ###
 
-  ### MIC plot
-  g1 <- ggplot(data = mic_plot, aes(x=combination_id, y=mic)) +
+  ### assay data plot (MIC/disk)
+  g1 <- ggplot(data = assay_plot, aes(x=combination_id, y=`get(assay)`)) +
     geom_boxplot(colour = boxplot_colour) +
     geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
     # geom_hline(aes(yintercept = as.mic(1))) +
     # geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_R)), colour = colours_SIR["R"]) +
     theme_bw() +
-    scale_y_mic() +
-    ylab("MIC (mg/L)") +
     #scale_x_discrete("group") +
     scale_size_continuous("Number of\nisolates") +
     scale_color_sir(name="Resistance\ncategory") +
@@ -208,6 +225,15 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       axis.title.x = element_blank(),
       axis.ticks.x = element_blank()
     )
+  if (assay=="mic") {
+    g1 <- g1 + 
+      scale_y_mic() +
+      ylab("MIC (mg/L)")
+  }
+  else {
+    g1 <- g1 + 
+      ylab("Disk zone (mm)")
+  }
   
   ### Bar plot - set size 
   g2 <- ggplot(combination_freq, aes(x=combination_id, y = n)) + 
@@ -281,9 +307,9 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   summary <- binary_matrix_wide %>% 
     filter(combination_id %in% comb_enough_strains) %>% 
     group_by(combination_id) %>%
-    summarise(median = median(mic), 
-              q25=stats::quantile(mic,0.25),
-              q75=stats::quantile(mic,0.75),
+    summarise(median = median(as.double(get(assay))), 
+              q25=stats::quantile(as.double(get(assay)),0.25),
+              q75=stats::quantile(as.double(get(assay)),0.75),
               ppv=mean(R, na.rm=T),
               R=sum(R, na.rm=T),
               n=n())
