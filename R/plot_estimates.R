@@ -110,7 +110,8 @@ compare_estimates <- function(tbl1,
                               y_title="Variant",
                               axis_label_size=9,
                               single_plot=TRUE,
-                              pd=position_dodge(width = 0.8)) {
+                              pd=position_dodge(width = 0.8),
+                              marker_order=NULL) {
   
   if (!single_plot) {
     plot1 <- plot_estimates(tbl1, 
@@ -121,7 +122,6 @@ compare_estimates <- function(tbl1,
                             title=title1,
                             axis_label_size=axis_label_size)
     
-    
     plot2 <- plot_estimates(tbl2, 
                             sig = sig, 
                             sig_colors=c("grey", colors[2]),
@@ -129,6 +129,11 @@ compare_estimates <- function(tbl1,
                             y_title=y_title, 
                             title=title2,
                             axis_label_size=axis_label_size)
+    
+    if (!is.null(marker_order)) {
+      plot1 <- plot1 + scale_y_discrete(limits=marker_order)
+      plot2 <- plot2 + scale_y_discrete(limits=marker_order)
+    }
     
     plot <- plot1 + plot2
   }
@@ -151,6 +156,10 @@ compare_estimates <- function(tbl1,
            x = x_title,
            y = y_title,
            col = "Group")
+    
+    if (!is.null(marker_order)) {
+      plot <- plot + scale_y_discrete(limits=marker_order)
+    }
   }
   
   return(plot)

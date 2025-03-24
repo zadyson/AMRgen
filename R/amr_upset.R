@@ -104,7 +104,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   # Make matrix longer 
   binary_matrix <- binary_matrix_wide %>% pivot_longer(cols = genes[1]:genes[length(genes)], names_to = "genes")
   
-  ##### Data wrangling for plots ###
   ### Counts per combination, for bar plot - X axis = combination. Y axis = number of strains ###
   # This first to filter on combinations with enough data 
   combination_freq <- binary_matrix_wide %>% group_by(combination_id) %>%
@@ -127,7 +126,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     group_by(genes) %>%
     summarise(gene.prev = sum(value))
 
-  ################### ORDER y axis ########################
   ### Set order of genes for y axis in combination dot plot 
   ## (amongst strains with marker combinations exceeding the minimum set size, that will be included in plot)
   gene.order.desc <- gene.prev %>%
@@ -146,8 +144,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     filter(genes %in% gene.order.desc) %>% 
     mutate(genes = factor(genes, levels = gene.order.desc))
   
-  
-  ############# Which have lines between in dot plot? 
   ### Point plot - X axis = combination. Y axis = genes. Lines joining genes in same strain ### 
   binary_matrix$point_size = 2 * binary_matrix$value # want dot size to be larger than 1 => can make 2/3/4 etc
   
@@ -170,9 +166,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       max = max(genes)
     ) %>%
     ungroup()
-
-  ################### ORDER x axis ########################
-
 
   ### Set order of combination_id <- x axis
   # Default = decreasing frequency
@@ -214,10 +207,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   g1 <- ggplot(data = assay_plot, aes(x=combination_id, y=`get(assay)`)) +
     geom_boxplot(colour = boxplot_colour) +
     geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
-    # geom_hline(aes(yintercept = as.mic(1))) +
-    # geom_hline(data = cut_dat, aes(yintercept = AMR::as.mic(breakpoint_R)), colour = colours_SIR["R"]) +
     theme_bw() +
-    #scale_x_discrete("group") +
     scale_size_continuous("Number of\nisolates") +
     scale_color_sir(name="Resistance\ncategory") +
     theme(

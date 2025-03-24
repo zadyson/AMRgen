@@ -148,8 +148,20 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     rename(ppv=p)
 
   # plots
-  markers_to_plot <- solo_stats$marker[solo_stats$n>=min]
+  markers_to_plot <- unique(solo_stats$marker[solo_stats$n>=min])
 
+  solo_pheno_plot <- solo_binary %>%
+    filter(marker %in% markers_to_plot) %>%
+    ggplot(aes(y = marker, fill = pheno)) +
+    geom_bar(stat = "count", position = "fill") +
+    scale_fill_manual(values = plot_cols) +
+    geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
+    scale_y_discrete(limits=markers_to_plot) +
+    theme_light() +
+    theme(axis.text.x=element_text(size=axis_label_size),
+          axis.text.y=element_text(size=axis_label_size)) +
+    labs(y = "", x = "Proportion", fill = "Phenotype")
+  
   ppv_plot <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, group = category, col = category)) +
@@ -157,31 +169,19 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +
     geom_point(aes(x = ppv), position = pd) +
     theme_bw() +
-    scale_y_discrete(labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
+    scale_y_discrete(limits=markers_to_plot, labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
     labs(y = "", x = "Solo PPV", col = "Category") +
     scale_colour_manual(values = plot_cols) +
     theme(axis.text.x=element_text(size=axis_label_size),
           axis.text.y=element_text(size=axis_label_size)) +
     xlim(0, 1)
 
-  solo_pheno_plot <- solo_binary %>%
-    filter(marker %in% markers_to_plot) %>%
-    ggplot(aes(x = marker, fill = pheno)) +
-    geom_bar(stat = "count", position = "fill") +
-    scale_fill_manual(values = plot_cols) +
-    coord_flip() +
-    geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
-    theme_light() +
-    theme(axis.text.x=element_text(size=axis_label_size),
-          axis.text.y=element_text(size=axis_label_size)) +
-    labs(x = "", y = "Proportion", fill = "Phenotype")
-
   header <- paste("Solo markers for class:", paste0(drug_class_list, collapse = ", "))
 
-  combined_plot <- solo_pheno_plot +
-    ppv_plot +
-    patchwork::plot_layout(axes = "collect", guides = "collect") +
-    patchwork::plot_annotation(title = header, subtitle = paste("vs phenotype for drug:", antibiotic))
+  combined_plot <- solo_pheno_plot + ggtitle(header, subtitle=paste("vs phenotype for drug:", antibiotic)) +
+    ppv_plot + 
+    patchwork::plot_layout(axes = "collect", guides = "collect") 
+    #patchwork::plot_annotation(title = header, subtitle = paste("vs phenotype for drug:", antibiotic))
 
   print(combined_plot)
   
