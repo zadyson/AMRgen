@@ -101,7 +101,7 @@ cip_bin<- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", d
 amr_complexUpset(cip_bin)
 
 # do upset plot of MIC vs genotype marker combinations, for combinations observed at least 5 times (using AMRgen function, not requiring complexUpset)
-cip_upset <- amr_upset(cip_bin, min_set_size=5, order="mic")
+cip_upset <- amr_upset(cip_bin, min_set_size=5, assay="mic", order="value")
 
 # check the summary information for each marker combination (number of genomes, MIC median and interquartile range, number and fraction resistant)
 cip_upset$summary
@@ -179,7 +179,7 @@ allstatsNWT$combined %>% filter(pval<0.05) %>% arrange(-ppv)
 amr_complexUpset(soloPPV_cipro$amr_binary, min_set_size=5, intersect_counts=F)
 
 # using the other upset function
-amr_upset(soloPPV_cipro$amr_binary, min_set_size=2, order="mic")
+amr_upset(soloPPV_cipro$amr_binary, min_set_size=2, assay="mic", order="value")
 
 
 ```
