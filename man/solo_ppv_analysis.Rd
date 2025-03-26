@@ -15,8 +15,8 @@ solo_ppv_analysis(
   keep_assay_values = TRUE,
   min = 1,
   axis_label_size = 9,
-  plot_cols = c(R = "IndianRed", I = "orange", S = "lightgrey", NWT = "navy"),
-  pd = position_dodge(width = 0.8)
+  pd = position_dodge(width = 0.8),
+  plot_cols = c(R = "IndianRed", NWT = "navy")
 )
 }
 \arguments{
@@ -47,7 +47,14 @@ contains identifiers.}
 the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant),
 "I" (intermediate), or "S" (susceptible).}
 
+\item{keep_assay_values}{A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix.
+Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to \code{TRUE}.}
+
 \item{min}{Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).}
+
+\item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'
+
+param axis_label_size Font size for axis labels in the PPV plot (default 9).}
 
 \item{plot_cols}{A named vector of colors for the plot. The names should be the phenotype categories
 (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes.

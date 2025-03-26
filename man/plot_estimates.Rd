@@ -37,6 +37,8 @@ Expected columns are:
 \item{title}{(optional) The main title of the plot. If NULL, no title is added.}
 
 \item{axis_label_size}{(optional) The font size of the axis labels. Defaults to 9.}
+
+\item{marker_order}{(optional) Vector indicating the order of the markers to be plotted on the y-axis.}
 }
 \value{
 A ggplot object showing the logistic regression coefficients with confidence

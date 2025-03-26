@@ -37,19 +37,23 @@ Expected columns are:
 
 \item{title2}{Title for tbl2 data. If single_plot, this will be the legend label for tbl2 data; otherwise it will be the title for the tbl2 plot.}
 
-\item{title}{The main title of the combined plot, if single_plot is TRUE.}
+\item{title}{(optional) The main title of the combined plot, if single_plot is TRUE.}
 
-\item{sig}{For individual plots, the p-value threshold for data points to highlight as significant. Defaults to 0.05.}
+\item{sig}{(optional) For individual plots, the p-value threshold for data points to highlight as significant. Defaults to 0.05.}
 
-\item{colors}{For combined plot, a vector of two colors to represent the two input datasets.}
+\item{colors}{(optional) For combined plot, a vector of two colors to represent the two input datasets.}
 
-\item{x_title}{The title for the x-axis. Defaults to "Coefficient (95\% CI)".}
+\item{x_title}{(optional) The title for the x-axis. Defaults to "Coefficient (95\% CI)".}
 
-\item{y_title}{The title for the y-axis. Defaults to "Variant".}
+\item{y_title}{(optional) The title for the y-axis. Defaults to "Variant".}
 
-\item{axis_label_size}{The font size of the axis labels. Defaults to 9.}
+\item{axis_label_size}{(optional) The font size of the axis labels. Defaults to 9.}
 
 \item{single_plot}{A boolean indicating whether to make a single combined plot (TRUE), or plot each dataset side-by-side (FALSE).}
+
+\item{pd}{(optional) Position dodge, i.e. spacing for the 2 estimates to be positioned above/below the line. Default 'position_dodge(width = 0.8)'}
+
+\item{marker_order}{(optional) Vector indicating the order of the markers to be plotted on the y-axis.}
 }
 \value{
 A ggplot object displaying the comparison of the two sets of estimates.
