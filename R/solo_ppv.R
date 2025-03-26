@@ -40,6 +40,13 @@
 #'   
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
 #'
+#' @param pd Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'
+#'
+#' param axis_label_size Font size for axis labels in the PPV plot (default 9).
+#' 
+#' @param keep_assay_values A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix.
+#'   Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to `TRUE`.
+#' 
 #' @return A list containing the following elements:
 #'   \describe{
 #'     \item{solo_stats}{A dataframe summarizing the PPV for resistance (R vs S/I) and NWT (R/I vs S),
@@ -81,11 +88,8 @@
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
                               keep_assay_values = TRUE, min=1,
-                              axis_label_size=9,
-                              plot_cols = c(
-                                "R" = "IndianRed", "I" = "orange", "S" = "lightgrey",
-                                "NWT" = "navy"),
-                              pd=position_dodge(width = 0.8)) {
+                              axis_label_size=9, pd=position_dodge(width = 0.8),
+                              plot_cols = c("R" = "IndianRed","NWT" = "navy")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -108,11 +112,10 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     rowSums()
   
   solo_binary <- amr_binary %>%
-    mutate(solo = marker_counts == 1) %>%
-    filter(solo) %>%
+    filter(marker_counts == 1) %>%
     pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to="marker") %>%
     filter(value == 1) %>%
-    filter(!is.na(pheno))
+    filter(!is.na(pheno)) 
 
   if (nrow(solo_binary) == 0) {
     stop("No solo markers found")
@@ -154,7 +157,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
-    scale_fill_manual(values = plot_cols) +
+    #scale_fill_manual(values = plot_cols) +
+    scale_fill_sir() +
     geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
     scale_y_discrete(limits=markers_to_plot) +
     theme_light() +

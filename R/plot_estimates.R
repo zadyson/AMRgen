@@ -17,6 +17,7 @@
 #' @param y_title (optional) The title for the y-axis. Defaults to "Variant".
 #' @param title (optional) The main title of the plot. If NULL, no title is added.
 #' @param axis_label_size (optional) The font size of the axis labels. Defaults to 9.
+#' @param marker_order (optional) Vector indicating the order of the markers to be plotted on the y-axis.
 #'
 #' @return A ggplot object showing the logistic regression coefficients with confidence
 #'   intervals. Significant markers (p-value < \code{sig}) are colored differently.
@@ -92,12 +93,14 @@ plot_estimates <- function(tbl, sig = 0.05,
 #' @param single_plot A boolean indicating whether to make a single combined plot (TRUE), or plot each dataset side-by-side (FALSE).
 #' @param title1 Title for tbl1 data. If single_plot, this will be the legend label for tbl1 data; otherwise it will be the title for the tbl1 plot.
 #' @param title2 Title for tbl2 data. If single_plot, this will be the legend label for tbl2 data; otherwise it will be the title for the tbl2 plot.
-#' @param title The main title of the combined plot, if single_plot is TRUE.
-#' @param sig For individual plots, the p-value threshold for data points to highlight as significant. Defaults to 0.05.
-#' @param colors For combined plot, a vector of two colors to represent the two input datasets.
-#' @param x_title The title for the x-axis. Defaults to "Coefficient (95% CI)".
-#' @param y_title The title for the y-axis. Defaults to "Variant".
-#' @param axis_label_size The font size of the axis labels. Defaults to 9.
+#' @param title (optional) The main title of the combined plot, if single_plot is TRUE.
+#' @param sig (optional) For individual plots, the p-value threshold for data points to highlight as significant. Defaults to 0.05.
+#' @param colors (optional) For combined plot, a vector of two colors to represent the two input datasets.
+#' @param x_title (optional) The title for the x-axis. Defaults to "Coefficient (95% CI)".
+#' @param y_title (optional) The title for the y-axis. Defaults to "Variant".
+#' @param axis_label_size (optional) The font size of the axis labels. Defaults to 9.
+#' @param pd (optional) Position dodge, i.e. spacing for the 2 estimates to be positioned above/below the line. Default 'position_dodge(width = 0.8)'
+#' @param marker_order (optional) Vector indicating the order of the markers to be plotted on the y-axis.
 #' 
 #' @return A ggplot object displaying the comparison of the two sets of estimates.
 #' @export

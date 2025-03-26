@@ -48,6 +48,9 @@
 #'
 #' @param keep_assay_values_from A character vector specifying which assay values (e.g., `"mic"`, `"disk"`)
 #'   to retain if `keep_assay_values` is `TRUE`. Defaults to `c("mic", "disk")`.
+#'   
+#' @param most_resistant A logical indicating whether, when multiple phenotype entries are present for the same
+#'   sample and drug, whether to keep the most resistant (otherwise the least resistant is kept). Default TRUE.
 #'
 #' @return A data frame where each row represents a sample, and each column represents a genetic marker
 #'   related to the specified antibiotic's drug class. The binary values in the matrix indicate the presence
@@ -118,7 +121,7 @@
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff") 
+                              sir_col = "pheno", ecoff_col = "ecoff", most_resistant=TRUE) 
                       {
   
   # check we have a drug_agent column with class ab
@@ -149,6 +152,30 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   overlap <- compare_geno_pheno_id(geno_table, pheno_table, geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col, rename_id_cols = T)
   pheno_matched <- overlap$pheno_matched
   geno_matched <- overlap$geno_matched
+  
+  # take single representative row per sample
+  pheno_matched_rows_unfiltered <- nrow(pheno_matched)
+  if (most_resistant) { # take most resistant
+    pheno_matched <- pheno_matched %>%
+      arrange(desc(pheno), desc(mic)) %>%
+      group_by(id) %>%
+      slice_head(n = 1) %>%
+      ungroup()
+    if (nrow(pheno_matched) < pheno_matched_rows_unfiltered) {
+      print("Some samples had multiple phenotype rows, taking the most resistant only")
+    }
+  }
+  if (!most_resistant) { # take least resistant
+    pheno_matched_rows_unfiltered <- nrow(pheno_matched)
+    pheno_matched <- pheno_matched %>%
+      arrange(pheno, mic) %>%
+      group_by(id) %>%
+      slice_head(n = 1) %>%
+      ungroup()
+    if (nrow(pheno_matched) < pheno_matched_rows_unfiltered) {
+      print("Some samples had multiple phenotype rows, taking the least resistant only")
+    }
+  }
 
   # check we have retained some samples that have relevant phenotype, and genotype data
   if (nrow(pheno_matched) == 0 | nrow(geno_matched) == 0) {
@@ -189,19 +216,6 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
 
   pheno_binary <- pheno_binary %>% select(id, R, NWT)
-
-  pheno_binary_rows_unfiltered <- nrow(pheno_binary)
-
-  # take single representative row per sample
-  pheno_binary <- pheno_binary %>%
-    arrange(id, -R, -NWT) %>%
-    group_by(id) %>%
-    slice_head(n = 1) %>%
-    ungroup()
-
-  if (nrow(pheno_binary) < pheno_binary_rows_unfiltered) {
-    print("Some samples had multiple phenotype rows, taking the most resistant only")
-  }
 
   # check there are some non-NA values for phenotype call
   if (sum(!is.na(pheno_binary[, 2])) == 0) {

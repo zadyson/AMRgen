@@ -15,7 +15,8 @@ get_binary_matrix(
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
   sir_col = "pheno",
-  ecoff_col = "ecoff"
+  ecoff_col = "ecoff",
+  most_resistant = TRUE
 )
 }
 \arguments{
@@ -59,6 +60,9 @@ the resistance interpretation (SIR) data. The values should be interpretable as 
 \item{ecoff_col}{A character string specifying the column name in \code{pheno_table} that contains
 the ECOFF interpretation of phenotype. The values should be interpretable as "WT" (wildtype)
 or "NWT" (nonwildtype).}
+
+\item{most_resistant}{A logical indicating whether, when multiple phenotype entries are present for the same
+sample and drug, whether to keep the most resistant (otherwise the least resistant is kept). Default TRUE.}
 }
 \value{
 A data frame where each row represents a sample, and each column represents a genetic marker
