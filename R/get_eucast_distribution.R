@@ -41,10 +41,6 @@
 #' mics <- rep(mic_data$mic, mic_data$count)
 #' ggplot2::autoplot(mics, ab = "cipro", mo = "K. pneumoniae", title = "Look at my MICs!")
 #'
-#' disk_data <- get_eucast_disk_distribution("cipro", "K. pneumoniae")
-#' disks <- rep(disk_data$disk_diffusion, disk_data$count)
-#' ggplot2::autoplot(disks, ab = "cipro", mo = "K. pneumoniae", title = "Look at my diffusion zones!")
-#'
 #'
 #' # Comparing With User Values ----------------------------------------------
 #'

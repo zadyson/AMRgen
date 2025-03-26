@@ -1,8 +1,42 @@
-# input = pheno data frame, name of the ID column (otherwise take first column, or try to find 'sample' or 'biosample'; same for geno data frame
-# compare the sample IDs, make a list of unique entries that appear in both
-# report the number of overlaps and uniques
-# return copies of geno and pheno data frames that each contain the overlapping samples only
-
+#' Compare Genotype and Phenotype Data by Sample ID
+#'
+#' This function compares genotype (`geno_data`) and phenotype (`pheno_data`) datasets based on their sample IDs. 
+#' It identifies sample IDs that are unique to either dataset, as well as those that overlap. Optionally, 
+#' it renames the sample ID columns in both datasets for consistency.
+#'
+#' @param geno_data A data frame containing the genotype data. The first column (or the column specified by
+#'        `geno_sample_col`) should represent sample IDs.
+#' @param pheno_data A data frame containing the phenotype data. The first column (or the column specified by
+#'        `pheno_sample_col`) should represent sample IDs.
+#' @param geno_sample_col A string specifying the name of the column in `geno_data` that contains the sample IDs.
+#'        Defaults to the first column of `geno_data`.
+#' @param pheno_sample_col A string specifying the name of the column in `pheno_data` that contains the sample IDs.
+#'        Defaults to the first column of `pheno_data`.
+#' @param rename_id_cols A logical value indicating whether to rename the sample ID columns in both `geno_data` and
+#'        `pheno_data` to "id". Defaults to `FALSE`.
+#'
+#' @return A list with the following elements:
+#' \item{pheno_unique}{A vector of sample IDs that are unique to the phenotype dataset.}
+#' \item{geno_unique}{A vector of sample IDs that are unique to the genotype dataset.}
+#' \item{overlap_ids}{A vector of sample IDs that are common to both datasets.}
+#' \item{geno_matched}{A data frame of the genotype data filtered to only include the samples with matching IDs.}
+#' \item{pheno_matched}{A data frame of the phenotype data filtered to only include the samples with matching IDs.}
+#'
+#' @examples
+#' # Example usage
+#' geno_table <- import_amrfp(ecoli_geno_raw, "Name")
+#' 
+#' # example phenotype data
+#' head(ecoli_ast)
+#'
+#' result <- compare_geno_pheno_id(geno_table, ecoli_ast, geno_sample_col = "Name", pheno_sample_col = "id")
+#' print(result$pheno_unique)
+#' print(result$geno_unique)
+#' print(result$overlap_ids)
+#' print(result$geno_matched)
+#' print(result$pheno_matched)
+#'
+#' @export
 compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL, pheno_sample_col = NULL, rename_id_cols = F) {
   if (is.null(geno_sample_col)) {
     geno_sample_col <- colnames(geno_data)[1]
