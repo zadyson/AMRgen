@@ -296,7 +296,6 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   
   # summary table
   summary <- binary_matrix_wide %>% 
-    filter(combination_id %in% comb_enough_strains) %>% 
     group_by(combination_id) %>%
     summarise(median = median(as.double(get(assay))), 
               q25=stats::quantile(as.double(get(assay)),0.25),
@@ -308,8 +307,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   # get names for summary
   combination_names <- binary_matrix_wide %>% 
     select(combination_id, any_of(genes)) %>% 
-    distinct() %>% 
-    filter(combination_id %in% comb_enough_strains)
+    distinct()
   
   combination_names <- combination_names %>% 
     mutate(marker_list = apply(., 1, function(row) {
