@@ -144,7 +144,7 @@ compare_estimates <- function(tbl1,
   else {
     tbl1 <- tbl1 %>% mutate(group=title1)
     
-    plot <- tbl2 %>% mutate(group=title2) %>% full_join(tbl1) %>%
+    plot <- tbl2 %>% mutate(group=title2) %>% bind_rows(tbl1) %>%
       mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>%
       filter(marker != "(Intercept)") %>%
       ggplot(aes(y = marker)) +
@@ -249,7 +249,7 @@ glm_details <- function(model) {
     as_tibble(rownames="marker") %>% 
     rename(est=Estimate, pval=`Pr(>|z|)`) %>% 
     select(marker, est, pval) %>% 
-    left_join(ci)
+    left_join(ci, by="marker")
   
   structure(model_summary, class = c("model_summary", class(model_summary)))
 }

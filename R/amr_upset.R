@@ -317,7 +317,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     select(combination_id, marker_list, marker_count)
   
   summary <- summary %>% 
-    left_join(combination_names) %>%
+    left_join(combination_names, by="combination_id") %>%
     select(-combination_id) %>%
     mutate(marker_list=if_else(is.na(marker_list), "-", marker_list)) %>%
     mutate(marker_count=if_else(is.na(marker_count), 0, marker_count)) %>% 

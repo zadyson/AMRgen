@@ -235,7 +235,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     count() %>%
     mutate(n=if_else(n>1,1,n)) %>% # only count 1 per strain
     ungroup() %>%
-    right_join(pheno_binary) %>%
+    right_join(pheno_binary, by="id") %>%
     pivot_wider(names_from = marker, values_from = n, values_fill = 0)
 
   # if there were samples with phenotypes, but no hits for any markers, there will be a 'NA' column created, need to remove this
@@ -248,7 +248,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     if (sum(keep_assay_values_from %in% colnames(pheno_matched)) > 0) {
       geno_binary <- pheno_matched %>%
         select(id, any_of(keep_assay_values_from)) %>%
-        full_join(geno_binary)
+        full_join(geno_binary, by="id")
     } else {
       print(paste("No specified assay columns found:", keep_assay_values_from))
     }
@@ -266,7 +266,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
       select(id, any_of(sir_col)) %>%
       mutate(pheno = as.sir(get(sir_col))) %>%
       select(id, pheno) %>%
-      full_join(geno_binary)
+      full_join(geno_binary, by="id")
   }
 
   return(geno_binary)
