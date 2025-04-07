@@ -31,7 +31,6 @@
 #' @param assay A character string indicating whether to plot MIC or disk diffusion data.
 #'        - "mic": Plot MIC data, stored in column 'mic' of class 'mic'.
 #'        - "disk": Plot disk diffusion data, stored in column 'disk' of class 'disk'.
-
 #'
 #' @return A list containing the following elements:
 #'   \describe{
@@ -190,6 +189,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   # Do by # median assay value in combination (only want each id once)
   if(order == "value"){
     if (assay=="mic") {
+      # use mic class median (ie ignoring range indicators <>=) for the purpose of ordering columns
       mic_medians <- binary_matrix_wide %>% group_by(combination_id) %>% summarise(median = median(mic))
       ordered_comb_order <- mic_medians %>% arrange(median) %>% pull(combination_id)
     }
@@ -294,12 +294,12 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   
   print(final_plot)
   
-  # summary table
+  # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
   summary <- binary_matrix_wide %>% 
     group_by(combination_id) %>%
-    summarise(median = median(as.double(get(assay))), 
-              q25=stats::quantile(as.double(get(assay)),0.25),
-              q75=stats::quantile(as.double(get(assay)),0.75),
+    summarise(median = median(as.double(stripRangeValues(get(assay)))), 
+              q25=stats::quantile(as.double(stripRangeValues(get(assay))),0.25),
+              q75=stats::quantile(as.double(stripRangeValues(get(assay))),0.75),
               ppv=mean(R, na.rm=T),
               R=sum(R, na.rm=T),
               n=n())
@@ -325,4 +325,31 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     relocate(marker_count, .before=median)
   
   return(list(plot=final_plot, summary=summary))
+}
+
+#' Strip Range Values from MIC Object
+#'
+#' This function removes any range values (i.e., values containing `<`, `>`, or `=`) from an 
+#' object of class `mic` (from the `AMR` package). It only modifies the object if it is of class `mic`.
+#'
+#' @param x A vector, such as MIC or disk diffusion values.
+#' 
+#' @return If the input was a `mic` object (from the AMR package), any values expressed as ranges
+#'          will be removed before returning (ie if all are ranges, the returned object will be empty).
+#'          If not a `mic` object, the input vector will be returned unmodified.
+#' 
+#' @examples
+#' # Example usage
+#' x <- AMR::as.mic(c("0.5", "0.25", "1", "0.5", "<0.5", ">=0.25", ">0.25"))
+#' stripRangeValues(x)
+#' 
+#' x <- AMR::as.disk(c(32,35,31,16,12))
+#' stripRangeValues(x)
+#'
+#' @importFrom AMR is.mic
+#' 
+#' @export
+stripRangeValues <- function(x) {
+  if(AMR::is.mic(x)) { x <- x[!grepl("[<>=]", x)] }
+  return(x)
 }
