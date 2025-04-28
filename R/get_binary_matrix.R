@@ -157,7 +157,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   pheno_matched_rows_unfiltered <- nrow(pheno_matched)
   if (most_resistant) { # take most resistant
     pheno_matched <- pheno_matched %>%
-      arrange(desc(pheno), desc(mic)) %>%
+      arrange(desc(get(sir_col)), desc(mic)) %>%
       group_by(id) %>%
       slice_head(n = 1) %>%
       ungroup()
@@ -168,7 +168,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   if (!most_resistant) { # take least resistant
     pheno_matched_rows_unfiltered <- nrow(pheno_matched)
     pheno_matched <- pheno_matched %>%
-      arrange(pheno, mic) %>%
+      arrange(get(sir_col), mic) %>%
       group_by(id) %>%
       slice_head(n = 1) %>%
       ungroup()
