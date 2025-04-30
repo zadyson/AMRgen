@@ -165,9 +165,6 @@ models$modelNWT
 # Note the matrix output is the same as cip_bin, but without the MIC data as this is not required
 #    for logistic regression.
 models$bin_mat
-
-# Plot
-models$plot
 ```
 
 ## 5. Assess solo positive predictive value of genetic markers
@@ -189,8 +186,8 @@ The function returns 4 objects:
 * `combined_plot`: a plot showing the distribution of S/I/R calls and the solo PPV for R and NWT, for each solo marker
 
 ``` {r solo_ppv_analysis, fig.height=8}
+# Run a solo PPV analysis
 soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
-
 
 # Output table
 soloPPV_cipro$solo_stats
@@ -199,8 +196,25 @@ soloPPV_cipro$solo_stats
 soloPPV_cipro$solo_binary
 
 soloPPV_cipro$amr_binary
-
-# Plot
-soloPPV_cipro$combined_plot
 ```
 
+## 6. Compare markers with assay data
+
+So far we have considered only the impact of individual markers, and their association with categorical S/I/R or WT/NWT calls.
+
+The function `amr_upset()` takes as binary matrix table `cip_bin` summarising ciprofloxacin resistance vs quinolone markers, generated using `get_binary_matrix()`, and explores the distribution of MIC or disk diffusion assay values for all observed combinations of markers (solo or multiple markers). It visualises the data in the form of an upset plot, showing the distribution of assay values and S/I/R calls for each observed marker combination, and returns a summary of these distributions (including sample size, median and interquartile range, number and proportion classified as R).
+
+The function returns 2 objects:
+
+* `summary`: data frame containing summarising the data associated with each combination of markers
+
+* `plot`: an upset plot showing the distribution of assay values, and breakdown of S/I/R calls, for each observed marker combination
+
+``` {r amr_upset, fig.height=8}
+# Compare ciprofloxacin MIC data with quinolone marker combinations,
+#    using the binary matrix we constructed earlier via get_binary_matrix()
+cipro_mic_upset <- amr_upset(cip_bin, min_set_size=2, assay="mic", order="value")
+
+# Output table
+cipro_mic_upset$summary
+```
