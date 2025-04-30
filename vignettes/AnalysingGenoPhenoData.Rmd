@@ -1,5 +1,5 @@
 ---
-title: "Analysing Geno-Pheno Data with AMRgen"
+title: "AnalysingGenoPhenoData"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{AnalysingGenoPhenoData}
@@ -18,7 +18,6 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(AMRgen)
-library(tidyverse)
 ```
 
 # Introduction
@@ -138,7 +137,8 @@ The function returns 4 objects:
 
 ``` {r manual_logistic, fig.height=8}
 # Manually run Firth's logistic regression model using the binary matrix produced above
-modelR <- logistf::logistf(R ~ ., data=cip_bin %>% select(-c(id,pheno,mic,NWT)))
+dataR <- cip_bin[, setdiff(names(cip_bin), c("id", "pheno", "mic", "NWT"))]
+modelR <- logistf::logistf(R ~ ., data=data)
 
 summary(modelR)
 
