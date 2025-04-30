@@ -17,6 +17,9 @@ navbar:
     - text: 'Reference'
       icon: "fa-book-open"
       href: "reference/index.html"
+    - text: "Vignettes"
+      icon: "fa-book"
+      href: "articles/AnalysingGenoPhenoData.html"
   right:
     - text: "Source Code"
       icon: "fab fa-github"
