@@ -40,5 +40,4 @@ rsconnect/
 *.Rproj
 lintr.R
 inst/doc
-/doc/
 /Meta/
