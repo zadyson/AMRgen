@@ -249,5 +249,5 @@ ggplot2::autoplot(comparison)
 ecoli_cip <- ecoli_ast$mic[ecoli_ast$drug_agent=="CIP"]
 comparison <- compare_mic_with_eucast(ecoli_cip, ab = "cipro", mo = "E. coli")
 comparison
-ggplot2::autoplot(comparison) + ggtitle("E. coli - Ciprofloxacin")
+ggplot2::autoplot(comparison)
 ```
