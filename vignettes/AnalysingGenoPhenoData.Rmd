@@ -218,3 +218,35 @@ cipro_mic_upset <- amr_upset(cip_bin, min_set_size=2, assay="mic", order="value"
 # Output table
 cipro_mic_upset$summary
 ```
+
+## 7. Download reference MIC distributions and compare to your data
+
+``` {r get_eucast_distribution}
+# get MIC distribution for ciprofloxacin, for all organisms
+get_eucast_mic_distribution("cipro")
+
+# specify microorganism to only get results for that pathogen
+ecoli_cip_mic_data <- get_eucast_mic_distribution("cipro", "E. coli")
+
+# get disk diffusion data instead
+ecoli_cip_disk_data <- get_eucast_disk_distribution("cipro", "E. coli")
+
+# plot the MIC data 
+mics <- rep(ecoli_cip_mic_data$mic, ecoli_cip_mic_data$count)
+ggplot2::autoplot(mics, ab = "cipro", mo = "E. coli", title = "E. coli cipro reference distribution")
+
+```
+
+``` {r compare_mic_with_eucast}
+# Compare reference distribution to random test data
+my_mic_values <- AMR::random_mic(500)
+comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "E. coli")
+comparison
+ggplot2::autoplot(comparison)
+
+
+# Compare reference distribution to example E. coli data
+comparison <- compare_mic_with_eucast(ecoli_ast %>% filter(drug_agent=="CIP") %>% pull(mic), ab = "cipro", mo = "E. coli")
+comparison
+ggplot2::autoplot(comparison) + ggtitle("E. coli - Ciprofloxacin")
+```

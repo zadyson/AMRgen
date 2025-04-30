@@ -6,9 +6,9 @@
 #' @importFrom AMR ab_name
 #' @importFrom dplyr %>%
 #' @importFrom tidyr pivot_longer
-#' @export
 #' @examples
 #' eucast_supported_ab_distributions()
+#' @export
 eucast_supported_ab_distributions <- function(...) {
   font_url <- get("font_url", envir = asNamespace("AMR"))
 
