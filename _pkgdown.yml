@@ -21,6 +21,11 @@ navbar:
     - text: "Source Code"
       icon: "fab fa-github"
       href: "https://github.com/interpretAMR/AMRgen"
+      
+articles:
+  - title: "Vignettes"
+    contents:
+      - AnalysingGenoPhenoData
 
 # Reference section grouping
 # reference:
