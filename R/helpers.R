@@ -98,3 +98,7 @@ process_input <- function(input) {
   # Return the dataframe
   return(data)
 }
+
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
