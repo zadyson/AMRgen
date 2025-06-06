@@ -11,12 +11,24 @@ glm_details(model)
 }
 \value{
 A tibble containing the estimates, confidence intervals, and p-values for each predictor in the model.
-
-Example
-model <- glm(R ~ ., data=dat, family = binomial(link = "logit"))
-model_details <- glm_details(model)
-autoplot(model_details)
 }
 \description{
 This function extracts and formats the estimates, confidence intervals, and p-values from a fitted glm model.
+}
+\examples{
+# Generate example data
+set.seed(1)
+dat <- data.frame(
+  R = rbinom(100, 1, 0.3),
+  geneA = rbinom(100, 1, 0.2),
+  geneB = rbinom(100, 1, 0.5),
+  geneC = rbinom(100, 1, 0.3)
+)
+
+# Fit logistic regression model and extract details
+model <- glm(R ~ ., data = dat, family = binomial(link = "logit"))
+model_details <- glm_details(model)
+
+# Plot model summary
+autoplot(model_details)
 }

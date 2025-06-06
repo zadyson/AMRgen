@@ -3,29 +3,28 @@
 \docType{data}
 \name{ecoli_ast}
 \alias{ecoli_ast}
-\title{E. coli NCBI AST example data, re-interpreted with AMR package}
+\title{E. coli NCBI AST Example Data, Re-interpreted with AMR Package}
 \format{
-\subsection{\code{ecoli_ast}}{
+\subsection{\code{ecoli_ast} A data frame with 15320 rows and 24 columns representing reinterpreted data from the NCBI AST browser.}{
 
-A data frame with 15320 rows and 24 columns representing reinterpreted data from NCBI AST Browser:
-\describe{
-\item{\code{id}}{sample identifier, imported from BioSample column in raw input}
-\item{spp_pheno}{species identifier, interpreted from \verb{Scientific name} using as.mo, used to interpret ecoff and pheno columns}
-\item{drug_agent}{antibiotic code, interpreted from \code{Antibiotic} using as.ab, used to interpret ecoff and pheno columns}
-\item{ecoff}{WT/NWT classification, interpreted using as.sir}
-\item{pheno}{S/I/R classification, interpreted using as.sir}
-\item{mic}{minimum inhibitory concentration, formated using as.mic, used to interpret ecoff and pheno columns}
-\item{disk}{disk diffusion zone, formated using as.disk, used to interpret ecoff and pheno columns}
-\item{guideline}{interpretation guidelines used to interpret ecoff and pheno columns}
-\item{\verb{Scientific name}}{species identifier, from input file}
-\item{Antibiotic}{antibiotic name, from input file}
-\item{\verb{Testing standard}}{interpretation standard (EUCAST or CLSI), from input file}
-\item{\verb{Measurement sign}}{measurement sign (>, <, =, etc) relating to MIC measurement, from input file}
-\item{\code{MIC (mg/L)}}{minimum inhibitory concentration, from input file}
-\item{\verb{Disk diffusion (mm)}}{disk diffusion zone, from input file}
-\item{\verb{Resistance phenotype}}{resistance call (SIR), from input file}
-
-...
+Columns include:
+\itemize{
+\item \code{id}: Sample identifier, imported from the \verb{#BioSample} column in the raw input.
+\item \code{spp_pheno}: Species identifier, interpreted from \verb{Scientific name} using \code{as.mo}, used to interpret \code{ecoff} and \code{pheno} columns.
+\item \code{drug_agent}: Antibiotic code, interpreted from \code{Antibiotic} using \code{as.ab}, used to interpret \code{ecoff} and \code{pheno} columns.
+\item \code{ecoff}: WT/NWT classification, interpreted using \code{as.sir}.
+\item \code{pheno}: S/I/R classification, interpreted using \code{as.sir}.
+\item \code{mic}: Minimum inhibitory concentration, formatted using \code{as.mic}, used to interpret \code{ecoff} and \code{pheno} columns.
+\item \code{disk}: Disk diffusion zone, formatted using \code{as.disk}, used to interpret \code{ecoff} and \code{pheno} columns.
+\item \code{guideline}: Interpretation guidelines used to interpret \code{ecoff} and \code{pheno} columns.
+\item \verb{Scientific name}: Species identifier, from input file.
+\item \code{Antibiotic}: Antibiotic name, from input file.
+\item \verb{Testing standard}: Interpretation standard (EUCAST or CLSI), from input file.
+\item \verb{Measurement sign}: Measurement sign (>, <, =, etc.) relating to MIC measurement, from input file.
+\item \code{MIC (mg/L)}: Minimum inhibitory concentration, from input file.
+\item \verb{Disk diffusion (mm)}: Disk diffusion zone, from input file.
+\item \verb{Resistance phenotype}: Resistance call (SIR), from input file.
+\item ...: Additional metadata columns from the NCBI AST export.
 }
 }
 }
@@ -36,6 +35,6 @@ A data frame with 15320 rows and 24 columns representing reinterpreted data from
 ecoli_ast
 }
 \description{
-A subset of E. coli phenotype data from the NCBI AST browser
+A subset of E. coli phenotype data from the NCBI AST browser.
 }
 \keyword{datasets}

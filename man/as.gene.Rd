@@ -10,7 +10,7 @@ as.gene(x)
 \item{x}{A character vector to be converted to a "gene" class.}
 }
 \value{
-For \code{as.gene}, an object of class "gene". For \code{\link[=import_amrfp]{import_amrfp()}}, a data frame with parsed AMR data.
+For \code{as.gene}, an object of class \code{"gene"}.
 }
 \description{
 Functions to create a custom "gene" class and parse AMR data.

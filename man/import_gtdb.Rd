@@ -7,14 +7,14 @@
 import_gtdb(file = NULL, tbl = NULL, species_column = "Species")
 }
 \arguments{
-\item{file}{File path to GTDB output file (tab-separated). If not given, tbl must be given.}
+\item{file}{File path to GTDB output file (tab-separated). If not given, \code{tbl} must be provided.}
 
-\item{tbl}{Data frame containing GTDB output. If not given, file must be given.}
+\item{tbl}{Data frame containing GTDB output. If not given, \code{file} must be provided.}
 
 \item{species_column}{Name of column containing the species call (default "Species").}
 }
 \value{
-tbl Data frame containing GTDB output with AMR-parsed microorganism code (gtdb.mo) and species name (gtdb.species) appended.
+A data frame containing GTDB output with AMR-parsed microorganism code (\code{gtdb.mo}) and species name (\code{gtdb.species}) appended.
 }
 \description{
 Import GTDB output (from file or data frame) and parse the species name into a microorganism recognised by AMR package. AMR mo code and species name will be added to the data frame.

@@ -3,22 +3,21 @@
 \docType{data}
 \name{ecoli_ast_raw}
 \alias{ecoli_ast_raw}
-\title{E. coli NCBI AST example data}
+\title{E. coli NCBI AST Example Data}
 \format{
-\subsection{\code{ecoli_ast_raw}}{
+\subsection{\code{ecoli_ast_raw} A data frame with 10 rows and 17 columns representing unprocessed data from the NCBI AST browser.}{
 
-A data frame with 10 rows and 17 columns representing unprocessed data from NCBI AST Browser:
-\describe{
-\item{\verb{#BioSample}}{sample identifier}
-\item{\verb{Scientific name}}{species identifier}
-\item{Antibiotic}{antibiotic name}
-\item{\verb{Testing standard}}{interpretation standard (EUCAST or CLSI)}
-\item{\verb{Measurement sign}}{measurement sign (>, <, =, etc) relating to MIC measurement}
-\item{\code{MIC (mg/L)}}{minimum inhibitory concentration}
-\item{\verb{Disk diffusion (mm)}}{disk diffusion zone}
-\item{\verb{Resistance phenotype}}{resistance call (SIR) as submitted}
-
-...
+Columns include:
+\itemize{
+\item \verb{#BioSample}: Sample identifier.
+\item \verb{Scientific name}: Species identifier.
+\item \code{Antibiotic}: Antibiotic name.
+\item \verb{Testing standard}: Interpretation standard (EUCAST or CLSI).
+\item \verb{Measurement sign}: Measurement sign (>, <, =, etc.) relating to MIC measurement.
+\item \code{MIC (mg/L)}: Minimum inhibitory concentration.
+\item \verb{Disk diffusion (mm)}: Disk diffusion zone.
+\item \verb{Resistance phenotype}: Resistance call (SIR) as submitted.
+\item ...: Additional metadata columns from the NCBI AST export.
 }
 }
 }
@@ -29,6 +28,6 @@ A data frame with 10 rows and 17 columns representing unprocessed data from NCBI
 ecoli_ast_raw
 }
 \description{
-A subset of E. coli phenotype data from the NCBI AST browser
+A subset of E. coli phenotype data from the NCBI AST browser.
 }
 \keyword{datasets}

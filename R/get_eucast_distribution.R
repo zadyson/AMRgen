@@ -138,7 +138,7 @@ get_eucast_disk_distribution <- function(ab, mo = NULL, as_freq_table = TRUE) {
 
 #' @rdname get_eucast_amr_distribution
 #' @importFrom AMR as.mic is.mic
-#' @importFrom dplyr as_tibble filter full_join select %>%
+#' @importFrom dplyr as_tibble filter full_join select
 #' @export
 compare_mic_with_eucast <- function(mics, ab, mo = NULL) {
   if (!is.mic(mics)) {
@@ -152,11 +152,11 @@ compare_mic_with_eucast <- function(mics, ab, mo = NULL) {
   user_mic <- mics %>%
     table() %>%
     as.data.frame() %>%
-    select(value = mics, user = Freq)
+    stats::setNames(c("value", "user"))
   eucast_mic <- vals %>%
     table() %>%
     as.data.frame() %>%
-    select(value = vals, eucast = Freq)
+    stats::setNames(c("value", "eucast"))
   total <- user_mic %>%
     full_join(eucast_mic) %>%
     filter(user + eucast > 0) %>%
@@ -180,11 +180,11 @@ compare_disk_with_eucast <- function(disks, ab, mo = NULL) {
   user_disk <- disks %>%
     table() %>%
     as.data.frame() %>%
-    select(value = disks, user = Freq)
+    stats::setNames(c("value", "user"))
   eucast_disk <- vals %>%
     table() %>%
     as.data.frame() %>%
-    select(value = vals, eucast = Freq)
+    stats::setNames(c("value", "eucast"))
   total <- user_disk %>%
     full_join(eucast_disk) %>%
     filter(user + eucast > 0) %>%
@@ -197,26 +197,26 @@ compare_disk_with_eucast <- function(disks, ab, mo = NULL) {
 print.compare_eucast <- function(x, ...) {
   class(x) <- class(x)[!class(x) == "compare_eucast"]
   print(x, ...)
-  message("Use ggplot2::autoplot() on this output to visualise")
+  message("Use ggplot2::autoplot() on this output to visualise.")
 }
 
 #' @noRd
 #' @importFrom dplyr mutate select
 #' @importFrom ggplot2 autoplot aes geom_col ggplot labs
 #' @importFrom tidyr pivot_longer
-# @importFrom AMR scale_x_mic
+#' @importFrom AMR as.mic
 #' @method autoplot compare_eucast
 #' @export
 autoplot.compare_eucast <- function(object, ...) {
   long <- object %>%
     mutate(
       User = user / sum(user),
-      EUCAST = eucast / sum(eucast)
-    ) %>%
+      EUCAST = eucast / sum(eucast),
+      value = as.mic(value, keep_operators = "none")) %>%
     select(-user, -eucast) %>%
     pivot_longer(-value, names_to = "Source", values_to = "count")
+
   ggplot(long, aes(x = value, y = count, fill = Source)) +
     geom_col(position = "dodge") +
-    labs(x = "Measurement Value", y = "Density") # +
-  # scale_x_mic(keep_operators = "none")
+    labs(x = "Measurement Value", y = "Density")
 }

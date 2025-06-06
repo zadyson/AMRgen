@@ -13,7 +13,7 @@ amr_complexUpset(
   colour_by = "pheno",
   plot_breakpoints = FALSE,
   organism = NULL,
-  break_guide = "EUCAST 2024",
+  break_guide = "EUCAST 2025",
   break_type = "ECOFF",
   drug = NULL,
   sort_intersections_by = "degree",
@@ -41,21 +41,21 @@ amr_complexUpset(
 
 \item{organism}{A character string specifying the organism, used when plotting breakpoints.}
 
-\item{break_guide}{A character string specifying the breakpoint guideline (e.g., \code{"EUCAST 2024"}). Default is \code{"EUCAST 2024"}.}
+\item{break_guide}{A character string specifying the breakpoint guideline (e.g., \code{"EUCAST 2025"}). Default is \code{"EUCAST 2025"}.}
 
 \item{break_type}{A character string specifying the breakpoint type (e.g., \code{"ECOFF"}). Default is \code{"ECOFF"}.}
 
 \item{drug}{A character string specifying the antimicrobial agent to be analysed.}
 
-\item{sort_intersections_by}{TODO fill in text}
+\item{sort_intersections_by}{A character string passed to \code{ComplexUpset::upset()} to control sorting of intersections (e.g., \code{"degree"} or \code{"cardinality"}).}
 
-\item{sort_intersections}{TODO fill in text}
+\item{sort_intersections}{A character string specifying the order of intersections (\code{"ascending"} or \code{"descending"}).}
 
-\item{show_intersect_size}{TODO fill in text}
+\item{show_intersect_size}{Logical. If \code{TRUE}, shows bar plot of intersection sizes. Default is \code{TRUE}.}
 
-\item{intersect_counts}{TODO fill in text}
+\item{intersect_counts}{Logical. If \code{TRUE}, counts are displayed in the intersection size bars. Default is \code{TRUE}.}
 
-\item{heights}{TODO fill in text}
+\item{heights}{Numeric vector specifying relative heights of the upset matrix vs annotation plots. If \code{NULL}, defaults based on \code{show_intersect_size}.}
 
 \item{colour_values}{A named vector specifying colours for different resistance categories (\code{S}, \code{I}, \code{R}). Default is \code{c(S="#66c2a5", I="#fdae61", R="#d53e4f")}.}
 }
@@ -66,8 +66,6 @@ A \code{ggplot} object displaying the Upset plot.
 This function generates an Upset plot using a binary matrix of genetic determinants and antimicrobial resistance (AMR) data. Optionally, MIC or disk diffusion breakpoints can be overlaid on the plot.
 }
 \examples{
-# Example usage:
-
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 binary_matrix <- get_binary_matrix(
@@ -81,5 +79,4 @@ binary_matrix <- get_binary_matrix(
 )
 
 amr_complexUpset(binary_matrix)
-
 }

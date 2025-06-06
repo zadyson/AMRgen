@@ -7,11 +7,14 @@
 export_ncbi_biosample(data, file, overwrite = FALSE)
 }
 \arguments{
-\item{data}{data set containing SIR results}
+\item{data}{Data set containing SIR results.}
 
-\item{file}{file path}
+\item{file}{File path to which the data will be exported.}
 
-\item{overwrite}{\link{logical} to overwrite existing file}
+\item{overwrite}{Logical indicating whether to overwrite an existing file.}
+}
+\value{
+A tab-delimited UTF-8 text file is written to disk in the format required by NCBI BioSample Antibiograms.
 }
 \description{
 Output phenotype data to \href{https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/}{NCBI BioSample Antibiograms}.

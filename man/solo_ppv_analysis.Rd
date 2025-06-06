@@ -20,75 +20,49 @@ solo_ppv_analysis(
 )
 }
 \arguments{
-\item{geno_table}{A data frame containing genotype data, including at least one column labeled
-\code{drug_class} for drug class information and one column for sample identifiers (specified via
-\code{geno_sample_col} otherwise it is assumed the first column contains identifiers).}
+\item{geno_table}{A data frame containing genotype data, including at least one column labeled \code{drug_class} for drug class information and one column for sample identifiers (specified via \code{geno_sample_col} otherwise it is assumed the first column contains identifiers).}
 
-\item{pheno_table}{A data frame containing phenotype data, which must include a column \code{drug_agent}
-(with the antibiotic information) and a column with the resistance interpretation (S/I/R, colname
-specified via \code{sir_col}).}
+\item{pheno_table}{A data frame containing phenotype data, which must include a column \code{drug_agent} (with the antibiotic information) and a column with the resistance interpretation (S/I/R, colname specified via \code{sir_col}).}
 
-\item{antibiotic}{A character string specifying the antibiotic of interest to filter phenotype data.
-The value must match one of the entries in the \code{drug_agent} column of \code{pheno_table}.}
+\item{antibiotic}{A character string specifying the antibiotic of interest to filter phenotype data. The value must match one of the entries in the \code{drug_agent} column of \code{pheno_table}.}
 
-\item{drug_class_list}{A character vector of drug classes to filter genotype data for markers
-related to the specified antibiotic. Markers in \code{geno_table} will be filtered based on whether
-their \code{drug_class} matches any value in this list.}
+\item{drug_class_list}{A character vector of drug classes to filter genotype data for markers related to the specified antibiotic. Markers in \code{geno_table} will be filtered based on whether their \code{drug_class} matches any value in this list.}
 
-\item{geno_sample_col}{A character string (optional) specifying the column name in \code{geno_table}
-containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column
-contains identifiers.}
+\item{geno_sample_col}{A character string (optional) specifying the column name in \code{geno_table} containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column contains identifiers.}
 
-\item{pheno_sample_col}{A character string (optional) specifying the column name in \code{pheno_table}
-containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column
-contains identifiers.}
+\item{pheno_sample_col}{A character string (optional) specifying the column name in \code{pheno_table} containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column contains identifiers.}
 
-\item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains
-the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant),
-"I" (intermediate), or "S" (susceptible).}
+\item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
 
-\item{keep_assay_values}{A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix.
-Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to \code{TRUE}.}
+\item{keep_assay_values}{A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix. Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to \code{TRUE}.}
 
 \item{min}{Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).}
 
-\item{axis_label_size}{TODO fill in text}
+\item{axis_label_size}{Font size for axis labels in the PPV plot (default 9).}
 
-\item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'
+\item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.}
 
-param axis_label_size Font size for axis labels in the PPV plot (default 9).}
-
-\item{plot_cols}{A named vector of colors for the plot. The names should be the phenotype categories
-(e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes.
-Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").}
+\item{plot_cols}{A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").}
 }
 \value{
 A list containing the following elements:
-\describe{
-\item{solo_stats}{A dataframe summarizing the PPV for resistance (R vs S/I) and NWT (R/I vs S),
-including the number of positive hits, sample size, PPV, and 95\% confidence intervals for each marker.}
-\item{combined_plot}{A combined ggplot object showing the PPV plot for the solo markers, and a bar plot
-for the phenotype distribution.}
-\item{solo_binary}{A dataframe with binary values indicating the presence or absence of the solo markers.}
-\item{amr_binary}{A dataframe with binary values for the AMR markers, based on the input genotype and phenotype data.}
+\itemize{
+\item \code{solo_stats}: A dataframe summarizing the PPV for resistance (R vs S/I) and NWT (R/I vs S), including the number of positive hits, sample size, PPV, and 95\% confidence intervals for each marker.
+\item \code{combined_plot}: A combined ggplot object showing the PPV plot for the solo markers, and a bar plot for the phenotype distribution.
+\item \code{solo_binary}: A dataframe with binary values indicating the presence or absence of the solo markers.
+\item \code{amr_binary}: A dataframe with binary values for the AMR markers, based on the input genotype and phenotype data.
 }
 }
 \description{
-This function performs a Positive Predictive Value (PPV) analysis for AMR markers
-associated with a given antibiotic and drug class. The function calculates the PPV
-for solo markers (those with only one genetic marker relevant to the drug class)
-and visualizes the results using various plots. It returns a list containing summary
-statistics for each solo marker, and associated plots showing the breakdown of
-resistance phenotypes, and PPV (with 95\% confidence interval) for each marker.
+This function performs a Positive Predictive Value (PPV) analysis for AMR markers associated with a given antibiotic and drug class. It calculates the PPV for solo markers and visualizes the results using various plots.
+}
+\details{
+The function analyzes the predictive power of individual AMR markers that belong to a specified drug class and are uniquely associated with one class. The phenotype data are matched with genotype presence/absence and then stratified to compute PPV for resistance and non-wild-type interpretations. It also generates plots to aid in interpretation.
 }
 \examples{
 \dontrun{
-# import genotype data
 geno_table <- import_amrfp(ecoli_geno_raw, "Name")
-
-# example phenotype data
 head(ecoli_ast)
-
 soloPPV_cipro <- solo_ppv_analysis(
   geno_table = geno_table,
   pheno_table = ecoli_ast,
@@ -96,8 +70,6 @@ soloPPV_cipro <- solo_ppv_analysis(
   drug_class_list = c("Quinolones"),
   sir_col = "Resistance phenotype"
 )
-
-# View the results
 soloPPV_cipro$solo_stats
 soloPPV_cipro$combined_plot
 }

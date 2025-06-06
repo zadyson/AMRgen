@@ -48,11 +48,13 @@ amr_logistic(
 \item{axis_label_size}{(Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.}
 }
 \value{
-A list with three components:
-\item{bin_mat}{The binary matrix of genetic data and phenotypic resistance information.}
-\item{modelR}{The fitted logistic regression model for resistance (\code{R}).}
-\item{modelNWT}{The fitted logistic regression model for non-resistance (\code{NWT}).}
-\item{plot}{A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.}
+A list with the following components:
+\itemize{
+\item \code{bin_mat}: The binary matrix of genetic data and phenotypic resistance information.
+\item \code{modelR}: The fitted logistic regression model for resistance (\code{R}).
+\item \code{modelNWT}: The fitted logistic regression model for non-resistance (\code{NWT}).
+\item \code{plot}: A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.
+}
 }
 \description{
 Performs logistic regression to analyze the relationship between genetic markers and phenotype (R, and NWT) for a specified antibiotic.
@@ -66,8 +68,6 @@ result <- amr_logistic(
   drug_class_list = c("Quinolones"),
   maf = 10
 )
-
 # To access the plot:
 print(result$plot)
-
 }

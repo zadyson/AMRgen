@@ -2,7 +2,7 @@
 % Please edit documentation in R/amr_upset.R
 \name{amr_upset}
 \alias{amr_upset}
-\title{amr_upset: Generate a series of plots for AMR gene and combination analysis}
+\title{Generate a Series of Plots for AMR Gene and Combination Analysis}
 \usage{
 amr_upset(
   binary_matrix,
@@ -17,64 +17,37 @@ amr_upset(
 )
 }
 \arguments{
-\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function.
-Expected columns are and identifier (column 1, any name); 'pheno' (class sir, with S/I/R categories to colour points),
-'mic' (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, ie
-1=present, 0=absent).}
+\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function. Expected columns are an identifier (column 1, any name), \code{pheno} (class sir, with S/I/R categories to colour points), \code{mic} (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).}
 
-\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots.
-Default is 2. Only genes with at least this number of occurrences are included in the plots.}
+\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.}
 
-\item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
-- "": Default (decreasing frequency of combinations),
-- "genes": Order by the number of genes in each combination.
-- "value": Order by the median assay value (MIC or disk zone) for each combination.}
+\item{order}{A character string indicating the order of the combinations on the x-axis. Options are: - "" (default): decreasing frequency of combinations - "genes": order by the number of genes in each combination - "value": order by the median assay value (MIC or disk zone) for each combination.}
 
-\item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e.
-number of times each combination of markers is observed). Default is FALSE.}
+\item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is FALSE.}
 
-\item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination,
-the proportion of samples with each phenotype classification (specified by the 'pheno' column in the input file).
-Default is TRUE.}
+\item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the \code{pheno} column in the input file). Default is TRUE.}
 
-\item{print_category_counts}{Logical indicating whether, if plot_category is set to true, to print the number of strains
-in each resistance category, for each marker combination in the plot (default FALSE).}
+\item{print_category_counts}{Logical indicating whether, if \code{plot_category} is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is FALSE.}
 
-\item{print_set_size}{Logical indicating whether, if plot_set_size is set to true, to print the number of strains
-with marker combination on the plot (default FALSE).}
+\item{print_set_size}{Logical indicating whether, if \code{plot_set_size} is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.}
 
-\item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination,
-(default "grey").}
+\item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".}
 
-\item{assay}{A character string indicating whether to plot MIC or disk diffusion data.
-- "mic": Plot MIC data, stored in column 'mic' of class 'mic'.
-- "disk": Plot disk diffusion data, stored in column 'disk' of class 'disk'.}
+\item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of: - "mic": plot MIC data stored in column \code{mic} - "disk": plot disk diffusion data stored in column \code{disk}}
 }
 \value{
 A list containing the following elements:
-\describe{
-\item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
-\item{summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
+\itemize{
+\item \code{plot}: A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.
+\item \code{summary}: A data frame summarizing each marker combination observed, including median MIC (and interquartile range), number of resistant isolates, and positive predictive value for resistance.
 }
 }
 \description{
-This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence
-from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for
-the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence.
-It also outputs a table summarising the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
-}
-\details{
-This function processes the provided binary matrix (\code{binary_matrix}), which is expected to contain data on gene
-presence/absence, MIC values, and phenotype calls (S/I/R) (can be generated using \code{get_binary_matrix}).
-The function also includes an analysis of gene prevalence and an ordering option for visualizing combinations
-in different ways.
+This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence. It also outputs a table summarizing the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
 }
 \examples{
 \dontrun{
-# Example usage
-
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
-
 binary_matrix <- get_binary_matrix(
   geno_table = ecoli_geno,
   pheno_table = ecoli_ast,
@@ -84,8 +57,6 @@ binary_matrix <- get_binary_matrix(
   keep_assay_values = TRUE,
   keep_assay_values_from = "mic"
 )
-
 amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
 }
-
 }

@@ -9,24 +9,24 @@
 #' @param colour_by A character string specifying the column used for colour mapping in the plot. Default is `"pheno"`.
 #' @param plot_breakpoints Logical. If `TRUE`, overlays MIC or disk diffusion breakpoints on the plot. Default is `FALSE`.
 #' @param organism A character string specifying the organism, used when plotting breakpoints.
-#' @param break_guide A character string specifying the breakpoint guideline (e.g., `"EUCAST 2024"`). Default is `"EUCAST 2024"`.
+#' @param break_guide A character string specifying the breakpoint guideline (e.g., `"EUCAST 2025"`). Default is `"EUCAST 2025"`.
 #' @param break_type A character string specifying the breakpoint type (e.g., `"ECOFF"`). Default is `"ECOFF"`.
 #' @param drug A character string specifying the antimicrobial agent to be analysed.
 #' @param colour_values A named vector specifying colours for different resistance categories (`S`, `I`, `R`). Default is `c(S="#66c2a5", I="#fdae61", R="#d53e4f")`.
-#' @param sort_intersections_by TODO fill in text
-#' @param sort_intersections TODO fill in text
-#' @param show_intersect_size TODO fill in text
-#' @param intersect_counts TODO fill in text
-#' @param heights TODO fill in text
+#' @param sort_intersections_by A character string passed to `ComplexUpset::upset()` to control sorting of intersections (e.g., `"degree"` or `"cardinality"`).
+#' @param sort_intersections A character string specifying the order of intersections (`"ascending"` or `"descending"`).
+#' @param show_intersect_size Logical. If `TRUE`, shows bar plot of intersection sizes. Default is `TRUE`.
+#' @param intersect_counts Logical. If `TRUE`, counts are displayed in the intersection size bars. Default is `TRUE`.
+#' @param heights Numeric vector specifying relative heights of the upset matrix vs annotation plots. If `NULL`, defaults based on `show_intersect_size`.
 #' @importFrom AMR as.ab as.mic as.mo scale_y_mic
 #' @importFrom ComplexUpset intersection_size upset
 #' @importFrom dplyr across all_of filter mutate pull rename
 #' @importFrom ggplot2 aes element_text geom_count geom_hline ggplot labs scale_colour_manual theme
 #' @importFrom rlang sym
+#' @importFrom patchwork plot_layout
 #' @return A `ggplot` object displaying the Upset plot.
+#' @export
 #' @examples
-#' # Example usage:
-#'
 #' ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 #'
 #' binary_matrix <- get_binary_matrix(
@@ -40,14 +40,20 @@
 #' )
 #'
 #' amr_complexUpset(binary_matrix)
-#'
-#' @export
-amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
-                             remove_NAs = TRUE, gene_determinants = NULL, colour_by = "pheno",
-                             plot_breakpoints = FALSE, organism = NULL, break_guide = "EUCAST 2024",
-                             break_type = "ECOFF", drug = NULL,
-                             sort_intersections_by = "degree", sort_intersections = "ascending",
-                             show_intersect_size = TRUE, intersect_counts = TRUE,
+amr_complexUpset <- function(binary_matrix,
+                             min_set_size = 10,
+                             mic_disk = "mic",
+                             remove_NAs = TRUE, gene_determinants = NULL,
+                             colour_by = "pheno",
+                             plot_breakpoints = FALSE,
+                             organism = NULL,
+                             break_guide = "EUCAST 2025",
+                             break_type = "ECOFF",
+                             drug = NULL,
+                             sort_intersections_by = "degree",
+                             sort_intersections = "ascending",
+                             show_intersect_size = TRUE,
+                             intersect_counts = TRUE,
                              heights = NULL,
                              colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")) {
   # mic_disk must be either 'mic' or 'disk'
@@ -183,7 +189,7 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
           theme(legend.title = element_text(face = "bold"))
       )
     )
-  ) + patchwork::plot_layout(heights = heights) # relative heights of plotting areas
+  ) + plot_layout(heights = heights) # relative heights of plotting areas
 
   return(plot)
 }

@@ -1,13 +1,14 @@
 #' Import/Export BioSample Antibiograms
 #'
 #' Output phenotype data to [NCBI BioSample Antibiograms](https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/).
-#' @param data data set containing SIR results
-#' @param file file path
-#' @param overwrite [logical] to overwrite existing file
-#' @export
+#' @param data Data set containing SIR results.
+#' @param file File path to which the data will be exported.
+#' @param overwrite Logical indicating whether to overwrite an existing file.
 #' @importFrom AMR is.sir
-#' @importFrom dplyr transmute where %>%
+#' @importFrom dplyr transmute where
 #' @importFrom tidyr pivot_longer
+#' @return A tab-delimited UTF-8 text file is written to disk in the format required by NCBI BioSample Antibiograms.
+#' @export
 export_ncbi_biosample <- function(data, file, overwrite = FALSE) {
   if (file.exists(file) && !overwrite) {
     stop("The file ", file, " already exists and `overwrite`` is set to `FALSE`")

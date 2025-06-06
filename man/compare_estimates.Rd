@@ -21,8 +21,7 @@ compare_estimates(
 )
 }
 \arguments{
-\item{tbl1}{A tibble containing the first set of summary statistics (e.g., coefficients, p-values, CI) for each variant.
-Expected columns are:
+\item{tbl1}{A tibble containing the first set of summary statistics (e.g., coefficients, p-values, CI) for each variant. Expected columns are:
 \itemize{
 \item \code{marker}: The name of the marker (e.g., variable name).
 \item \code{pval}: The p-value for each marker.

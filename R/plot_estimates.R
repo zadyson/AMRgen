@@ -1,16 +1,12 @@
 #' Plot Estimates from a Table of Results
 #'
-#' This function creates a ggplot object visualizing logistic regression coefficients
-#' with their 95% confidence intervals. Significant markers are highlighted based
-#' on a specified p-value threshold.
-#'
-#' @param tbl A data frame or tibble containing the logistic regression results.
-#'   Expected columns are:
-#'   - `marker`: The name of the marker (e.g., variable name).
-#'   - `pval`: The p-value for each marker.
-#'   - `ci.lower`: The lower bound of the confidence interval.
-#'   - `ci.upper`: The upper bound of the confidence interval.
-#'   - `est`: The estimated coefficient.
+#' This function creates a ggplot object visualizing logistic regression coefficients with their 95% confidence intervals. Significant markers are highlighted based on a specified p-value threshold.
+#' @param tbl A data frame or tibble containing the logistic regression results. Expected columns are:
+#' - `marker`: The name of the marker (e.g., variable name).
+#' - `pval`: The p-value for each marker.
+#' - `ci.lower`: The lower bound of the confidence interval.
+#' - `ci.upper`: The upper bound of the confidence interval.
+#' - `est`: The estimated coefficient.
 #' @param sig (optional) The significance threshold for p-values. Defaults to 0.05.
 #' @param sig_colors (optional) A vector of two colors to represent significant and non-significant estimates.
 #' @param x_title (optional) The title for the x-axis. Defaults to "Coefficient (95% CI)".
@@ -18,12 +14,11 @@
 #' @param title (optional) The main title of the plot. If NULL, no title is added.
 #' @param axis_label_size (optional) The font size of the axis labels. Defaults to 9.
 #' @param marker_order (optional) Vector indicating the order of the markers to be plotted on the y-axis.
-#'
-#' @return A ggplot object showing the logistic regression coefficients with confidence
-#'   intervals. Significant markers (p-value < \code{sig}) are colored differently.
-#'
+#' @importFrom dplyr filter if_else mutate
+#' @importFrom ggplot2 aes element_text geom_linerange geom_point geom_vline ggplot labs scale_color_manual scale_y_discrete theme theme_light
+#' @return A ggplot object showing the logistic regression coefficients with confidence intervals. Significant markers (p-value < `sig`) are colored differently.
+#' @export
 #' @examples
-#' # Example dataset
 #' tbl <- tibble::tibble(
 #'   marker = c("(Intercept)", "var1", "var2", "var3"),
 #'   pval = c(0.1, 0.03, 0.2, 0.04),
@@ -32,12 +27,7 @@
 #'   est = c(0.2, 0.5, 0.1, 0.7)
 #' )
 #'
-#' # Plot
 #' plot_estimates(tbl)
-#'
-#' @export
-#' @importFrom dplyr filter if_else mutate
-#' @importFrom ggplot2 aes element_text geom_linerange geom_point geom_vline ggplot labs scale_color_manual scale_y_discrete theme theme_light
 plot_estimates <- function(tbl, sig = 0.05,
                            sig_colors = c(`FALSE` = "grey", `TRUE` = "blue4"),
                            x_title = "Coefficient (95% CI)",
@@ -87,13 +77,12 @@ plot_estimates <- function(tbl, sig = 0.05,
 #'
 #' This function compares two sets of estimates by creating a plot that overlays the estimates and confidence intervals for both sets. It can also display the estimates in two separate plots.
 #'
-#' @param tbl1 A tibble containing the first set of summary statistics (e.g., coefficients, p-values, CI) for each variant.
-#'   Expected columns are:
-#'   - `marker`: The name of the marker (e.g., variable name).
-#'   - `pval`: The p-value for each marker.
-#'   - `ci.lower`: The lower bound of the confidence interval.
-#'   - `ci.upper`: The upper bound of the confidence interval.
-#'   - `est`: The estimated coefficient.
+#' @param tbl1 A tibble containing the first set of summary statistics (e.g., coefficients, p-values, CI) for each variant. Expected columns are:
+#'  - `marker`: The name of the marker (e.g., variable name).
+#'  - `pval`: The p-value for each marker.
+#'  - `ci.lower`: The lower bound of the confidence interval.
+#'  - `ci.upper`: The upper bound of the confidence interval.
+#'  - `est`: The estimated coefficient.
 #' @param tbl2 A tibble containing the second set of summary statistics for each variant (same format as tbl1).
 #' @param single_plot A boolean indicating whether to make a single combined plot (TRUE), or plot each dataset side-by-side (FALSE).
 #' @param title1 Title for tbl1 data. If single_plot, this will be the legend label for tbl1 data; otherwise it will be the title for the tbl1 plot.
@@ -106,11 +95,10 @@ plot_estimates <- function(tbl, sig = 0.05,
 #' @param axis_label_size (optional) The font size of the axis labels. Defaults to 9.
 #' @param pd (optional) Position dodge, i.e. spacing for the 2 estimates to be positioned above/below the line. Default 'position_dodge(width = 0.8)'
 #' @param marker_order (optional) Vector indicating the order of the markers to be plotted on the y-axis.
-#'
-#' @return A ggplot object displaying the comparison of the two sets of estimates.
-#' @export
 #' @importFrom dplyr bind_rows filter if_else mutate
 #' @importFrom ggplot2 aes element_text geom_linerange geom_point geom_vline ggplot labs position_dodge scale_color_manual scale_y_discrete theme theme_light
+#' @return A ggplot object displaying the comparison of the two sets of estimates.
+#' @export
 compare_estimates <- function(tbl1,
                               tbl2,
                               title1 = NULL, title2 = NULL, title = NULL,
@@ -208,24 +196,16 @@ autoplot.model_summary <- function(object,
 #' Extract Details from a logistf Model
 #'
 #' This function extracts and formats the estimates, confidence intervals, and p-values from a fitted logistf model.
-#'
 #' @param model A fitted logistf model object.
-#'
-#' @importFrom dplyr as_tibble %>%
-#' @export
-#'
+#' @importFrom dplyr as_tibble
 #' @return A tibble containing the estimates, confidence intervals, and p-values for each predictor in the model.
-#'
+#' @export
 #' @examples
-#'
 #' library(logistf)
 #' library(ggplot2)
-
 #' model <- logistf(case ~ age + oc + vic + vicl + vis + dia, data = sex2)
 #' model_details <- logistf_details(model)
-
 #' autoplot(model_details)
-#'
 logistf_details <- function(model) {
   # Create summary tibble
   model_summary <- cbind(
@@ -250,17 +230,26 @@ print.model_summary <- function(x, ...) {
 #' Extract Details from a Generalized Linear Model
 #'
 #' This function extracts and formats the estimates, confidence intervals, and p-values from a fitted glm model.
-#'
 #' @param model A fitted glm model object.
-#'
-#' @return A tibble containing the estimates, confidence intervals, and p-values for each predictor in the model.
-#'
-#' Example
-#' model <- glm(R ~ ., data=dat, family = binomial(link = "logit"))
-#' model_details <- glm_details(model)
-#' autoplot(model_details)
 #' @importFrom dplyr as_tibble left_join rename select
+#' @return A tibble containing the estimates, confidence intervals, and p-values for each predictor in the model.
 #' @export
+#' @examples
+#' # Generate example data
+#' set.seed(1)
+#' dat <- data.frame(
+#'   R = rbinom(100, 1, 0.3),
+#'   geneA = rbinom(100, 1, 0.2),
+#'   geneB = rbinom(100, 1, 0.5),
+#'   geneC = rbinom(100, 1, 0.3)
+#' )
+#'
+#' # Fit logistic regression model and extract details
+#' model <- glm(R ~ ., data = dat, family = binomial(link = "logit"))
+#' model_details <- glm_details(model)
+#'
+#' # Plot model summary
+#' autoplot(model_details)
 glm_details <- function(model) {
   # get CI data
   ci <- stats::confint(model) %>%
@@ -281,7 +270,6 @@ glm_details <- function(model) {
 #' AMR Logistic Regression Analysis
 #'
 #' Performs logistic regression to analyze the relationship between genetic markers and phenotype (R, and NWT) for a specified antibiotic.
-#'
 #' @param geno_table A data frame containing the genotype data.
 #' @param pheno_table A data frame containing the phenotypic data.
 #' @param antibiotic A character string specifying the antibiotic to model using logistic regression.
@@ -295,18 +283,15 @@ glm_details <- function(model) {
 #' @param single_plot (Optional) A logical value. If `TRUE`, a single plot is produced comparing the estimates for resistance (`R`) and non-resistance (`NWT`). Otherwise, two plots are printed side-by-side. Defaults to `TRUE`.
 #' @param colors (Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to `c("maroon", "blue4")`.
 #' @param axis_label_size (Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.
-#'
-#' @return A list with three components:
-#' \item{bin_mat}{The binary matrix of genetic data and phenotypic resistance information.}
-#' \item{modelR}{The fitted logistic regression model for resistance (`R`).}
-#' \item{modelNWT}{The fitted logistic regression model for non-resistance (`NWT`).}
-#' \item{plot}{A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.}
-#'
 #' @importFrom dplyr any_of select where
 #' @importFrom ggplot2 ggtitle
 #' @importFrom stats glm
+#' @return A list with the following components:
+#' - `bin_mat`: The binary matrix of genetic data and phenotypic resistance information.
+#' - `modelR`: The fitted logistic regression model for resistance (`R`).
+#' - `modelNWT`: The fitted logistic regression model for non-resistance (`NWT`).
+#' - `plot`: A ggplot object comparing the estimates for resistance and non-resistance with corresponding statistical significance indicators.
 #' @export
-#'
 #' @examples
 #' # Example usage of the amr_logistic function
 #' result <- amr_logistic(
@@ -316,10 +301,8 @@ glm_details <- function(model) {
 #'   drug_class_list = c("Quinolones"),
 #'   maf = 10
 #' )
-#'
 #' # To access the plot:
 #' print(result$plot)
-#'
 amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          geno_sample_col = NULL, pheno_sample_col = NULL,
                          sir_col = "pheno", ecoff_col = "ecoff",
@@ -373,14 +356,18 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   ))
 }
 
+
 #' Merge Logistic Regression and Solo PPV Statistics
 #'
 #' This function merges logistic regression model statistics with solo PPV statistics and creates a combined plot.
-#'
 #' @param model A data frame containing logistic regression model statistics.
 #' @param solo_stats A data frame containing solo PPV statistics.
 #' @param title An optional title for the plot.
-#' @return A list containing the combined data frame and the plot.
+#' @importFrom dplyr filter full_join
+#' @return A list containing:
+#' - `combined`: A merged data frame of logistic regression and PPV statistics.
+#' - `plot`: A ggplot object showing the relationship between model estimates and PPV.
+#' @export
 #' @examples
 #' \dontrun{
 #' soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast,
@@ -397,8 +384,6 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 #'   title = "Quinolone markers vs Cip R"
 #' )
 #' }
-#' @export
-#' @importFrom dplyr filter full_join
 merge_logreg_soloppv <- function(model, solo_stats, title = NULL) {
   combined <- model %>%
     full_join(solo_stats, by = "marker", suffix = c(".est", ".ppv")) %>%
@@ -414,14 +399,13 @@ merge_logreg_soloppv <- function(model, solo_stats, title = NULL) {
 #' Plot Combined Statistics
 #'
 #' This function creates a plot of combined logistic regression and solo PPV statistics.
-#'
 #' @param combined_stats A data frame containing combined statistics from logistic regression and solo PPV.
 #' @param sig A significance level for the logistic regression p-values. Default is 0.05.
 #' @param title An optional title for the plot.
-#' @return A ggplot2 object representing the combined plot.
-#' @export
 #' @importFrom dplyr if_else mutate
 #' @importFrom ggplot2 aes geom_hline geom_linerange geom_point geom_vline ggplot labs theme_bw
+#' @return A ggplot2 object representing the combined plot.
+#' @export
 plot_combined_stats <- function(combined_stats, sig = 0.05, title = NULL) {
   combined_stats %>%
     mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>%
@@ -440,8 +424,16 @@ plot_combined_stats <- function(combined_stats, sig = 0.05, title = NULL) {
 }
 
 
+#' Plot Combined Statistics of Logistic Regression and Solo PPV
+#'
+#' This function creates a plot comparing logistic regression coefficients with PPV values from solo marker analysis. It highlights markers based on statistical significance of the logistic regression.
+#' @param combined_stats A data frame containing combined statistics from logistic regression and solo PPV analysis.
+#' @param sig A numeric value specifying the significance threshold for p-values. Default is 0.05.
+#' @param title An optional character string specifying the plot title.
 #' @importFrom dplyr if_else mutate
 #' @importFrom ggplot2 aes geom_hline geom_linerange geom_point geom_vline ggplot labs theme_bw
+#' @return A ggplot2 object visualizing the relationship between PPV and logistic regression estimates, with confidence intervals and significance annotation.
+#' @export
 plot_solo_logReg <- function(combined_stats, sig = 0.05, title = NULL) {
   combined_stats %>%
     mutate(sig_binary = if_else(pval < sig, TRUE, FALSE)) %>%

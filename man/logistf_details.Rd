@@ -16,11 +16,9 @@ A tibble containing the estimates, confidence intervals, and p-values for each p
 This function extracts and formats the estimates, confidence intervals, and p-values from a fitted logistf model.
 }
 \examples{
-
 library(logistf)
 library(ggplot2)
 model <- logistf(case ~ age + oc + vic + vicl + vis + dia, data = sex2)
 model_details <- logistf_details(model)
 autoplot(model_details)
-
 }

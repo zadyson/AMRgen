@@ -1,12 +1,12 @@
 #' Retrieve Available Antimicrobial Wild Type Distributions from EUCAST
 #'
 #' Run this function to get an updated list of antimicrobial distributions currently supported by EUCAST. This retrieves live info from <https://mic.eucast.org>.
-#' @param ... arguments passed on to function, currently unused
+#' @param ... Arguments passed on to the function, currently unused.
 #' @importFrom AMR ab_name as.ab
 #' @importFrom rvest html_attrs html_children html_element html_text2 read_html
+#' @export
 #' @examples
 #' eucast_supported_ab_distributions()
-#' @export
 eucast_supported_ab_distributions <- function(...) {
   font_url <- get("font_url", envir = asNamespace("AMR"))
 

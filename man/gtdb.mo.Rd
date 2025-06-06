@@ -7,10 +7,10 @@
 gtdb.mo(species)
 }
 \arguments{
-\item{species}{name of species, coerced with \code{\link[AMR:as.mo]{AMR::as.mo()}}.}
+\item{species}{Name of species, coerced with \code{\link[AMR:as.mo]{AMR::as.mo()}}.}
 }
 \value{
-microorganism
+A character vector of valid microorganism codes as determined by \code{\link[AMR:as.mo]{AMR::as.mo()}}.
 }
 \description{
 Parse a character vector containing species names from GTDB output to get a valid microorganism code.

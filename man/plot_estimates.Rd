@@ -16,8 +16,7 @@ plot_estimates(
 )
 }
 \arguments{
-\item{tbl}{A data frame or tibble containing the logistic regression results.
-Expected columns are:
+\item{tbl}{A data frame or tibble containing the logistic regression results. Expected columns are:
 \itemize{
 \item \code{marker}: The name of the marker (e.g., variable name).
 \item \code{pval}: The p-value for each marker.
@@ -41,16 +40,12 @@ Expected columns are:
 \item{marker_order}{(optional) Vector indicating the order of the markers to be plotted on the y-axis.}
 }
 \value{
-A ggplot object showing the logistic regression coefficients with confidence
-intervals. Significant markers (p-value < \code{sig}) are colored differently.
+A ggplot object showing the logistic regression coefficients with confidence intervals. Significant markers (p-value < \code{sig}) are colored differently.
 }
 \description{
-This function creates a ggplot object visualizing logistic regression coefficients
-with their 95\% confidence intervals. Significant markers are highlighted based
-on a specified p-value threshold.
+This function creates a ggplot object visualizing logistic regression coefficients with their 95\% confidence intervals. Significant markers are highlighted based on a specified p-value threshold.
 }
 \examples{
-# Example dataset
 tbl <- tibble::tibble(
   marker = c("(Intercept)", "var1", "var2", "var3"),
   pval = c(0.1, 0.03, 0.2, 0.04),
@@ -59,7 +54,5 @@ tbl <- tibble::tibble(
   est = c(0.2, 0.5, 0.1, 0.7)
 )
 
-# Plot
 plot_estimates(tbl)
-
 }

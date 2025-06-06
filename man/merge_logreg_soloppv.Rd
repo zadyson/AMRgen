@@ -14,7 +14,11 @@ merge_logreg_soloppv(model, solo_stats, title = NULL)
 \item{title}{An optional title for the plot.}
 }
 \value{
-A list containing the combined data frame and the plot.
+A list containing:
+\itemize{
+\item \code{combined}: A merged data frame of logistic regression and PPV statistics.
+\item \code{plot}: A ggplot object showing the relationship between model estimates and PPV.
+}
 }
 \description{
 This function merges logistic regression model statistics with solo PPV statistics and creates a combined plot.

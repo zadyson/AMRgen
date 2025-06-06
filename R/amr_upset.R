@@ -1,54 +1,29 @@
-### Function to generate "amr_upset"
-
-#' amr_upset: Generate a series of plots for AMR gene and combination analysis
+#' Generate a Series of Plots for AMR Gene and Combination Analysis
 #'
-#' This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence
-#' from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for
-#' the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence.
-#' It also outputs a table summarising the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
-#'
-#' @param binary_matrix A data frame containing the original binary matrix output from the `get_binary_matrix` function.
-#'        Expected columns are and identifier (column 1, any name); 'pheno' (class sir, with S/I/R categories to colour points),
-#'        'mic' (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, ie
-#'        1=present, 0=absent).
-#' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots.
-#'        Default is 2. Only genes with at least this number of occurrences are included in the plots.
-#' @param order A character string indicating the order of the combinations on the x-axis. Options are:
-#'        - "": Default (decreasing frequency of combinations),
-#'        - "genes": Order by the number of genes in each combination.
-#'        - "value": Order by the median assay value (MIC or disk zone) for each combination.
-#' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e.
-#'        number of times each combination of markers is observed). Default is FALSE.
-#' @param print_set_size Logical indicating whether, if plot_set_size is set to true, to print the number of strains
-#'        with marker combination on the plot (default FALSE).
-#' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination,
-#'         the proportion of samples with each phenotype classification (specified by the 'pheno' column in the input file).
-#'         Default is TRUE.
-#' @param print_category_counts Logical indicating whether, if plot_category is set to true, to print the number of strains
-#'        in each resistance category, for each marker combination in the plot (default FALSE).
-#' @param boxplot_colour Colour for lines of the box plots summarising the MIC distribution for each marker combination,
-#'        (default "grey").
-#' @param assay A character string indicating whether to plot MIC or disk diffusion data.
-#'        - "mic": Plot MIC data, stored in column 'mic' of class 'mic'.
-#'        - "disk": Plot disk diffusion data, stored in column 'disk' of class 'disk'.
-#'
+#' This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence. It also outputs a table summarizing the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
+#' @param binary_matrix A data frame containing the original binary matrix output from the `get_binary_matrix` function. Expected columns are an identifier (column 1, any name), `pheno` (class sir, with S/I/R categories to colour points), `mic` (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).
+#' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.
+#' @param order A character string indicating the order of the combinations on the x-axis. Options are: - "" (default): decreasing frequency of combinations - "genes": order by the number of genes in each combination - "value": order by the median assay value (MIC or disk zone) for each combination.
+#' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is FALSE.
+#' @param print_set_size Logical indicating whether, if `plot_set_size` is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.
+#' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the `pheno` column in the input file). Default is TRUE.
+#' @param print_category_counts Logical indicating whether, if `plot_category` is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is FALSE.
+#' @param boxplot_colour Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".
+#' @param assay A character string indicating whether to plot MIC or disk diffusion data. Must be one of: - "mic": plot MIC data stored in column `mic` - "disk": plot disk diffusion data stored in column `disk`
+#' @importFrom AMR as.mic scale_color_sir scale_fill_sir scale_y_mic
+#' @importFrom dplyr any_of arrange desc distinct filter group_by if_else left_join mutate n pull relocate row_number select summarise ungroup
+#' @importFrom forcats fct_rev
+#' @importFrom ggplot2 aes after_stat coord_flip element_blank geom_bar geom_boxplot geom_col geom_point geom_segment geom_text ggplot labs position_fill scale_size_continuous scale_x_discrete scale_y_discrete scale_y_reverse theme theme_bw theme_light ylab
+#' @importFrom patchwork plot_layout plot_spacer
+#' @importFrom stats median
+#' @importFrom tidyr pivot_longer unite
 #' @return A list containing the following elements:
-#'   \describe{
-#'     \item{plot}{A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.}
-#'     \item{summary}{Summary of each marker combination observed, including median MIC (and interquartile range) and positive predictive value for resistance (R).}
-#'   }
-#'
-#' @details This function processes the provided binary matrix (`binary_matrix`), which is expected to contain data on gene
-#'          presence/absence, MIC values, and phenotype calls (S/I/R) (can be generated using `get_binary_matrix`).
-#'          The function also includes an analysis of gene prevalence and an ordering option for visualizing combinations
-#'          in different ways.
-#'
+#' - `plot`: A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.
+#' - `summary`: A data frame summarizing each marker combination observed, including median MIC (and interquartile range), number of resistant isolates, and positive predictive value for resistance.
+#' @export
 #' @examples
 #' \dontrun{
-#' # Example usage
-#'
 #' ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
-#'
 #' binary_matrix <- get_binary_matrix(
 #'   geno_table = ecoli_geno,
 #'   pheno_table = ecoli_ast,
@@ -58,19 +33,8 @@
 #'   keep_assay_values = TRUE,
 #'   keep_assay_values_from = "mic"
 #' )
-#'
 #' amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
 #' }
-#'
-#' @importFrom AMR scale_color_sir scale_fill_sir scale_y_mic as.mic
-#' @importFrom dplyr any_of arrange desc distinct filter group_by if_else left_join mutate n pull relocate row_number select summarise ungroup
-#' @importFrom forcats fct_rev
-#' @importFrom ggplot2 aes after_stat coord_flip element_blank geom_bar geom_boxplot geom_col geom_point geom_segment geom_text ggplot labs position_fill scale_size_continuous scale_x_discrete scale_y_discrete scale_y_reverse theme theme_bw theme_light ylab
-#' @importFrom patchwork plot_spacer plot_layout
-#' @importFrom stats median
-#' @importFrom tidyr pivot_longer unite
-#'
-#' @export
 amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
