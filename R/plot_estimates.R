@@ -249,7 +249,7 @@ print.model_summary <- function(x, ...) {
 #' model_details <- glm_details(model)
 #'
 #' # Plot model summary
-#' autoplot(model_details)
+#' ggplot2::autoplot(model_details)
 glm_details <- function(model) {
   # get CI data
   ci <- stats::confint(model) %>%

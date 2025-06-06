@@ -30,5 +30,5 @@ model <- glm(R ~ ., data = dat, family = binomial(link = "logit"))
 model_details <- glm_details(model)
 
 # Plot model summary
-autoplot(model_details)
+ggplot2::autoplot(model_details)
 }
