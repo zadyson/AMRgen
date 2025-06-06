@@ -17,9 +17,9 @@
 #' Amikacin, amoxicillin, amoxicillin/clavulanic acid, amphotericin B, ampicillin, ampicillin/sulbactam, anidulafungin, apramycin, aspoxicillin, avilamycin, azithromycin, aztreonam, aztreonam/avibactam, bacitracin, bedaquiline, benzylpenicillin, capreomycin, cefaclor, cefadroxil, cefalexin, cefaloridine, cefalotin, cefapirin, cefazolin, cefdinir, cefepime, cefepime/tazobactam, cefepime/zidebactam, cefiderocol, cefixime, cefoperazone, cefoperazone/sulbactam, cefoselis, cefotaxime, cefotetan, cefovecin, cefoxitin, cefpirome, cefpodoxime, cefpodoxime/clavulanic acid, cefquinome, ceftaroline, ceftazidime, ceftazidime/avibactam, ceftibuten, ceftiofur, ceftobiprole, ceftolozane/tazobactam, ceftriaxone, cefuroxime, cephradine, chloramphenicol, chlortetracycline, ciprofloxacin, clarithromycin, clavulanic acid, clinafloxacin, clindamycin, clofazimine, cloxacillin, colistin, cycloserine, dalbavancin, danofloxacin, daptomycin, delafloxacin, delamanid, dicloxacillin, difloxacin, doripenem, doxycycline, enrofloxacin, eravacycline, ertapenem, erythromycin, ethambutol, ethionamide, faropenem, fidaxomicin, florfenicol, flucloxacillin, fluconazole, flucytosine, flumequine, fosfomycin, fusidic acid, gamithromycin, gatifloxacin, gemifloxacin, gentamicin, imipenem, imipenem/relebactam, isavuconazole, isoniazid, itraconazole, kanamycin, ketoconazole, lefamulin, levofloxacin, lincomycin, linezolid, loracarbef, marbofloxacin, mecillinam, meropenem, meropenem/vaborbactam, metronidazole, micafungin, minocycline, moxifloxacin, mupirocin, nalidixic acid, narasin, neomycin, netilmicin, nitrofurantoin, nitroxoline, norfloxacin, norvancomycin, ofloxacin, omadacycline, orbifloxacin, oritavancin, oxacillin, oxolinic acid, oxytetracycline, pefloxacin, phenoxymethylpenicillin, piperacillin, piperacillin/tazobactam, pirlimycin, posaconazole, pradofloxacin, pristinamycin, pyrazinamide, quinupristin/dalfopristin, retapamulin, rezafungin, rifabutin, rifampicin, roxithromycin, secnidazole, sitafloxacin, spectinomycin, spiramycin, streptomycin, sulbactam, sulfadiazine, sulfamethoxazole, sulfisoxazole, tedizolid, teicoplanin, telavancin, telithromycin, temocillin, terbinafine, tetracycline, thiamphenicol, tiamulin, ticarcillin, ticarcillin/clavulanic acid, tigecycline, tildipirosin, tilmicosin, tobramycin, trimethoprim, trimethoprim/sulfamethoxazole, tulathromycin, tylosin, tylvalosin, vancomycin, viomycin, and voriconazole.
 #'
 #' For the current list, run [eucast_supported_ab_distributions()].
-#' @importFrom rvest read_html html_element html_table
-#' @importFrom AMR as.ab ab_name ab_atc as.mo as.mic as.disk mo_name
-#' @importFrom dplyr mutate filter select matches %>%
+#' @importFrom AMR ab_atc ab_name as.ab as.disk as.mic as.mo mo_name
+#' @importFrom dplyr filter matches mutate select
+#' @importFrom rvest html_element html_table read_html
 #' @importFrom tidyr pivot_longer
 #' @rdname get_eucast_amr_distribution
 #' @export
@@ -137,8 +137,8 @@ get_eucast_disk_distribution <- function(ab, mo = NULL, as_freq_table = TRUE) {
 }
 
 #' @rdname get_eucast_amr_distribution
-#' @importFrom AMR is.mic as.mic
-#' @importFrom dplyr select filter as_tibble
+#' @importFrom AMR as.mic is.mic
+#' @importFrom dplyr as_tibble filter full_join select %>%
 #' @export
 compare_mic_with_eucast <- function(mics, ab, mo = NULL) {
   if (!is.mic(mics)) {
@@ -149,24 +149,24 @@ compare_mic_with_eucast <- function(mics, ab, mo = NULL) {
   }
   distr <- get_eucast_mic_distribution(ab = ab, mo = mo, as_freq_table = TRUE)
   vals <- rep(distr[[1]], distr[[2]])
-  user_mic <- mics |>
-    table() |>
-    as.data.frame() |>
+  user_mic <- mics %>%
+    table() %>%
+    as.data.frame() %>%
     select(value = mics, user = Freq)
-  eucast_mic <- vals |>
-    table() |>
-    as.data.frame() |>
+  eucast_mic <- vals %>%
+    table() %>%
+    as.data.frame() %>%
     select(value = vals, eucast = Freq)
-  total <- user_mic |>
-    full_join(eucast_mic) |>
-    filter(user + eucast > 0) |>
+  total <- user_mic %>%
+    full_join(eucast_mic) %>%
+    filter(user + eucast > 0) %>%
     as_tibble()
   structure(total, class = c("compare_eucast", class(total)))
 }
 
 #' @rdname get_eucast_amr_distribution
-#' @importFrom AMR is.disk as.disk
-#' @importFrom dplyr select filter as_tibble
+#' @importFrom AMR as.disk is.disk
+#' @importFrom dplyr as_tibble filter full_join select
 #' @export
 compare_disk_with_eucast <- function(disks, ab, mo = NULL) {
   if (!is.disk(disks)) {
@@ -177,17 +177,17 @@ compare_disk_with_eucast <- function(disks, ab, mo = NULL) {
   }
   distr <- get_eucast_disk_distribution(ab = ab, mo = mo, as_freq_table = TRUE)
   vals <- rep(distr[[1]], distr[[2]])
-  user_disk <- disks |>
-    table() |>
-    as.data.frame() |>
+  user_disk <- disks %>%
+    table() %>%
+    as.data.frame() %>%
     select(value = disks, user = Freq)
-  eucast_disk <- vals |>
-    table() |>
-    as.data.frame() |>
+  eucast_disk <- vals %>%
+    table() %>%
+    as.data.frame() %>%
     select(value = vals, eucast = Freq)
-  total <- user_disk |>
-    full_join(eucast_disk) |>
-    filter(user + eucast > 0) |>
+  total <- user_disk %>%
+    full_join(eucast_disk) %>%
+    filter(user + eucast > 0) %>%
     as_tibble()
   structure(total, class = c("compare_eucast", class(total)))
 }
@@ -201,18 +201,19 @@ print.compare_eucast <- function(x, ...) {
 }
 
 #' @noRd
+#' @importFrom dplyr mutate select
+#' @importFrom ggplot2 autoplot aes geom_col ggplot labs
 #' @importFrom tidyr pivot_longer
-#' @importFrom ggplot2 autoplot ggplot aes labs geom_col
 # @importFrom AMR scale_x_mic
 #' @method autoplot compare_eucast
 #' @export
 autoplot.compare_eucast <- function(object, ...) {
-  long <- object |>
+  long <- object %>%
     mutate(
       User = user / sum(user),
       EUCAST = eucast / sum(eucast)
-    ) |>
-    select(-user, -eucast) |>
+    ) %>%
+    select(-user, -eucast) %>%
     pivot_longer(-value, names_to = "Source", values_to = "count")
   ggplot(long, aes(x = value, y = count, fill = Source)) +
     geom_col(position = "dodge") +

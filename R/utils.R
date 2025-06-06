@@ -1,6 +1,6 @@
 AMRgen_env <- new.env()
 
-globalVariables(c(
+utils::globalVariables(c(
   ".",
   "..count..",
   "ab",

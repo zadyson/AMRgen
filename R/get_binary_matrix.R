@@ -48,7 +48,7 @@
 #'
 #' @param keep_assay_values_from A character vector specifying which assay values (e.g., `"mic"`, `"disk"`)
 #'   to retain if `keep_assay_values` is `TRUE`. Defaults to `c("mic", "disk")`.
-#'   
+#'
 #' @param most_resistant A logical indicating whether, when multiple phenotype entries are present for the same
 #'   sample and drug, whether to keep the most resistant (otherwise the least resistant is kept). Default TRUE.
 #'
@@ -118,12 +118,13 @@
 #' }
 #'
 #' @export
+#' @importFrom AMR as.ab as.disk as.mic as.sir is.ab
+#' @importFrom dplyr any_of arrange case_when count desc filter full_join group_by if_else mutate pull right_join select slice_head ungroup
+#' @importFrom tidyr pivot_wider
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff", most_resistant=TRUE) 
-                      {
-  
+                              sir_col = "pheno", ecoff_col = "ecoff", most_resistant = TRUE) {
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
@@ -145,14 +146,14 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     stop(paste("input", geno_table, "must have a column labelled `drug_class`"))
   }
   if (sum(drug_class_list %in% geno_table$drug_class) == 0) {
-    stop(paste("No markers matching drug class", paste(drug_class_list, collapse=","), "were identified in input geno_table"))
+    stop(paste("No markers matching drug class", paste(drug_class_list, collapse = ","), "were identified in input geno_table"))
   }
 
   # subset pheno & geno dataframes to those samples with overlap
   overlap <- compare_geno_pheno_id(geno_table, pheno_table, geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col, rename_id_cols = T)
   pheno_matched <- overlap$pheno_matched
   geno_matched <- overlap$geno_matched
-  
+
   # take single representative row per sample
   pheno_matched_rows_unfiltered <- nrow(pheno_matched)
   if (most_resistant) { # take most resistant
@@ -233,9 +234,9 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     filter(marker %in% markers) %>%
     group_by(id, marker) %>%
     count() %>%
-    mutate(n=if_else(n>1,1,n)) %>% # only count 1 per strain
+    mutate(n = if_else(n > 1, 1, n)) %>% # only count 1 per strain
     ungroup() %>%
-    right_join(pheno_binary, by="id") %>%
+    right_join(pheno_binary, by = "id") %>%
     pivot_wider(names_from = marker, values_from = n, values_fill = 0)
 
   # if there were samples with phenotypes, but no hits for any markers, there will be a 'NA' column created, need to remove this
@@ -248,15 +249,15 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     if (sum(keep_assay_values_from %in% colnames(pheno_matched)) > 0) {
       geno_binary <- pheno_matched %>%
         select(id, any_of(keep_assay_values_from)) %>%
-        full_join(geno_binary, by="id")
+        full_join(geno_binary, by = "id")
     } else {
       print(paste("No specified assay columns found:", keep_assay_values_from))
     }
     if ("mic" %in% colnames(geno_binary)) {
-      geno_binary <- geno_binary %>% mutate(mic=as.mic(mic))
+      geno_binary <- geno_binary %>% mutate(mic = as.mic(mic))
     }
     if ("disk" %in% colnames(geno_binary)) {
-      geno_binary <- geno_binary %>% mutate(disk=as.disk(disk))
+      geno_binary <- geno_binary %>% mutate(disk = as.disk(disk))
     }
   }
 
@@ -266,7 +267,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
       select(id, any_of(sir_col)) %>%
       mutate(pheno = as.sir(get(sir_col))) %>%
       select(id, pheno) %>%
-      full_join(geno_binary, by="id")
+      full_join(geno_binary, by = "id")
   }
 
   return(geno_binary)

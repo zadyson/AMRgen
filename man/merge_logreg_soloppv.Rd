@@ -22,13 +22,17 @@ This function merges logistic regression model statistics with solo PPV statisti
 \examples{
 \dontrun{
 soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast,
-                          antibiotic="Ciprofloxacin",
-                          drug_class_list=c("Quinolones"),
-                          sir_col="pheno")
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = c("Quinolones"),
+  sir_col = "pheno"
+)
 logistic_cipro <- amr_logistic(ecoli_geno, ecoli_ast,
-                          "Ciprofloxacin", c("Quinolones"), maf=5)
+  "Ciprofloxacin", c("Quinolones"),
+  maf = 5
+)
 allstatsR <- merge_logreg_soloppv(logistic_cipro$modelR,
-                    soloPPV_cipro$solo_stats \%>\% filter(category=="R"),
-                    title="Quinolone markers vs Cip R")
+  soloPPV_cipro$solo_stats \%>\% filter(category == "R"),
+  title = "Quinolone markers vs Cip R"
+)
 }
 }

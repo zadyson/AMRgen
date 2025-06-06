@@ -75,16 +75,17 @@ in different ways.
 
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
-binary_matrix<- get_binary_matrix(geno_table=ecoli_geno, 
-              pheno_table=ecoli_ast, 
-              antibiotic="Ciprofloxacin", 
-              drug_class_list=c("Quinolones"), 
-              sir_col="pheno", 
-              keep_assay_values=TRUE, 
-              keep_assay_values_from = "mic"
-           )
+binary_matrix <- get_binary_matrix(
+  geno_table = ecoli_geno,
+  pheno_table = ecoli_ast,
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = c("Quinolones"),
+  sir_col = "pheno",
+  keep_assay_values = TRUE,
+  keep_assay_values_from = "mic"
+)
 
-amr_upset(binary_matrix, min_set_size = 3, order = "value", assay="mic")
+amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
 }
 
 }

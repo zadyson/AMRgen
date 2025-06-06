@@ -13,36 +13,42 @@
 #' @param break_type A character string specifying the breakpoint type (e.g., `"ECOFF"`). Default is `"ECOFF"`.
 #' @param drug A character string specifying the antimicrobial agent to be analysed.
 #' @param colour_values A named vector specifying colours for different resistance categories (`S`, `I`, `R`). Default is `c(S="#66c2a5", I="#fdae61", R="#d53e4f")`.
-#' @importFrom AMR as.mo as.ab as.mic
-#' @importFrom dplyr mutate across filter select rename
-#' @importFrom tidyr separate_longer_delim
-#' @importFrom ggplot2 ggplot aes geom_count scale_colour_manual labs theme element_text geom_hline
-#' @importFrom ComplexUpset upset intersection_size
+#' @param sort_intersections_by TODO fill in text
+#' @param sort_intersections TODO fill in text
+#' @param show_intersect_size TODO fill in text
+#' @param intersect_counts TODO fill in text
+#' @param heights TODO fill in text
+#' @importFrom AMR as.ab as.mic as.mo scale_y_mic
+#' @importFrom ComplexUpset intersection_size upset
+#' @importFrom dplyr across all_of filter mutate pull rename
+#' @importFrom ggplot2 aes element_text geom_count geom_hline ggplot labs scale_colour_manual theme
+#' @importFrom rlang sym
 #' @return A `ggplot` object displaying the Upset plot.
 #' @examples
 #' # Example usage:
-#' 
+#'
 #' ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
-#' 
-#' binary_matrix<- get_binary_matrix(geno_table=ecoli_geno, 
-#'               pheno_table=ecoli_ast, 
-#'               antibiotic="Ciprofloxacin", 
-#'               drug_class_list=c("Quinolones"), 
-#'               sir_col="pheno", 
-#'               keep_assay_values=TRUE, 
-#'               keep_assay_values_from = "mic"
-#'            )
-#' 
+#'
+#' binary_matrix <- get_binary_matrix(
+#'   geno_table = ecoli_geno,
+#'   pheno_table = ecoli_ast,
+#'   antibiotic = "Ciprofloxacin",
+#'   drug_class_list = c("Quinolones"),
+#'   sir_col = "pheno",
+#'   keep_assay_values = TRUE,
+#'   keep_assay_values_from = "mic"
+#' )
+#'
 #' amr_complexUpset(binary_matrix)
-#' 
+#'
 #' @export
 amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
                              remove_NAs = TRUE, gene_determinants = NULL, colour_by = "pheno",
                              plot_breakpoints = FALSE, organism = NULL, break_guide = "EUCAST 2024",
-                             break_type = "ECOFF", drug = NULL, 
-                             sort_intersections_by="degree", sort_intersections="ascending",
-                             show_intersect_size=TRUE, intersect_counts=TRUE,
-                             heights=NULL,
+                             break_type = "ECOFF", drug = NULL,
+                             sort_intersections_by = "degree", sort_intersections = "ascending",
+                             show_intersect_size = TRUE, intersect_counts = TRUE,
+                             heights = NULL,
                              colour_values = c(S = "#66c2a5", I = "#fdae61", R = "#d53e4f")) {
   # mic_disk must be either 'mic' or 'disk'
   if (!mic_disk %in% c("mic", "disk")) {
@@ -147,34 +153,37 @@ amr_complexUpset <- function(binary_matrix, min_set_size = 10, mic_disk = "mic",
     colour_values <- c(colour_values, grDevices::topo.colors(length(to_add)))
     names(colour_values) <- col_vals
   }
-  
+
   if (show_intersect_size) {
-    base_annotations=list('Intersection size'=intersection_size(counts=intersect_counts))
-    if (is.null(heights)) {heights=c(2,1)}
-  }
-  else {
-    base_annotations=list()
-    if (is.null(heights)) {heights=c(1,1)}
+    base_annotations <- list("Intersection size" = intersection_size(counts = intersect_counts))
+    if (is.null(heights)) {
+      heights <- c(2, 1)
+    }
+  } else {
+    base_annotations <- list()
+    if (is.null(heights)) {
+      heights <- c(1, 1)
+    }
   }
 
   # now plot
   plot <- upset(upset_data, genes,
     name = "genetic determinant", min_size = min_set_size, width_ratio = 0.1,
-    sort_intersections_by=sort_intersections_by, sort_intersections=sort_intersections,
+    sort_intersections_by = sort_intersections_by, sort_intersections = sort_intersections,
     base_annotations = base_annotations,
     annotations = list(
       y_axis_name = (
         ggplot(mapping = aes(y = !!sym(mic_disk), colour = as.factor(!!sym(colour_by)))) +
-        geom_count() +
-        break_r_line + # these values will be NULL if plot breakpoints isn't set
-        break_s_line +
-        scale_colour_manual(values = colour_values) +
-        #scale_y + # set to scale_y_mic() if we have mic data
-        labs(y = y_axis_name, colour = colour_by, size = "Number of\nisolates") +
-        theme(legend.title = element_text(face = "bold"))
+          geom_count() +
+          break_r_line + # these values will be NULL if plot breakpoints isn't set
+          break_s_line +
+          scale_colour_manual(values = colour_values) +
+          # scale_y + # set to scale_y_mic() if we have mic data
+          labs(y = y_axis_name, colour = colour_by, size = "Number of\nisolates") +
+          theme(legend.title = element_text(face = "bold"))
       )
     )
-  ) + patchwork::plot_layout(heights=heights) # relative heights of plotting areas
+  ) + patchwork::plot_layout(heights = heights) # relative heights of plotting areas
 
   return(plot)
 }

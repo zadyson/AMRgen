@@ -60,39 +60,38 @@ print.gene <- function(x, ...) {
 #'
 #' This processing ensures compatibility with downstream AMR analysis workflows.
 #'
-#' @importFrom readr read_tsv
-#' @importFrom dplyr filter mutate select left_join all_of
-#' @importFrom tidyr separate_longer_delim
+#' @importFrom AMR as.ab
+#' @importFrom dplyr all_of everything filter left_join mutate select
 #' @importFrom tibble add_column
+#' @importFrom tidyr separate_longer_delim
 #'
 #' @examples
 #' # Example usage:
 #' \dontrun{
 #' # small example E. coli AMRfinderplus data
 #' ecoli_geno_raw
-#' 
+#'
 #' # import first few rows of this data frame and parse it as AMRfp data
-#' geno <- import_amrfp(ecoli_geno_raw %>% head(n=10), "Name")
+#' geno <- import_amrfp(ecoli_geno_raw %>% head(n = 10), "Name")
 #' geno
 #' }
 #' @export
 import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_table) {
-  
   in_table <- process_input(input_table)
 
-    # filter to only include AMR elements
+  # filter to only include AMR elements
   if ("Element type" %in% colnames(in_table)) {
     in_table <- in_table %>% filter(`Element type` == "AMR")
-  }
-  else {
-    print ("No `Element type` column found, assuming all rows report AMR markers")
+  } else {
+    print("No `Element type` column found, assuming all rows report AMR markers")
   }
 
   # create the gene class for the gene column
   if ("Gene symbol" %in% colnames(in_table)) {
     gene_col <- as.gene(in_table$`Gene symbol`)
+  } else {
+    stop("Expected column `Gene symbol` not found")
   }
-  else {stop("Expected column `Gene symbol` not found")}
 
   # Find the position of the "Gene symbol" column and insert gene after it (could replace it really)
   position <- which(names(in_table) == "Gene symbol")

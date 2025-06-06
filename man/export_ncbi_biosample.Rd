@@ -8,6 +8,10 @@ export_ncbi_biosample(data, file, overwrite = FALSE)
 }
 \arguments{
 \item{data}{data set containing SIR results}
+
+\item{file}{file path}
+
+\item{overwrite}{\link{logical} to overwrite existing file}
 }
 \description{
 Output phenotype data to \href{https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/}{NCBI BioSample Antibiograms}.

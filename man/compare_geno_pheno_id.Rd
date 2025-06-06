@@ -48,7 +48,10 @@ geno_table <- import_amrfp(ecoli_geno_raw, "Name")
 # example phenotype data
 head(ecoli_ast)
 
-result <- compare_geno_pheno_id(geno_table, ecoli_ast, geno_sample_col = "Name", pheno_sample_col = "id")
+result <- compare_geno_pheno_id(geno_table,
+                                ecoli_ast,
+                                geno_sample_col = "Name",
+                                pheno_sample_col = "id")
 print(result$pheno_unique)
 print(result$geno_unique)
 print(result$overlap_ids)

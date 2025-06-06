@@ -52,6 +52,8 @@ Assumes there are columns labelled "mic" and/or "disk"; these will be added to t
 
 \item{min}{Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).}
 
+\item{axis_label_size}{TODO fill in text}
+
 \item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'
 
 param axis_label_size Font size for axis labels in the PPV plot (default 9).}

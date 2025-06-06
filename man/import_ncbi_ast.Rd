@@ -75,7 +75,7 @@ pheno <- import_ncbi_ast(ecoli_ast_raw)
 head(pheno)
 
 # import and re-interpret resistance (S/I/R) and ECOFF (WT/NWT) using AMR package
-pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
+pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff = T)
 head(pheno)
 }
 }

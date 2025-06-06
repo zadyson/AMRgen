@@ -45,7 +45,7 @@ This processing ensures compatibility with downstream AMR analysis workflows.
 ecoli_geno_raw
 
 # import first few rows of this data frame and parse it as AMRfp data
-geno <- import_amrfp(ecoli_geno_raw \%>\% head(n=10), "Name")
+geno <- import_amrfp(ecoli_geno_raw \%>\% head(n = 10), "Name")
 geno
 }
 }

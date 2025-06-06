@@ -47,6 +47,16 @@ amr_complexUpset(
 
 \item{drug}{A character string specifying the antimicrobial agent to be analysed.}
 
+\item{sort_intersections_by}{TODO fill in text}
+
+\item{sort_intersections}{TODO fill in text}
+
+\item{show_intersect_size}{TODO fill in text}
+
+\item{intersect_counts}{TODO fill in text}
+
+\item{heights}{TODO fill in text}
+
 \item{colour_values}{A named vector specifying colours for different resistance categories (\code{S}, \code{I}, \code{R}). Default is \code{c(S="#66c2a5", I="#fdae61", R="#d53e4f")}.}
 }
 \value{
@@ -60,14 +70,15 @@ This function generates an Upset plot using a binary matrix of genetic determina
 
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
-binary_matrix<- get_binary_matrix(geno_table=ecoli_geno, 
-              pheno_table=ecoli_ast, 
-              antibiotic="Ciprofloxacin", 
-              drug_class_list=c("Quinolones"), 
-              sir_col="pheno", 
-              keep_assay_values=TRUE, 
-              keep_assay_values_from = "mic"
-           )
+binary_matrix <- get_binary_matrix(
+  geno_table = ecoli_geno,
+  pheno_table = ecoli_ast,
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = c("Quinolones"),
+  sir_col = "pheno",
+  keep_assay_values = TRUE,
+  keep_assay_values_from = "mic"
+)
 
 amr_complexUpset(binary_matrix)
 

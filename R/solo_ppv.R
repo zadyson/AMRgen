@@ -37,16 +37,18 @@
 #' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories
 #'   (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes.
 #'   Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
-#'   
+#'
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
 #'
 #' @param pd Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'
 #'
 #' param axis_label_size Font size for axis labels in the PPV plot (default 9).
-#' 
+#'
 #' @param keep_assay_values A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix.
 #'   Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to `TRUE`.
-#' 
+#'
+#' @param axis_label_size TODO fill in text
+#'
 #' @return A list containing the following elements:
 #'   \describe{
 #'     \item{solo_stats}{A dataframe summarizing the PPV for resistance (R vs S/I) and NWT (R/I vs S),
@@ -57,12 +59,10 @@
 #'     \item{amr_binary}{A dataframe with binary values for the AMR markers, based on the input genotype and phenotype data.}
 #'   }
 #'
-#' @importFrom dplyr %>%
-#' @importFrom ggplot2 ggplot aes geom_vline geom_linerange geom_point theme_bw labs scale_y_discrete
-#'   scale_colour_manual coord_flip geom_bar geom_text theme_light position_fill
+#' @importFrom AMR scale_fill_sir
+#' @importFrom dplyr any_of bind_rows filter group_by mutate n relocate rename select summarise
+#' @importFrom ggplot2 aes after_stat element_text geom_bar geom_linerange geom_point geom_text geom_vline ggplot ggtitle labs position_dodge position_fill scale_colour_manual scale_y_discrete theme theme_bw theme_light xlim
 #' @importFrom tidyr pivot_longer
-#' @importFrom purrr map
-#' @importFrom patchwork plot_layout plot_annotation
 #'
 #' @examples
 #' \dontrun{
@@ -71,7 +71,7 @@
 #'
 #' # example phenotype data
 #' head(ecoli_ast)
-#' 
+#'
 #' soloPPV_cipro <- solo_ppv_analysis(
 #'   geno_table = geno_table,
 #'   pheno_table = ecoli_ast,
@@ -87,9 +87,9 @@
 #' @export
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
-                              keep_assay_values = TRUE, min=1,
-                              axis_label_size=9, pd=position_dodge(width = 0.8),
-                              plot_cols = c("R" = "IndianRed","NWT" = "navy")) {
+                              keep_assay_values = TRUE, min = 1,
+                              axis_label_size = 9, pd = position_dodge(width = 0.8),
+                              plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -110,12 +110,12 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   marker_counts <- amr_binary %>%
     select(-any_of(c("id", "pheno", "R", "NWT", "mic", "disk"))) %>%
     rowSums()
-  
+
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
-    pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to="marker") %>%
+    pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
     filter(value == 1) %>%
-    filter(!is.na(pheno)) 
+    filter(!is.na(pheno))
 
   if (nrow(solo_binary) == 0) {
     stop("No solo markers found")
@@ -148,24 +148,26 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   solo_stats <- bind_rows(solo_stats_R, solo_stats_NWT) %>%
     relocate(category, .before = x) %>%
-    rename(ppv=p)
+    rename(ppv = p)
 
   # plots
-  markers_to_plot <- unique(solo_stats$marker[solo_stats$n>=min])
+  markers_to_plot <- unique(solo_stats$marker[solo_stats$n >= min])
 
   solo_pheno_plot <- solo_binary %>%
     filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
-    #scale_fill_manual(values = plot_cols) +
+    # scale_fill_manual(values = plot_cols) +
     scale_fill_sir() +
     geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
-    scale_y_discrete(limits=markers_to_plot) +
+    scale_y_discrete(limits = markers_to_plot) +
     theme_light() +
-    theme(axis.text.x=element_text(size=axis_label_size),
-          axis.text.y=element_text(size=axis_label_size)) +
+    theme(
+      axis.text.x = element_text(size = axis_label_size),
+      axis.text.y = element_text(size = axis_label_size)
+    ) +
     labs(y = "", x = "Proportion", fill = "Phenotype")
-  
+
   ppv_plot <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, group = category, col = category)) +
@@ -173,21 +175,23 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +
     geom_point(aes(x = ppv), position = pd) +
     theme_bw() +
-    scale_y_discrete(limits=markers_to_plot, labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
+    scale_y_discrete(limits = markers_to_plot, labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
     labs(y = "", x = "Solo PPV", col = "Category") +
     scale_colour_manual(values = plot_cols) +
-    theme(axis.text.x=element_text(size=axis_label_size),
-          axis.text.y=element_text(size=axis_label_size)) +
+    theme(
+      axis.text.x = element_text(size = axis_label_size),
+      axis.text.y = element_text(size = axis_label_size)
+    ) +
     xlim(0, 1)
 
   header <- paste("Solo markers for class:", paste0(drug_class_list, collapse = ", "))
 
-  combined_plot <- solo_pheno_plot + ggtitle(header, subtitle=paste("vs phenotype for drug:", antibiotic)) +
-    ppv_plot + 
-    patchwork::plot_layout(axes = "collect", guides = "collect") 
-    #patchwork::plot_annotation(title = header, subtitle = paste("vs phenotype for drug:", antibiotic))
+  combined_plot <- solo_pheno_plot + ggtitle(header, subtitle = paste("vs phenotype for drug:", antibiotic)) +
+    ppv_plot +
+    patchwork::plot_layout(axes = "collect", guides = "collect")
+  # patchwork::plot_annotation(title = header, subtitle = paste("vs phenotype for drug:", antibiotic))
 
   print(combined_plot)
-  
+
   return(list(solo_stats = solo_stats, combined_plot = combined_plot, solo_binary = solo_binary, amr_binary = amr_binary))
 }

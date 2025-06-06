@@ -1,16 +1,14 @@
-require(AMR)
-require(tidyverse)
-
 #' Get Microorganism from GTDB Species Name
 #'
 #' Parse a character vector containing species names from GTDB output to get a valid microorganism code.
 #'
-#' @param species name of species, coerced with [as.mo()]
+#' @param species name of species, coerced with [AMR::as.mo()].
 #'
 #' @return microorganism
 #' @export
 #'
 #' @examples gtdb.mo("Escherichia_A coli_BC")
+#' @importFrom AMR as.mo mo_cleaning_regex
 gtdb.mo <- function(species) {
   as.mo(species, cleaning_regex = paste0(mo_cleaning_regex(), "|_[A-Z]+($| )"), keep_synonyms = TRUE)
 }
@@ -32,6 +30,9 @@ gtdb.mo <- function(species) {
 #'   "Acinetobacter calcoaceticus_C"
 #' )))
 #' }
+#' @importFrom AMR mo_name
+#' @importFrom dplyr mutate
+#' @importFrom readr read_tsv
 import_gtdb <- function(file = NULL, tbl = NULL, species_column = "Species") {
   if (!is.null(file)) {
     tbl <- read_tsv(file)

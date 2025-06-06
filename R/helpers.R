@@ -1,7 +1,7 @@
 #' Compare Genotype and Phenotype Data by Sample ID
 #'
-#' This function compares genotype (`geno_data`) and phenotype (`pheno_data`) datasets based on their sample IDs. 
-#' It identifies sample IDs that are unique to either dataset, as well as those that overlap. Optionally, 
+#' This function compares genotype (`geno_data`) and phenotype (`pheno_data`) datasets based on their sample IDs.
+#' It identifies sample IDs that are unique to either dataset, as well as those that overlap. Optionally,
 #' it renames the sample ID columns in both datasets for consistency.
 #'
 #' @param geno_data A data frame containing the genotype data. The first column (or the column specified by
@@ -25,11 +25,14 @@
 #' @examples
 #' # Example usage
 #' geno_table <- import_amrfp(ecoli_geno_raw, "Name")
-#' 
+#'
 #' # example phenotype data
 #' head(ecoli_ast)
 #'
-#' result <- compare_geno_pheno_id(geno_table, ecoli_ast, geno_sample_col = "Name", pheno_sample_col = "id")
+#' result <- compare_geno_pheno_id(geno_table,
+#'                                 ecoli_ast,
+#'                                 geno_sample_col = "Name",
+#'                                 pheno_sample_col = "id")
 #' print(result$pheno_unique)
 #' print(result$geno_unique)
 #' print(result$overlap_ids)
@@ -37,6 +40,7 @@
 #' print(result$pheno_matched)
 #'
 #' @export
+#' @importFrom dplyr any_of filter pull rename
 compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL, pheno_sample_col = NULL, rename_id_cols = F) {
   if (is.null(geno_sample_col)) {
     geno_sample_col <- colnames(geno_data)[1]
@@ -77,6 +81,7 @@ compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL,
 
 
 
+#' @importFrom readr read_tsv
 process_input <- function(input) {
   # Check if the input is a file path (string)
   if (is.character(input) && file.exists(input)) {
@@ -99,6 +104,6 @@ process_input <- function(input) {
   return(data)
 }
 
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @export
-magrittr::`%>%`
+dplyr::`%>%`

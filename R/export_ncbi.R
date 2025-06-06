@@ -2,7 +2,12 @@
 #'
 #' Output phenotype data to [NCBI BioSample Antibiograms](https://www.ncbi.nlm.nih.gov/biosample/docs/antibiogram/).
 #' @param data data set containing SIR results
+#' @param file file path
+#' @param overwrite [logical] to overwrite existing file
 #' @export
+#' @importFrom AMR is.sir
+#' @importFrom dplyr transmute where %>%
+#' @importFrom tidyr pivot_longer
 export_ncbi_biosample <- function(data, file, overwrite = FALSE) {
   if (file.exists(file) && !overwrite) {
     stop("The file ", file, " already exists and `overwrite`` is set to `FALSE`")
@@ -11,7 +16,7 @@ export_ncbi_biosample <- function(data, file, overwrite = FALSE) {
     stop("`file` must have the file extension 'txt' or 'tsv'")
   }
   if (any(is.sir(data))) {
-    data <- data |>
+    data <- data %>%
       pivot_longer(where(AMR::is.sir),
         names_to = "antibiotic",
         values_to = "resistance_phenotype"

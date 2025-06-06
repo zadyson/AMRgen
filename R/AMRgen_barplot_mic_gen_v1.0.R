@@ -46,6 +46,12 @@
 #' - The function automatically groups the data by `Antibiotic`, `MIC (mg/L)`, and `Gene symbol` and calculates the frequency of occurrences.
 # - The plot uses the `viridis` color scale with the "turbo" palette by default. You can replace it with your custom palette if desired.
 #'
+#' @importFrom AMR ab_group scale_x_mic
+#' @importFrom dplyr case_when filter group_by join_by left_join mutate pull select summarise
+#' @importFrom ggplot2 aes element_blank element_text facet_wrap geom_bar geom_vline ggplot guide_legend guides labs theme theme_minimal unit
+#' @importFrom rlang sym
+#' @export
+#'
 #' @examples
 #' \dontrun{
 #' AMRgen_barplot_mic_gen(pheno_data,
@@ -55,11 +61,6 @@
 #'   pathogen_mo = "B_ESCHR_COLI"
 #' )
 #' }
-#' @import ggplot2
-#' @import dplyr
-#' @import AMR
-#' @export
-#'
 AMRgen_barplot_mic_gen <- function(pheno_data, geno_data,
                                    # provides specifics or a single name if it's the same in both
                                    pathogen_mo,

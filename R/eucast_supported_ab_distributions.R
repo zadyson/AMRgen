@@ -2,10 +2,8 @@
 #'
 #' Run this function to get an updated list of antimicrobial distributions currently supported by EUCAST. This retrieves live info from <https://mic.eucast.org>.
 #' @param ... arguments passed on to function, currently unused
-#' @importFrom rvest read_html html_element html_children html_text2 html_attrs
-#' @importFrom AMR ab_name
-#' @importFrom dplyr %>%
-#' @importFrom tidyr pivot_longer
+#' @importFrom AMR ab_name as.ab
+#' @importFrom rvest html_attrs html_children html_element html_text2 read_html
 #' @examples
 #' eucast_supported_ab_distributions()
 #' @export

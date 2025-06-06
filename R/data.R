@@ -13,7 +13,7 @@
 #'   \item{`MIC (mg/L)`}{minimum inhibitory concentration}
 #'   \item{`Disk diffusion (mm)`}{disk diffusion zone}
 #'   \item{`Resistance phenotype`}{resistance call (SIR) as submitted}
-#'   
+#'
 #'   ...
 #' }
 #' @source <https://www.ncbi.nlm.nih.gov/pathogens/ast>
@@ -41,7 +41,7 @@
 #'   \item{`MIC (mg/L)`}{minimum inhibitory concentration, from input file}
 #'   \item{`Disk diffusion (mm)`}{disk diffusion zone, from input file}
 #'   \item{`Resistance phenotype`}{resistance call (SIR), from input file}
-#'   
+#'
 #'   ...
 #' }
 #' @source <https://www.ncbi.nlm.nih.gov/pathogens/ast>
@@ -59,7 +59,7 @@
 #'   \item{`Hierarchy node`}{node in NCBI hierarchy}
 #'   \item{Class, Subclass}{drug class/es associated with marker (in NCBI refgene)}
 #'   \item{`% Coverage of reference sequence`,% Identity to reference sequence`, `Accession of closest sequence` }{sequence match information}
-#'   
+#'
 #'   ...
 #' }
 #' @source <https://github.com/ncbi/amr/wiki/Interpreting-results>

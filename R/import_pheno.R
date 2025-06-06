@@ -55,16 +55,18 @@
 #' \dontrun{
 #' # small example E. coli AST data from NCBI
 #' ecoli_ast_raw
-#' 
+#'
 #' # import without re-interpreting resistance
 #' pheno <- import_ncbi_ast(ecoli_ast_raw)
 #' head(pheno)
-#' 
+#'
 #' # import and re-interpret resistance (S/I/R) and ECOFF (WT/NWT) using AMR package
-#' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff=T)
+#' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = T, ecoff = T)
 #' head(pheno)
 #' }
-#' @importFrom magrittr %>%
+#' @importFrom AMR as.ab as.disk as.mic as.mo as.sir
+#' @importFrom dplyr any_of case_when if_else mutate relocate rename rowwise
+#' @importFrom tidyr unite
 #' @export
 import_ncbi_ast <- function(input, sample_col = "#BioSample", interpret = F, ecoff = F, default_guideline = "EUCAST") {
   ast <- process_input(input)

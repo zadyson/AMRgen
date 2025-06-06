@@ -7,7 +7,7 @@
 gtdb.mo(species)
 }
 \arguments{
-\item{species}{name of species, coerced with \code{\link[=as.mo]{as.mo()}}}
+\item{species}{name of species, coerced with \code{\link[AMR:as.mo]{AMR::as.mo()}}.}
 }
 \value{
 microorganism
