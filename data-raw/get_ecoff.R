@@ -1,8 +1,3 @@
-library(dplyr)
-library(tidyr)
-library(AMR)
-library(rvest)
-
 # set up a local environment to store the website results in:
 AMRgen_env <- new.env()
 

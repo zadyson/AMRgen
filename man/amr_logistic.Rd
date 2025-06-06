@@ -59,10 +59,10 @@ Performs logistic regression to analyze the relationship between genetic markers
 }
 \examples{
 # Example usage of the amr_logistic function
-result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), 
-                      pheno_table = ecoli_ast, 
-                      antibiotic = "Ciprofloxacin", 
-                      drug_class_list = c("Quinolones"), 
+result <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"),
+                      pheno_table = ecoli_ast,
+                      antibiotic = "Ciprofloxacin",
+                      drug_class_list = c("Quinolones"),
                       maf = 10)
 
 # To access the plot:

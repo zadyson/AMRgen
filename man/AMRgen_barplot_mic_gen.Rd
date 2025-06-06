@@ -70,7 +70,6 @@ the y-axis represents their frequency, and the bars are colored by the gene symb
 \details{
 \itemize{
 \item The function automatically groups the data by \code{Antibiotic}, \code{MIC (mg/L)}, and \verb{Gene symbol} and calculates the frequency of occurrences.
-\item The plot uses the \code{viridis} color scale with the "turbo" palette by default. You can replace it with your custom palette if desired.
 }
 }
 \examples{

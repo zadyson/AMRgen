@@ -44,7 +44,7 @@
 #'
 #' @details
 #' - The function automatically groups the data by `Antibiotic`, `MIC (mg/L)`, and `Gene symbol` and calculates the frequency of occurrences.
-#' - The plot uses the `viridis` color scale with the "turbo" palette by default. You can replace it with your custom palette if desired.
+# - The plot uses the `viridis` color scale with the "turbo" palette by default. You can replace it with your custom palette if desired.
 #'
 #' @examples
 #' \dontrun{
@@ -57,7 +57,6 @@
 #' }
 #' @import ggplot2
 #' @import dplyr
-#' @import viridis
 #' @import AMR
 #' @export
 #'
