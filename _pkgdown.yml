@@ -1,5 +1,5 @@
 # Site metadata
-url: 'https://interpretamr.github.io/AMRgen'
+url: 'https://amrverse.github.io/AMRgen'
 title: 'AMRgen'
 
 # Template settings
@@ -23,7 +23,7 @@ navbar:
   right:
     - text: "Source Code"
       icon: "fab fa-github"
-      href: "https://github.com/interpretAMR/AMRgen"
+      href: "https://github.com/amrverse/AMRgen"
       
 articles:
   - title: "Vignettes"
@@ -49,5 +49,5 @@ footer:
     left: [devtext]
     right: [logo]
   components:
-    devtext: 'Free and Open Source (GPL-2), brought by interpretAMR-AMRgen Development Team'
+    devtext: 'Free and Open Source (GPL-2), brought by amrverse-AMRgen Development Team'
     logo: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'

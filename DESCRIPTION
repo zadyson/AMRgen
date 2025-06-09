@@ -35,7 +35,7 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 License: GPL-3 | file LICENSE
-URL: https://interpretAMR.github.io/AMRgen/, https://github.com/interpretAMR/AMRgen
+URL: https://amrverse.github.io/AMRgen/, https://github.com/amrverse/AMRgen
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

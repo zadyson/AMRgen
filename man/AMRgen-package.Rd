@@ -11,8 +11,8 @@ The AMRgen package provides tools for interpreting antimicrobial resistance (AMR
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://interpretAMR.github.io/AMRgen/}
-  \item \url{https://github.com/interpretAMR/AMRgen}
+  \item \url{https://amrverse.github.io/AMRgen/}
+  \item \url{https://github.com/amrverse/AMRgen}
 }
 
 }
