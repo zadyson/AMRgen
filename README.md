@@ -10,7 +10,7 @@ R Package for Genetic and Phenotypic Resistance Interpretation
 
 This package is developed in collaboration with the ESGEM-AMR Working Group and is tailored for researchers and healthcare professionals tackling AMR globally.
 
-The [AMRgen website](https://interpretamr.github.io/AMRgen/index.html) has full function [documentation](https://interpretamr.github.io/AMRgen/reference/index.html) and a [Vignette](https://interpretamr.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
+The [AMRgen website](https://amrverse.github.io/AMRgen/index.html) has full function [documentation](https://amrverse.github.io/AMRgen/reference/index.html) and a [Vignette](https://amrverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
 
 ------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ remotes::install_github("msberends/AMR")
 Then install this package
 ```r
 # Install from GitHub
-remotes::install_github("interpretAMR/AMRgen")
+remotes::install_github("amrverse/AMRgen")
 ```
 
 It is best to restart R before running the installation. If you didn't do this and/or you encounter issues with the examples below after install, it may help to also restart after the install and start fresh with the examples below.
@@ -97,7 +97,7 @@ comparison
 ggplot2::autoplot(comparison)
 ```
 
-For more see the [Vignette](https://interpretamr.github.io/AMRgen/articles/AnalysingGenoPhenoData.html).
+For more see the [Vignette](https://amrverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html).
 
 
 ## Contributions
