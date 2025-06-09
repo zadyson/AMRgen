@@ -4,6 +4,8 @@ R Package for Genetic and Phenotypic Resistance Interpretation
 
 ## Overview
 
+<img src="logo.png" width="200" align="right" alt="AMRgen">
+
 **AMRgen** is an open-source R package designed to bridge the gap between genotypic and phenotypic antimicrobial resistance (AMR) data. Developed as an extension to the [AMR R package](https://github.com/msberends/AMR), it provides tools to interpret AMR genes, integrate these findings with antimicrobial susceptibility test (AST) data, and calculate genotype-phenotype associations.
 
 This package is developed in collaboration with the ESGEM-AMR Working Group and is tailored for researchers and healthcare professionals tackling AMR globally.
