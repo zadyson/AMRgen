@@ -283,6 +283,7 @@ glm_details <- function(model) {
 #' @param single_plot (Optional) A logical value. If `TRUE`, a single plot is produced comparing the estimates for resistance (`R`) and non-resistance (`NWT`). Otherwise, two plots are printed side-by-side. Defaults to `TRUE`.
 #' @param colors (Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to `c("maroon", "blue4")`.
 #' @param axis_label_size (Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.
+#' @param marker_col (Optional) Name of the column containing the marker identifiers, whose unique values will be treate as predictors in the regression. Defaults to `"marker"`.
 #' @importFrom dplyr any_of select where
 #' @importFrom ggplot2 ggtitle
 #' @importFrom stats glm
@@ -308,7 +309,8 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          sir_col = "pheno", ecoff_col = "ecoff",
                          maf = 10, glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
-                         axis_label_size = 9) {
+                         axis_label_size = 9, marker_col="marker") {
+
   bin_mat <- get_binary_matrix(
     geno_table = geno_table,
     pheno_table = pheno_table,
@@ -317,21 +319,22 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     geno_sample_col = geno_sample_col,
     pheno_sample_col = pheno_sample_col,
     sir_col = sir_col,
-    ecoff_col = ecoff_col
+    ecoff_col = ecoff_col,
+    marker_col = marker_col
   )
 
   if (glm) {
     print("Fitting logistic regression models using glm")
     modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = T) >= maf)), family = stats::binomial(link = "logit"))
-    modelR <- glm_details(modelR)
+    modelR <- glm_details(modelR) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
     modelNWT <- glm(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = T) >= maf)), family = stats::binomial(link = "logit"))
-    modelNWT <- glm_details(modelNWT)
+    modelNWT <- glm_details(modelNWT) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
   } else {
     print("Fitting logistic regression models using logistf")
-    modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = T) >= maf)))
-    modelR <- logistf_details(modelR)
-    modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = T) >= maf)))
-    modelNWT <- logistf_details(modelNWT)
+    modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = T) >= maf)), pl = FALSE)
+    modelR <- logistf_details(modelR) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
+    modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = T) >= maf)), pl = FALSE)
+    modelNWT <- logistf_details(modelNWT) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
   }
 
   plot <- compare_estimates(modelR, modelNWT,

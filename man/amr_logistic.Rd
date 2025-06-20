@@ -17,7 +17,8 @@ amr_logistic(
   glm = FALSE,
   single_plot = TRUE,
   colors = c("maroon", "blue4"),
-  axis_label_size = 9
+  axis_label_size = 9,
+  marker_col = "marker"
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ amr_logistic(
 \item{colors}{(Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to \code{c("maroon", "blue4")}.}
 
 \item{axis_label_size}{(Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.}
+
+\item{marker_col}{(Optional) Name of the column containing the marker identifiers, whose unique values will be treate as predictors in the regression. Defaults to \code{"marker"}.}
 }
 \value{
 A list with the following components:

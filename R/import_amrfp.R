@@ -7,7 +7,7 @@
 #' @importFrom AMR as.ab
 #' @importFrom dplyr all_of everything filter left_join mutate select
 #' @importFrom tibble add_column
-#' @importFrom tidyr separate_longer_delim
+#' @importFrom tidyr separate_longer_delim, separate
 #' @return A tibble containing the processed AMR elements, with harmonised gene names, mapped drug agents, and drug classes. The output retains the original columns from the AMRFinderPlus table along with the newly mapped variables.
 #' @details
 #' The function performs the following steps:
@@ -48,18 +48,66 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   # Find the position of the "Gene symbol" column and insert gene after it (could replace it really)
   position <- which(names(in_table) == "Gene symbol")
   in_table_gene <- add_column(in_table, marker = gene_col, .after = position)
+  
+  # separate into gene and mutation, with mutation in HGVS format
+  if ("Element subtype" %in% colnames(in_table)) {
+    in_table_mutation <- in_table_gene %>% separate(marker, into = c("gene", "mutation"), sep = "_", remove=F, fill="right") %>%
+      mutate(gene=if_else(`Element subtype`=="POINT", gene, as.character(marker))) %>%
+      mutate(mutation=if_else(`Element subtype`=="POINT", convert_mutation(mutation), NA))
+  } else {
+    print("No `Element subtype` column found, cannot parse mutations")
+    in_table_mutation <- in_table_gene %>% mutate(gene=NA, mutation=NA)
+  }
+  
+  # create AMRrules style label with node:mutation
+  if ("Hierarchy node" %in% colnames(in_table_mutation)) {
+    in_table_label <- in_table_mutation %>% 
+      mutate(marker.label=case_when(`Element subtype`=="POINT" & !is.na(`Hierarchy node`) ~ paste0(`Hierarchy node`,mutation,collapse=":"),
+                                    `Element subtype`=="POINT" & is.na(`Hierarchy node`) ~ paste0(gene,mutation,collapse=":"),
+                                    `Element subtype`!="POINT" & !is.na(`Hierarchy node`) ~ `Hierarchy node`,
+                                    `Element subtype`!="POINT" & is.na(`Hierarchy node`) ~ gene,
+                                    TRUE ~ NA))
+    
+    in_table_label <- in_table_mutation %>%
+      mutate(node=if_else(is.na(`Hierarchy node`), gene, `Hierarchy node`)) %>%
+      mutate(marker.label=if_else(`Element subtype`=="POINT", 
+                                  paste0(node,":",mutation),
+                                  node))
+  }
+  else {mutate(marker.label=NA, node=NA)}
 
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
-  in_table_subclass_split <- in_table_gene %>% separate_longer_delim(Subclass, "/")
+  in_table_subclass_split <- in_table_label %>% separate_longer_delim(Subclass, "/")
 
   # make two new columns - drug_class and drug_agent, where we control the vocab for the AMRFinderPlus Subclass column
   # into something that is comparable with the drugs in the AMR package
   in_table_ab <- in_table_subclass_split %>%
     left_join(., amrfp_drugs[, c("AFP_Subclass", "drug_agent", "drug_class")], by = c("Subclass" = "AFP_Subclass")) %>%
-    select(all_of(sample_col), marker, drug_agent, drug_class, everything())
+    relocate(any_of(c("marker","gene","mutation","node","marker.label", "drug_agent", "drug_class")), .before=`Gene symbol`)
 
   # convert drug_agent into the "ab" class (will leave NAs as is)
   in_table_ab <- in_table_ab %>% mutate(drug_agent = as.ab(drug_agent))
 
   return(in_table_ab)
+}
+
+#' @export
+convert_mutation <- function(mut) {
+  
+  # to consider
+  # AMRfp encodes protein mutations as adeS_T153M or adeS_Q163STOP or amrR_ASLD153del
+  #    promoter mutations have -X position ampC_C-42G
+  #    some protein substitutions might have multiple AA on either side of the coordinate
+  # weird one: cirA_Y253CfsTer5
+  
+  aa_mapping <- c(
+    A = "Ala", R = "Arg", N = "Asn", D = "Asp", C = "Cys", E = "Glu",
+    Q = "Gln", G = "Gly", H = "His", I = "Ile", L = "Leu", K = "Lys",
+    M = "Met", F = "Phe", P = "Pro", S = "Ser", T = "Thr", W = "Trp",
+    Y = "Tyr", V = "Val"
+  )
+  aa1 <- substr(mut, 1, 1)
+  position <- substr(mut, 2, nchar(mut) - 1)
+  aa2 <- substr(mut, nchar(mut), nchar(mut))
+  return(paste0("p.", aa_mapping[aa1], position, aa_mapping[aa2]))
 }

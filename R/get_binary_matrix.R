@@ -9,6 +9,7 @@
 #' @param pheno_sample_col A character string (optional) specifying the column name in `pheno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
 #' @param ecoff_col A character string specifying the column name in `pheno_table` that contains the ECOFF interpretation of phenotype. The values should be interpretable as "WT" (wildtype) or "NWT" (nonwildtype).
+#' @param marker_col A character string specifying the column name in `geno_table` containing the marker identifiers. Defaults to `"marker"`.
 #' @param keep_SIR A logical indicating whether to retain the full S/I/R phenotype column in the output. Defaults to `TRUE`.
 #' @param keep_assay_values A logical indicating whether to include columns with the raw phenotype assay data. Assumes there are columns labelled "mic" and "disk"; these will be added to the output table if present. Defaults to `FALSE`.
 #' @param keep_assay_values_from A character vector specifying which assay values (e.g., `"mic"`, `"disk"`) to retain if `keep_assay_values` is `TRUE`. Defaults to `c("mic", "disk")`.
@@ -68,7 +69,9 @@
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff", most_resistant = TRUE) {
+                              sir_col = "pheno", ecoff_col = "ecoff", marker_col="marker", 
+                              most_resistant = TRUE) {
+  
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
@@ -98,7 +101,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   pheno_matched <- overlap$pheno_matched
   geno_matched <- overlap$geno_matched
 
-  # take single representative row per sample
+  # take single representative phenotype row per sample
   pheno_matched_rows_unfiltered <- nrow(pheno_matched)
   if (most_resistant) { # take most resistant
     pheno_matched <- pheno_matched %>%
@@ -170,17 +173,19 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   # extract list of relevant drug markers
   markers <- geno_matched %>%
     filter(drug_class %in% drug_class_list | as.ab(drug_agent) == as.ab(antibiotic)) %>%
-    pull(marker) %>%
+    pull(get(marker_col)) %>%
     unique()
 
   # get geno as binary table indicating presence/absence for the relevant drug markers
   geno_binary <- geno_matched %>%
-    filter(marker %in% markers) %>%
-    group_by(id, marker) %>%
+    filter(get(marker_col) %in% markers) %>%
+    group_by(id, get(marker_col)) %>%
     count() %>%
+    rename(marker=`get(marker_col)`) %>%
     mutate(n = if_else(n > 1, 1, n)) %>% # only count 1 per strain
     ungroup() %>%
     right_join(pheno_binary, by = "id") %>%
+    mutate(marker = gsub(":", "..", marker)) %>% # replace : separator with .. otherwise pivot_wider replaces it with _
     pivot_wider(names_from = marker, values_from = n, values_fill = 0)
 
   # if there were samples with phenotypes, but no hits for any markers, there will be a 'NA' column created, need to remove this

@@ -8,6 +8,7 @@
 #' @param geno_sample_col A character string (optional) specifying the column name in `geno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param pheno_sample_col A character string (optional) specifying the column name in `pheno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
+#' @param marker_col A character string specifying the column name in `geno_table` containing the marker identifiers. Defaults to `"marker"`.
 #' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
 #' @param pd Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.
@@ -41,7 +42,7 @@
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
-                              keep_assay_values = TRUE, min = 1,
+                              marker_col="marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
   # check there is a SIR column specified
@@ -57,7 +58,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     antibiotic = antibiotic,
     drug_class_list = drug_class_list,
     geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col,
-    sir_col = sir_col, keep_assay_values = keep_assay_values
+    sir_col = sir_col, keep_assay_values = keep_assay_values, marker_col=marker_col
   )
 
   # get solo markers
@@ -68,6 +69,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
     pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
+    mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker)) %>%
     filter(value == 1) %>%
     filter(!is.na(pheno))
 

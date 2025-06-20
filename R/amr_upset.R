@@ -68,7 +68,10 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     unite("combination_id", genes[1]:genes[length(genes)], remove = FALSE) # add in combinations
 
   # Make matrix longer
-  binary_matrix <- binary_matrix_wide %>% pivot_longer(cols = genes[1]:genes[length(genes)], names_to = "genes")
+  binary_matrix <- binary_matrix_wide %>% 
+    pivot_longer(cols = genes[1]:genes[length(genes)], names_to = "genes") %>%
+    mutate(genes=gsub("\\.\\.", ":", genes)) %>% 
+    mutate(genes=gsub("`", "", genes))
 
   ### Counts per combination, for bar plot - X axis = combination. Y axis = number of strains ###
   # This first to filter on combinations with enough data
@@ -135,7 +138,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       min = min(genes),
       max = max(genes)
     ) %>%
-    ungroup()
+    ungroup() 
 
   ### Set order of combination_id <- x axis
   # Default = decreasing frequency
@@ -238,13 +241,14 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   }
 
   ### Dot plot of combinations
-  g3 <- binary_matrix %>%
+  
+  g3 <- binary_matrix <- binary_matrix %>%
     mutate(binary_comb = if_else(value > 0, 1, 0)) %>%
     ggplot(aes(x = combination_id, y = fct_rev(genes))) +
     geom_point(aes(size = binary_comb), show.legend = FALSE) +
     theme_bw() +
     scale_size_continuous(range = c(-1, 2)) +
-    scale_y_discrete("Marker") +
+    scale_y_discrete(name="Marker") +
     geom_segment(
       data = multi_genes_combination_ids,
       aes(
@@ -260,7 +264,8 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     )
 
   ### Plot gene prev / set size
-  g4 <- ggplot(gene.prev, aes(x = fct_rev(genes), y = gene.prev)) +
+  g4 <- gene.prev %>%
+    ggplot(aes(x = fct_rev(genes), y = gene.prev)) +
     geom_col() +
     theme_bw() +
     coord_flip() +
@@ -295,16 +300,30 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   print(final_plot)
 
   # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
-  summary <- binary_matrix_wide %>%
-    group_by(combination_id) %>%
-    summarise(
-      median = median(as.double(as.mic(get(assay), keep_operators = FALSE))),
-      q25 = stats::quantile(as.double(as.mic(get(assay), keep_operators = FALSE)), 0.25),
-      q75 = stats::quantile(as.double(as.mic(get(assay), keep_operators = FALSE)), 0.75),
-      ppv = mean(R, na.rm = T),
-      R = sum(R, na.rm = T),
-      n = n()
-    )
+  if (assay=="mic") {
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise(
+        median = median(as.double(as.mic(mic, keep_operators = FALSE)), na.rm=T),
+        q25 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.25, na.rm=T),
+        q75 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.75, na.rm=T),
+        ppv = mean(R, na.rm = T),
+        R = sum(R, na.rm = T),
+        n = n()
+      )
+  }
+  else {
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise(
+        median = median(as.double(as.disk(disk)), na.rm=T),
+        q25 = stats::quantile(as.double(as.disk(disk)), 0.25, na.rm=T),
+        q75 = stats::quantile(as.double(as.disk(disk)), 0.75, na.rm=T),
+        ppv = mean(R, na.rm = T),
+        R = sum(R, na.rm = T),
+        n = n()
+      )
+  }
 
   # get names for summary
   combination_names <- binary_matrix_wide %>%
@@ -324,7 +343,9 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     mutate(marker_list = if_else(is.na(marker_list), "-", marker_list)) %>%
     mutate(marker_count = if_else(is.na(marker_count), 0, marker_count)) %>%
     relocate(marker_list, .before = median) %>%
-    relocate(marker_count, .before = median)
+    relocate(marker_count, .before = median) %>%
+    mutate(marker_list=gsub("\\.\\.", ":", marker_list)) %>% 
+    mutate(marker_list=gsub("`", "", marker_list))
 
   return(list(plot = final_plot, summary = summary))
 }

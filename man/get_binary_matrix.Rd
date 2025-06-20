@@ -16,6 +16,7 @@ get_binary_matrix(
   pheno_sample_col = NULL,
   sir_col = "pheno",
   ecoff_col = "ecoff",
+  marker_col = "marker",
   most_resistant = TRUE
 )
 }
@@ -41,6 +42,8 @@ get_binary_matrix(
 \item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
 
 \item{ecoff_col}{A character string specifying the column name in \code{pheno_table} that contains the ECOFF interpretation of phenotype. The values should be interpretable as "WT" (wildtype) or "NWT" (nonwildtype).}
+
+\item{marker_col}{A character string specifying the column name in \code{geno_table} containing the marker identifiers. Defaults to \code{"marker"}.}
 
 \item{most_resistant}{A logical indicating whether, when multiple phenotype entries are present for the same sample and drug, the most resistant should be kept (otherwise the least resistant is kept). Default is \code{TRUE}.}
 }

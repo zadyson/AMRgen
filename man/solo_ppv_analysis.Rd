@@ -12,6 +12,7 @@ solo_ppv_analysis(
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
   sir_col = NULL,
+  marker_col = "marker",
   keep_assay_values = TRUE,
   min = 1,
   axis_label_size = 9,
@@ -33,6 +34,8 @@ solo_ppv_analysis(
 \item{pheno_sample_col}{A character string (optional) specifying the column name in \code{pheno_table} containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column contains identifiers.}
 
 \item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
+
+\item{marker_col}{A character string specifying the column name in \code{geno_table} containing the marker identifiers. Defaults to \code{"marker"}.}
 
 \item{keep_assay_values}{A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix. Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to \code{TRUE}.}
 
