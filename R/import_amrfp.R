@@ -38,40 +38,33 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
     print("No `Element type` column found, assuming all rows report AMR markers")
   }
 
-  # create the gene class for the gene column
-  if ("Gene symbol" %in% colnames(in_table)) {
-    gene_col <- as.gene(in_table$`Gene symbol`)
+  # detect variation type
+  if ("Method" %in% colnames(in_table)) {
+    in_table_mutation <- in_table %>% 
+      mutate(marker=`Gene symbol`) %>%
+      mutate(`variation type`=case_when(Method=="INTERNAL_STOP" ~ "Inactivating mutation detected",
+                                      grepl("PARTIAL", Method) ~ "Inactivating mutation detected",
+                                      Method=="POINTN" ~ "Nucleotide variant detected",
+                                      Method %in% c("POINTX", "POINTP") ~ "Protein variant detected",
+                                      Method %in% c("ALLELEP", "ALLELEX", "BLASTP", "BLASTX", "EXACTP", "EXACTX") ~ "Gene presence detected",
+                                      TRUE ~ NA)) %>% 
+      separate(marker, into = c("gene", "mutation"), sep = "_", remove=F, fill="right") %>%
+      mutate(gene=if_else(startsWith(Method,"POINT"), gene, marker)) %>%
+      mutate(mutation=if_else(startsWith(Method,"POINT"),convert_mutation(marker, Method), mutation))
   } else {
-    stop("Expected column `Gene symbol` not found")
-  }
-
-  # Find the position of the "Gene symbol" column and insert gene after it (could replace it really)
-  position <- which(names(in_table) == "Gene symbol")
-  in_table_gene <- add_column(in_table, marker = gene_col, .after = position)
-  
-  # separate into gene and mutation, with mutation in HGVS format
-  if ("Element subtype" %in% colnames(in_table)) {
-    in_table_mutation <- in_table_gene %>% separate(marker, into = c("gene", "mutation"), sep = "_", remove=F, fill="right") %>%
-      mutate(gene=if_else(`Element subtype`=="POINT", gene, as.character(marker))) %>%
-      mutate(mutation=if_else(`Element subtype`=="POINT", convert_mutation(mutation), NA))
-  } else {
-    print("No `Element subtype` column found, cannot parse mutations")
-    in_table_mutation <- in_table_gene %>% mutate(gene=NA, mutation=NA)
+    print("Need Method columns to assign to parse mutations and assign variation type")
+    in_table_mutation <- marker %>% mutate(`variation type`=NA, gene=NA, mutation=NA)
   }
   
   # create AMRrules style label with node:mutation
-  if ("Hierarchy node" %in% colnames(in_table_mutation)) {
-    in_table_label <- in_table_mutation %>% 
-      mutate(marker.label=case_when(`Element subtype`=="POINT" & !is.na(`Hierarchy node`) ~ paste0(`Hierarchy node`,mutation,collapse=":"),
-                                    `Element subtype`=="POINT" & is.na(`Hierarchy node`) ~ paste0(gene,mutation,collapse=":"),
-                                    `Element subtype`!="POINT" & !is.na(`Hierarchy node`) ~ `Hierarchy node`,
-                                    `Element subtype`!="POINT" & is.na(`Hierarchy node`) ~ gene,
-                                    TRUE ~ NA))
-    
+  if ("Hierarchy node" %in% colnames(in_table_mutation) & "Element subtype" %in% colnames(in_table_mutation)) {
     in_table_label <- in_table_mutation %>%
       mutate(node=if_else(is.na(`Hierarchy node`), gene, `Hierarchy node`)) %>%
       mutate(marker.label=if_else(`Element subtype`=="POINT", 
-                                  paste0(node,":",mutation),
+                                  if_else(!is.na(mutation), paste0(node,":",mutation), gsub("_",":",marker)),
+                                  node)) %>%
+      mutate(marker.label=if_else(`variation type`=="Inactivating mutation detected", 
+                                  paste0(node,":-"),
                                   node))
   }
   else {mutate(marker.label=NA, node=NA)}
@@ -91,23 +84,58 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   return(in_table_ab)
 }
 
-#' @export
-convert_mutation <- function(mut) {
+
+#' Convert mutation string based on method
+#'
+#' This function takes a mutation string (e.g., "gene_REF123ALT") and a
+#' mutation method, then extracts and converts parts of the mutation string.
+#' Specifically designed for use within `dplyr::mutate()`.
+#'
+#' @param gene_symbol_col A character vector representing the 'Gene symbol'
+#'                        column (the mutation string).
+#' @param method_col A character vector representing the 'Method' column.
+#' @return A character vector containing the formatted mutation strings
+#'         (e.g., "Ala123Trp") or NA if not applicable/match.
+#' @examples
+#' data_for_mutation <- tibble(
+#'   `Gene symbol` = c("gyrA_S83I","ompK36_D135DGD","cirA_W427STOP", "cirA_Y253CfsTer5", "blaSHV_C-112A"),
+#'   Method = c("POINTX", "POINTP", "POINTX", "POINTP", "POINTN")
+#' )
+#'
+#' data_for_mutation %>%
+#'   mutate(mutation = convert_mutation(`Gene symbol`, Method))
+convert_mutation <- function(gene_symbol_col, method_col) {
   
-  # to consider
-  # AMRfp encodes protein mutations as adeS_T153M or adeS_Q163STOP or amrR_ASLD153del
-  #    promoter mutations have -X position ampC_C-42G
-  #    some protein substitutions might have multiple AA on either side of the coordinate
-  # weird one: cirA_Y253CfsTer5
+  # Ensure inputs are treated as vectors. `mutate` will pass them as such.
+  # The regex pattern for splitting the mutation string
+  regex_pattern <- "^([^_]+)_([A-Za-z]+)(-?)(\\d+)([A-Za-z]+)$"
   
-  aa_mapping <- c(
-    A = "Ala", R = "Arg", N = "Asn", D = "Asp", C = "Cys", E = "Glu",
-    Q = "Gln", G = "Gly", H = "His", I = "Ile", L = "Leu", K = "Lys",
-    M = "Met", F = "Phe", P = "Pro", S = "Ser", T = "Thr", W = "Trp",
-    Y = "Tyr", V = "Val"
+  # Apply str_match to the entire gene_symbol_col vector.
+  # str_match is already vectorized, so it handles all rows at once.
+  result_matrix <- str_match(gene_symbol_col, regex_pattern)
+  
+  # Convert the result matrix to a tibble immediately
+  extracted_data <- tibble(
+    ref = result_matrix[,3],
+    minus = result_matrix[,4],
+    position = result_matrix[,5],
+    alt = result_matrix[,6]
   )
-  aa1 <- substr(mut, 1, 1)
-  position <- substr(mut, 2, nchar(mut) - 1)
-  aa2 <- substr(mut, nchar(mut), nchar(mut))
-  return(paste0("p.", aa_mapping[aa1], position, aa_mapping[aa2]))
+  
+  # Perform the conditional conversion based on Method and apply convert_aa_code
+  new_ref <- ifelse(method_col %in% c("POINTX", "POINTP"), convert_aa_code(extracted_data$ref), extracted_data$ref)
+  new_alt <- ifelse(method_col %in% c("POINTX", "POINTP"), convert_aa_code(extracted_data$alt), extracted_data$alt)
+  
+  # Construct the final mutation string
+  # `paste0` is vectorized. We need to handle NA carefully if new_ref, position, or new_alt are NA.
+  new_mutation_string <- ifelse(
+    method_col %in% c("POINTX", "POINTP") ,
+    ifelse(!is.na(new_ref) & !is.na(new_alt) & !is.na(extracted_data$position),
+           paste0(new_ref, extracted_data$minus, extracted_data$position, new_alt),
+           NA_character_ # Return NA if any of the components are NA
+    ),
+    paste0(extracted_data$minus, extracted_data$position, new_ref, ">", new_alt)
+  )
+  
+  return(new_mutation_string)
 }
