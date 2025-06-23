@@ -76,7 +76,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   # into something that is comparable with the drugs in the AMR package
   in_table_ab <- in_table_subclass_split %>%
     left_join(., amrfp_drugs[, c("AFP_Subclass", "drug_agent", "drug_class")], by = c("Subclass" = "AFP_Subclass")) %>%
-    relocate(any_of(c("marker","gene","mutation","node","marker.label", "drug_agent", "drug_class")), .before=`Gene symbol`)
+    relocate(any_of(c("marker","gene","mutation","node","marker.label", "variation type", "drug_agent", "drug_class")), .before=`Gene symbol`)
 
   # convert drug_agent into the "ab" class (will leave NAs as is)
   in_table_ab <- in_table_ab %>% mutate(drug_agent = as.ab(drug_agent))
