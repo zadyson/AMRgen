@@ -65,7 +65,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
                                   node)) %>%
       mutate(marker.label=if_else(`variation type`=="Inactivating mutation detected", 
                                   paste0(node,":-"),
-                                  node))
+                                  marker.label))
   }
   else {in_table_label <- in_table_mutation %>% mutate(marker.label=NA, node=NA)}
 
