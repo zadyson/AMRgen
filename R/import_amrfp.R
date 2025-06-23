@@ -29,7 +29,8 @@
 #' geno
 #' }
 import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_table) {
-  in_table <- process_input(input_table)
+  in_table <- process_input(input_table) %>% 
+    mutate(marker=`Gene symbol`)
 
   # filter to only include AMR elements
   if ("Element type" %in% colnames(in_table)) {
@@ -41,7 +42,6 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   # detect variation type
   if ("Method" %in% colnames(in_table)) {
     in_table_mutation <- in_table %>% 
-      mutate(marker=`Gene symbol`) %>%
       mutate(`variation type`=case_when(Method=="INTERNAL_STOP" ~ "Inactivating mutation detected",
                                       grepl("PARTIAL", Method) ~ "Inactivating mutation detected",
                                       Method=="POINTN" ~ "Nucleotide variant detected",
@@ -53,7 +53,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
       mutate(mutation=if_else(startsWith(Method,"POINT"),convert_mutation(marker, Method), mutation))
   } else {
     print("Need Method columns to assign to parse mutations and assign variation type")
-    in_table_mutation <- in_table %>% mutate(`variation type`=NA, gene=NA, mutation=NA, marker=`Gene symbol`)
+    in_table_mutation <- in_table %>% mutate(`variation type`=NA, gene=NA, mutation=NA)
   }
   
   # create AMRrules style label with node:mutation
@@ -76,7 +76,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
   # into something that is comparable with the drugs in the AMR package
   in_table_ab <- in_table_subclass_split %>%
     left_join(., amrfp_drugs[, c("AFP_Subclass", "drug_agent", "drug_class")], by = c("Subclass" = "AFP_Subclass")) %>%
-    relocate(any_of(c("marker","gene","mutation","node","marker.label", "variation type", "drug_agent", "drug_class")), .before=`Gene symbol`)
+    relocate(any_of(c(sample_col, "gene", "mutation", "node", "variation type", "marker", "marker.label",  "drug_agent", "drug_class")))
 
   # convert drug_agent into the "ab" class (will leave NAs as is)
   in_table_ab <- in_table_ab %>% mutate(drug_agent = as.ab(drug_agent))
