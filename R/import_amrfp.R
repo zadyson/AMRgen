@@ -53,7 +53,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
       mutate(mutation=if_else(startsWith(Method,"POINT"),convert_mutation(marker, Method), mutation))
   } else {
     print("Need Method columns to assign to parse mutations and assign variation type")
-    in_table_mutation <- marker %>% mutate(`variation type`=NA, gene=NA, mutation=NA)
+    in_table_mutation <- in_table %>% mutate(`variation type`=NA, gene=NA, mutation=NA, marker=`Gene symbol`)
   }
   
   # create AMRrules style label with node:mutation
@@ -67,7 +67,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
                                   paste0(node,":-"),
                                   node))
   }
-  else {mutate(marker.label=NA, node=NA)}
+  else {in_table_label <- in_table_mutation %>% mutate(marker.label=NA, node=NA)}
 
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
   in_table_subclass_split <- in_table_label %>% separate_longer_delim(Subclass, "/")
@@ -96,14 +96,7 @@ import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_tabl
 #' @param method_col A character vector representing the 'Method' column.
 #' @return A character vector containing the formatted mutation strings
 #'         (e.g., "Ala123Trp") or NA if not applicable/match.
-#' @examples
-#' data_for_mutation <- tibble(
-#'   `Gene symbol` = c("gyrA_S83I","ompK36_D135DGD","cirA_W427STOP", "cirA_Y253CfsTer5", "blaSHV_C-112A"),
-#'   Method = c("POINTX", "POINTP", "POINTX", "POINTP", "POINTN")
-#' )
-#'
-#' data_for_mutation %>%
-#'   mutate(mutation = convert_mutation(`Gene symbol`, Method))
+#' @export
 convert_mutation <- function(gene_symbol_col, method_col) {
   
   # Ensure inputs are treated as vectors. `mutate` will pass them as such.
@@ -138,4 +131,77 @@ convert_mutation <- function(gene_symbol_col, method_col) {
   )
   
   return(new_mutation_string)
+}
+
+
+check_mixed_case_grepl <- function(s) {
+  # Check if string contains at least one uppercase letter
+  has_upper <- grepl("[A-Z]", s)
+  # Check if string contains at least one lowercase letter
+  has_lower <- grepl("[a-z]", s)
+  
+  # Return TRUE only if both conditions are met
+  return(has_upper && has_lower)
+}
+
+
+#' Convert single-letter amino acid code(s) to three-letter code(s)
+#'
+#' This function takes a single-letter amino acid code, a vector of single-letter codes,
+#' or a string representing a sequence of single-letter codes. It returns the
+#' corresponding three-letter code(s), concatenated directly for sequences.
+#'
+#' @param input_code A character string (e.g., "A", "MAG") or a vector of
+#'                   character strings (e.g., c("A", "G", "C")).
+#' @importFrom stringr str_split
+#' @return A character string (or vector of strings) with the three-letter
+#'         amino acid code(s). For multi-character input strings, a single
+#'         concatenated string is returned. Returns NA for individual unmatched codes.
+#' @examples
+#' # Single character input
+#' convert_aa_code("A")
+#'
+#' # Vector of single characters
+#' convert_aa_code(c("M", "A", "G", "Z")) # Z will be NA
+#'
+#' # Multi-character sequence input
+#' convert_aa_code("MAG")
+#' convert_aa_code("MAGL")
+#'
+#' @export
+convert_aa_code <- function(input_code) {
+  aa_mapping <- c(
+    A = "Ala", R = "Arg", N = "Asn", D = "Asp", C = "Cys", E = "Glu",
+    Q = "Gln", G = "Gly", H = "His", I = "Ile", L = "Leu", K = "Lys",
+    M = "Met", F = "Phe", P = "Pro", S = "Ser", T = "Thr", W = "Trp",
+    Y = "Tyr", V = "Val", `*`="Ter"
+  )
+  # `sapply` ensures this works correctly if `input_code` is a vector
+  # (which is how `mutate` passes a column to the function).
+  sapply(input_code, function(single_input_str) {
+    # Handle NA inputs gracefully
+    if (is.na(single_input_str)) {
+      return(NA_character_)
+    }
+    
+    # replace any 'STOP' codon with "*"
+    single_input_str <- gsub("STOP", "*", single_input_str)
+    
+    # if there are any lowercase, assume this is already in 3-letter code and return unchanged
+    if (check_mixed_case_grepl(single_input_str)) {
+      return(single_input_str)
+    }
+    
+    # Split the input string into individual characters
+    chars <- stringr::str_split(single_input_str, pattern = "")[[1]]
+    
+    # Perform the lookup for each character
+    converted_chars <- aa_mapping[chars]
+    
+    # return NA if any letters can't be converted
+    if (any(is.na(converted_chars))) { return(NA_character_) }
+    
+    # Concatenate the 3-letter codes directly (no separator)
+    return(paste(unname(converted_chars), collapse = ""))
+  }, USE.NAMES = FALSE) # USE.NAMES=FALSE prevents sapply from trying to name the output vector
 }
