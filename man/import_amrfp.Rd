@@ -4,12 +4,12 @@
 \alias{import_amrfp}
 \title{Import and Process AMRFinderPlus Results}
 \usage{
-import_amrfp(input_table, sample_col, amrfp_drugs = amrfp_drugs_table)
+import_amrfp(input_table, sample_col = "Name", amrfp_drugs = amrfp_drugs_table)
 }
 \arguments{
 \item{input_table}{A character string specifying the path to the AMRFinderPlus results table (TSV format).}
 
-\item{sample_col}{A character string specifying the column that identifies samples in the dataset.}
+\item{sample_col}{A character string specifying the column that identifies samples in the dataset (default \code{Name}).}
 
 \item{amrfp_drugs}{A tibble containing a reference table mapping AMRFinderPlus subclasses (\code{AFP_Subclass}) to standardised drug agents (\code{drug_agent}) and drug classes (\code{drug_class}). Defaults to \code{amrfp_drugs_table}, which is provided internally.}
 }

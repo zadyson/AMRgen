@@ -2,7 +2,7 @@
 #'
 #' This function imports and processes AMRFinderPlus results, extracting antimicrobial resistance (AMR) elements and mapping them to standardised antibiotic names and drug classes. The function also converts gene symbols to a harmonised format and ensures compatibility with the AMR package.
 #' @param input_table A character string specifying the path to the AMRFinderPlus results table (TSV format).
-#' @param sample_col A character string specifying the column that identifies samples in the dataset.
+#' @param sample_col A character string specifying the column that identifies samples in the dataset (default `Name`).
 #' @param amrfp_drugs A tibble containing a reference table mapping AMRFinderPlus subclasses (`AFP_Subclass`) to standardised drug agents (`drug_agent`) and drug classes (`drug_class`). Defaults to `amrfp_drugs_table`, which is provided internally.
 #' @importFrom AMR as.ab
 #' @importFrom dplyr all_of everything filter left_join mutate select
@@ -28,7 +28,7 @@
 #' geno <- import_amrfp(ecoli_geno_raw %>% head(n = 10), "Name")
 #' geno
 #' }
-import_amrfp <- function(input_table, sample_col, amrfp_drugs = amrfp_drugs_table) {
+import_amrfp <- function(input_table, sample_col="Name", amrfp_drugs = amrfp_drugs_table) {
   in_table <- process_input(input_table) %>% 
     mutate(marker=`Gene symbol`)
 

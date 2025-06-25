@@ -5,7 +5,7 @@
 \alias{ecoli_geno_raw}
 \title{E. coli Genotype Example Data}
 \format{
-\subsection{\code{ecoli_geno_raw} A data frame with 53591 rows and 10 columns representing genotyping results from AMRfinderPlus.}{
+\subsection{\code{ecoli_geno_raw} A data frame with 45228 rows and 28 columns representing genotyping results from AMRfinderPlus.}{
 
 Columns include:
 \itemize{
