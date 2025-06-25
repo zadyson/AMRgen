@@ -108,31 +108,16 @@ import_ncbi_ast <- function(input, sample_col = "#BioSample", interpret = F, eco
         }
         if (interpret) {
           ast <- ast %>%
-            rowwise() %>%
-            mutate(pheno_MIC = if_else(!is.na(mic),
-              as.sir(mic, mo = spp_pheno, ab = drug_agent, guideline = guideline),
-              NA
-            )) %>%
-            mutate(pheno_disk = if_else(!is.na(disk),
-              as.sir(disk, mo = spp_pheno, ab = drug_agent, guideline = guideline),
-              NA
-            )) %>%
-            unite(pheno, pheno_MIC:pheno_disk, na.rm = T) %>%
-            mutate(pheno = as.sir(pheno)) %>%
+            mutate(pheno_mic = as.sir(mic, ab = drug_agent, mo = spp_pheno, guideline = guideline)) %>%
+            mutate(pheno_disk = as.sir(disk, ab = drug_agent, mo = spp_pheno, guideline = guideline)) %>%
+            mutate(pheno = coalesce(pheno_mic, pheno_disk)) %>%
             relocate(pheno, .after = drug_agent)
         }
         if (ecoff) {
           ast <- ast %>%
-            rowwise() %>%
-            mutate(ecoff_MIC = if_else(!is.na(mic),
-              as.sir(mic, mo = spp_pheno, ab = drug_agent, guideline = guideline, breakpoint_type = "ECOFF"),
-              NA
-            )) %>%
-            mutate(ecoff_disk = if_else(!is.na(disk),
-              as.sir(disk, mo = spp_pheno, ab = drug_agent, guideline = guideline, breakpoint_type = "ECOFF"),
-              NA
-            )) %>%
-            unite(ecoff, ecoff_MIC:ecoff_disk, na.rm = T) %>%
+            mutate(ecoff_mic = as.sir(mic, ab = drug_agent, mo = spp_pheno, guideline = guideline, breakpoint_type = "ECOFF")) %>%
+            mutate(ecoff_disk = as.sir(disk, ab = drug_agent, mo = spp_pheno, guideline = guideline, breakpoint_type = "ECOFF")) %>%
+            mutate(ecoff = coalesce(ecoff_mic, ecoff_disk)) %>%
             mutate(ecoff = case_when(ecoff == "R" ~ "NWT", ecoff == "S" ~ "WT", TRUE ~ NA)) %>%
             relocate(ecoff, .after = drug_agent)
         }

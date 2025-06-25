@@ -6,8 +6,9 @@
 #' @param amrfp_drugs A tibble containing a reference table mapping AMRFinderPlus subclasses (`AFP_Subclass`) to standardised drug agents (`drug_agent`) and drug classes (`drug_class`). Defaults to `amrfp_drugs_table`, which is provided internally.
 #' @importFrom AMR as.ab
 #' @importFrom dplyr all_of everything filter left_join mutate select
-#' @importFrom tibble add_column
+#' @importFrom tibble tibble add_column
 #' @importFrom tidyr separate_longer_delim, separate
+#' @importFrom stringr str_match
 #' @return A tibble containing the processed AMR elements, with harmonised gene names, mapped drug agents, and drug classes. The output retains the original columns from the AMRFinderPlus table along with the newly mapped variables.
 #' @details
 #' The function performs the following steps:
@@ -105,7 +106,7 @@ convert_mutation <- function(gene_symbol_col, method_col) {
   
   # Apply str_match to the entire gene_symbol_col vector.
   # str_match is already vectorized, so it handles all rows at once.
-  result_matrix <- str_match(gene_symbol_col, regex_pattern)
+  result_matrix <- stringr::str_match(gene_symbol_col, regex_pattern)
   
   # Convert the result matrix to a tibble immediately
   extracted_data <- tibble(

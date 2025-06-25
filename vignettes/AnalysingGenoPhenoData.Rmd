@@ -138,7 +138,8 @@ The function returns 4 objects:
 ``` {r manual_logistic, fig.height=8}
 # Manually run Firth's logistic regression model using the binary matrix produced above
 dataR <- cip_bin[, setdiff(names(cip_bin), c("id", "pheno", "mic", "NWT"))]
-modelR <- logistf::logistf(R ~ ., data = dataR)
+dataR <- dataR[,colSums(dataR, na.rm=T)>5]
+modelR <- logistf::logistf(R ~ ., data = dataR, pl = FALSE)
 
 summary(modelR)
 

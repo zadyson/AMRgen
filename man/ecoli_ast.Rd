@@ -5,7 +5,7 @@
 \alias{ecoli_ast}
 \title{E. coli NCBI AST Example Data, Re-interpreted with AMR Package}
 \format{
-\subsection{\code{ecoli_ast} A data frame with 15320 rows and 24 columns representing reinterpreted data from the NCBI AST browser.}{
+\subsection{\code{ecoli_ast} A data frame with 6305 rows and 7 columns representing reinterpreted data from the NCBI AST browser.}{
 
 Columns include:
 \itemize{
