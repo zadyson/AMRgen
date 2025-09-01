@@ -1,7 +1,5 @@
 # AMRgen
 
-R Package for Genetic and Phenotypic Resistance Interpretation 
-
 ## Overview
 
 <img src="logo.png" width="200" align="right" alt="AMRgen">
@@ -22,7 +20,7 @@ The [AMRgen website](https://AMRverse.github.io/AMRgen/index.html) has full func
 -   **Visualisation**: Generate powerful UpSet plots to identify intersections of AMR gene presence and phenotypic resistance, highlighting multidrug resistance patterns.
 -   **Modular and Extensible**: Leverages the robust foundation of the AMR package, including antibiotic selectors and clinical breakpoint interpretations.
 
-> Planned for development
+Planned for development:
 
 -   **NCBI-Compliant Export**: Export phenotype data to NCBI-compliant antibiogram format.
 -   **Expanded Data Import**: Import and parse phenotype data from other tools (e.g. CARD, ResFinder).

@@ -105,7 +105,8 @@ The genotype and phenotype tables can include data related to many different dru
 # Get matrix combining phenotype data for ciprofloxacin, binary calls for R/NWT phenotype,
 #    and genotype presence/absence data for all markers associated with the relevant drug
 #    class (which are labelled "Quinolones" in AMRfinderplus).
-cip_bin <- get_binary_matrix(ecoli_geno,
+cip_bin <- get_binary_matrix(
+  ecoli_geno,
   ecoli_ast,
   antibiotic = "Ciprofloxacin",
   drug_class_list = "Quinolones",
@@ -163,8 +164,11 @@ plot_estimates(modelR_summary)
 ``` {r amr_logistic, fig.height=8}
 # Alternatively, use the amr_logistic() function to model R and NWT and plot the results together
 models <- amr_logistic(
-  geno_table = import_amrfp(ecoli_geno_raw, "Name"), pheno_table = ecoli_ast,
-  antibiotic = "Ciprofloxacin", drug_class_list = c("Quinolones"), maf = 10
+  geno_table = import_amrfp(ecoli_geno_raw, "Name"),
+  pheno_table = ecoli_ast,
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = c("Quinolones"),
+  maf = 10
 )
 
 # Output tables
@@ -197,7 +201,8 @@ The function returns 4 objects:
 
 ``` {r solo_ppv_analysis, fig.height=8}
 # Run a solo PPV analysis
-soloPPV_cipro <- solo_ppv_analysis(ecoli_geno,
+soloPPV_cipro <- solo_ppv_analysis(
+  ecoli_geno,
   ecoli_ast,
   antibiotic = "Ciprofloxacin",
   drug_class_list = "Quinolones",
@@ -228,7 +233,8 @@ The function returns 2 objects:
 ``` {r amr_upset, fig.height=8}
 # Compare ciprofloxacin MIC data with quinolone marker combinations,
 #    using the binary matrix we constructed earlier via get_binary_matrix()
-cipro_mic_upset <- amr_upset(cip_bin,
+cipro_mic_upset <- amr_upset(
+  cip_bin,
   min_set_size = 2,
   assay = "mic",
   order = "value"
@@ -252,7 +258,10 @@ ecoli_cip_disk_data <- get_eucast_disk_distribution("cipro", "E. coli")
 
 # plot the MIC data
 mics <- rep(ecoli_cip_mic_data$mic, ecoli_cip_mic_data$count)
-ggplot2::autoplot(mics, ab = "cipro", mo = "E. coli", title = "E. coli cipro reference distribution")
+ggplot2::autoplot(mics,
+                  ab = "cipro",
+                  mo = "E. coli",
+                  title = "E. coli cipro reference distribution")
 ```
 
 ``` {r compare_mic_with_eucast}
