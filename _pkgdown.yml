@@ -1,5 +1,21 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 # Site metadata
-url: 'https://amrverse.github.io/AMRgen'
+url: 'https://AMRverse.github.io/AMRgen'
 title: 'AMRgen'
 
 # Template settings
@@ -23,25 +39,59 @@ navbar:
   right:
     - text: "Source Code"
       icon: "fab fa-github"
-      href: "https://github.com/amrverse/AMRgen"
-      
+      href: "https://github.com/AMRverse/AMRgen"
+
 articles:
   - title: "Vignettes"
     contents:
       - AnalysingGenoPhenoData
 
 # Reference section grouping
-# reference:
-#   - title: 'Core Functions'
-#     desc: 'Primary functions for resistance interpretation'
-#     contents:
-#       - function1
-#       - function2
-#   - title: 'Utilities'
-#     desc: 'Helper functions'
-#     contents:
-#       - function3
-#       - function4
+reference:
+  - title: "Data Import & Preprocessing"
+    desc: >
+      Functions to import, harmonise, and prepare genotype and phenotype data from public repositories or internal formats.
+    contents:
+      - starts_with("import")
+      - starts_with("export")
+      - starts_with("convert")
+      - get_binary_matrix
+      - as.gene
+      - gtdb.mo
+
+  - title: "Resistance Interpretation"
+    desc: >
+      Core tools for interpreting antimicrobial resistance based on EUCAST breakpoints and custom models.
+    contents:
+      - starts_with("compare")
+      - matches("eucast")
+      - solo_ppv_analysis
+      - merge_logreg_soloppv
+
+  - title: "Modelling"
+    desc: >
+      Statistical models for resistance prediction and inference, including logistic regression and Firth regression.
+    contents:
+      - amr_logistic
+      - glm_details
+      - logistf_details
+
+  - title: "Visualisation & Reporting"
+    desc: >
+      Tools to visualise results, including MIC distributions, model outputs, and genotype-phenotype relationships.
+    contents:
+      - matches("plot")
+      - amr_upset
+      - amr_complexUpset
+
+  - title: "Data"
+    desc: >
+      Example datasets for demonstration and reproducible analysis.
+    contents:
+      - ecoli_ast
+      - ecoli_ast_raw
+      - ecoli_geno_raw
+
 
 # Footer configuration
 footer:
@@ -49,5 +99,5 @@ footer:
     left: [devtext]
     right: [logo]
   components:
-    devtext: 'Free and Open Source (GPL-2), brought by amrverse-AMRgen Development Team'
+    devtext: 'Free and Open Source (GPL-3), brought by AMRverse/AMRgen Development Team'
     logo: 'Our goal is to develop interpretive standards for AMR genotypes, akin to the interpretive standards developed by EUCAST and CLSI for antimicrobial susceptibility phenotyping.'

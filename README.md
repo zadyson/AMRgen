@@ -6,11 +6,11 @@ R Package for Genetic and Phenotypic Resistance Interpretation
 
 <img src="logo.png" width="200" align="right" alt="AMRgen">
 
-**AMRgen** is an open-source R package designed to bridge the gap between genotypic and phenotypic antimicrobial resistance (AMR) data. Developed as an extension to the [AMR R package](https://github.com/msberends/AMR), it provides tools to interpret AMR genes, integrate these findings with antimicrobial susceptibility test (AST) data, and calculate genotype-phenotype associations.
+**AMRgen** is an open-source R package designed to bridge the gap between genotypic and phenotypic antimicrobial resistance (AMR) data. Developed as an extension to the [AMR R package](https://amr-for-r.org), it provides tools to interpret AMR genes, integrate these findings with antimicrobial susceptibility test (AST) data, and calculate genotype-phenotype associations.
 
 This package is developed in collaboration with the ESGEM-AMR Working Group and is tailored for researchers and healthcare professionals tackling AMR globally.
 
-The [AMRgen website](https://amrverse.github.io/AMRgen/index.html) has full function [documentation](https://amrverse.github.io/AMRgen/reference/index.html) and a [Vignette](https://amrverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
+The [AMRgen website](https://AMRverse.github.io/AMRgen/index.html) has full function [documentation](https://AMRverse.github.io/AMRgen/reference/index.html) and a [Vignette](https://AMRverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
 
 ------------------------------------------------------------------------
 
@@ -33,21 +33,17 @@ The [AMRgen website](https://amrverse.github.io/AMRgen/index.html) has full func
 To install and explore the package, follow the instructions below:
 
 ### Installation
-Note that this package requires the latest version of the `AMR` package (still in beta).
 
-Install the latest version of the `AMR` package with:
+Install the latest version of this package with:
+
 ```r
 install.packages("remotes") # if you haven't already
-remotes::install_github("msberends/AMR")
+remotes::install_github("AMRverse/AMRgen")
 ```
 
-Then install this package
-```r
-# Install from GitHub
-remotes::install_github("amrverse/AMRgen")
-```
+All required packages, including the [AMR package](https://amr-for-r.org), will be installed automatically.
 
-It is best to restart R before running the installation. If you didn't do this and/or you encounter issues with the examples below after install, it may help to also restart after the install and start fresh with the examples below.
+It might be best to restart R before running the installation to prevent issues with running the examples below.
 
 ## Quick Usage Examples
 
@@ -97,7 +93,7 @@ comparison
 ggplot2::autoplot(comparison)
 ```
 
-For more see the [Vignette](https://amrverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html).
+For more see the [Vignette](https://AMRverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html).
 
 
 ## Contributions

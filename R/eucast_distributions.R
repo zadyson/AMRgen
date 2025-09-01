@@ -1,3 +1,57 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
+#' Retrieve Available Antimicrobial Wild Type Distributions from EUCAST
+#'
+#' Run this function to get an updated list of antimicrobial distributions currently supported by EUCAST. This retrieves live info from <https://mic.eucast.org>.
+#' @param ... Arguments passed on to the function, currently unused.
+#' @importFrom AMR ab_name as.ab
+#' @importFrom rvest html_attrs html_children html_element html_text2 read_html
+#' @export
+#' @examples
+#' eucast_supported_ab_distributions()
+eucast_supported_ab_distributions <- function(...) {
+  if (is.null(AMRgen_env$eucast_ab_select_list)) {
+    if (interactive()) message("Retrieving list of antimicrobials from ", font_url("https://mic.eucast.org", "mic.eucast.org"), "...", appendLF = FALSE)
+    url <- "https://mic.eucast.org/search/?search[method]=mic"
+    page <- read_html(url)
+    select_list <- page %>%
+      html_element("#search_antibiotic") %>%
+      html_children()
+    select_values <- select_list %>%
+      html_attrs() %>%
+      unlist()
+    select_names <- select_list %>% html_text2()
+    select_names <- select_names[!grepl("...", names(select_values), fixed = TRUE)]
+    select_names_AMR <- as.character(as.ab(select_names, flag_multiple_results = FALSE, info = FALSE, fast_mode = TRUE))
+    select_values <- select_values[!is.na(select_names_AMR)]
+    select_names_AMR <- select_names_AMR[!is.na(select_names_AMR)]
+    names(select_names_AMR) <- select_values
+    AMRgen_env$eucast_ab_select_list <- select_names_AMR
+    if (interactive()) message("OK")
+  }
+
+  if (isTRUE(list(...)$invisible)) {
+    return(invisible())
+  }
+  out <- ab_name(AMRgen_env$eucast_ab_select_list)
+  names(out) <- AMRgen_env$eucast_ab_select_list
+  sort(out)
+}
+
 #' Get and Compare Antimicrobial Wild Type Distributions from EUCAST
 #'
 #' These functions allow retrieval of antimicrobial wild type distributions, live from [eucast.org](https://mic.eucast.org).
@@ -49,9 +103,6 @@
 #' comparison
 #' ggplot2::autoplot(comparison)
 get_eucast_amr_distribution <- function(ab, mo = NULL, method = "MIC", as_freq_table = TRUE) {
-  font_url <- get("font_url", envir = asNamespace("AMR"))
-  font_italic <- get("font_italic", envir = asNamespace("AMR"))
-
   # retrieve available antimicrobials online
   eucast_supported_ab_distributions(invisible = TRUE)
 
@@ -212,7 +263,8 @@ autoplot.compare_eucast <- function(object, ...) {
     mutate(
       User = user / sum(user),
       EUCAST = eucast / sum(eucast),
-      value = as.mic(value, keep_operators = "none")) %>%
+      value = as.mic(value, keep_operators = "none")
+    ) %>%
     select(-user, -eucast) %>%
     pivot_longer(-value, names_to = "Source", values_to = "count")
 

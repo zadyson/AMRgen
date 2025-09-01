@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Perform Solo PPV Analysis for AMR Markers
 #'
 #' This function performs a Positive Predictive Value (PPV) analysis for AMR markers associated with a given antibiotic and drug class. It calculates the PPV for solo markers and visualizes the results using various plots.
@@ -42,7 +58,7 @@
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
-                              marker_col="marker", keep_assay_values = TRUE, min = 1,
+                              marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
   # check there is a SIR column specified
@@ -58,7 +74,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     antibiotic = antibiotic,
     drug_class_list = drug_class_list,
     geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col,
-    sir_col = sir_col, keep_assay_values = keep_assay_values, marker_col=marker_col
+    sir_col = sir_col, keep_assay_values = keep_assay_values, marker_col = marker_col
   )
 
   # get solo markers
@@ -69,7 +85,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
     pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
-    mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker)) %>%
+    mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+    mutate(marker = gsub("`", "", marker)) %>%
     filter(value == 1) %>%
     filter(!is.na(pheno))
 
@@ -81,7 +98,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   solo_stats_R <- solo_binary %>%
     group_by(marker) %>%
     summarise(
-      x = sum(R, na.rm = T),
+      x = sum(R, na.rm = TRUE),
       n = n(),
       p = x / n,
       se = sqrt(p * (1 - p) / n),

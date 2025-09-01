@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Compare Genotype and Phenotype Data by Sample ID
 #'
 #' This function compares genotype (`geno_data`) and phenotype (`pheno_data`) datasets based on their sample IDs. It identifies sample IDs that are unique to either dataset, as well as those that overlap. Optionally, it renames the sample ID columns in both datasets for consistency.
@@ -18,15 +34,16 @@
 #' geno_table <- import_amrfp(ecoli_geno_raw, "Name")
 #' head(ecoli_ast)
 #' result <- compare_geno_pheno_id(geno_table,
-#'                                 ecoli_ast,
-#'                                 geno_sample_col = "Name",
-#'                                 pheno_sample_col = "id")
+#'   ecoli_ast,
+#'   geno_sample_col = "Name",
+#'   pheno_sample_col = "id"
+#' )
 #' print(result$pheno_unique)
 #' print(result$geno_unique)
 #' print(result$overlap_ids)
 #' print(result$geno_matched)
 #' print(result$pheno_matched)
-compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL, pheno_sample_col = NULL, rename_id_cols = F) {
+compare_geno_pheno_id <- function(geno_data, pheno_data, geno_sample_col = NULL, pheno_sample_col = NULL, rename_id_cols = FALSE) {
   if (is.null(geno_sample_col)) {
     geno_sample_col <- colnames(geno_data)[1]
   }

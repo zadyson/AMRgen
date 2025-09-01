@@ -21,7 +21,12 @@ amr_upset(
 
 \item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.}
 
-\item{order}{A character string indicating the order of the combinations on the x-axis. Options are: - "" (default): decreasing frequency of combinations - "genes": order by the number of genes in each combination - "value": order by the median assay value (MIC or disk zone) for each combination.}
+\item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
+\itemize{
+\item "" (default): decreasing frequency of combinations
+\item "genes": order by the number of genes in each combination
+\item "value": order by the median assay value (MIC or disk zone) for each combination.
+}}
 
 \item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is FALSE.}
 
@@ -33,7 +38,11 @@ amr_upset(
 
 \item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".}
 
-\item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of: - "mic": plot MIC data stored in column \code{mic} - "disk": plot disk diffusion data stored in column \code{disk}}
+\item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
+\itemize{
+\item "mic": plot MIC data stored in column \code{mic}
+\item "disk": plot disk diffusion data stored in column \code{disk}
+}}
 }
 \value{
 A list containing the following elements:

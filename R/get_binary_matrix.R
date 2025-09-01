@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Get Binary Matrix of Genotype and Phenotype Data
 #'
 #' This function generates a binary matrix representing the resistance (R vs S/I) and nonwildtype (R/I vs S) status for a given antibiotic, and presence or absence of genetic markers related to one or more specified drug classes. It takes as input separate tables for genotype and phenotype data, matches these according to a common identifier (either specified by column names or assuming the first column contains the ID), and filters the data according to the specified antibiotic and drug class criteria before creating a binary matrix. Suitable input files can be generated using `import_ncbi_ast` to import phenotype data from NCBI, and `parse_amrfp` to import genotype data from AMRfinderPlus.
@@ -69,9 +85,8 @@
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff", marker_col="marker", 
+                              sir_col = "pheno", ecoff_col = "ecoff", marker_col = "marker",
                               most_resistant = TRUE) {
-  
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
@@ -97,7 +112,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
 
   # subset pheno & geno dataframes to those samples with overlap
-  overlap <- compare_geno_pheno_id(geno_table, pheno_table, geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col, rename_id_cols = T)
+  overlap <- compare_geno_pheno_id(geno_table, pheno_table, geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col, rename_id_cols = TRUE)
   pheno_matched <- overlap$pheno_matched
   geno_matched <- overlap$geno_matched
 
@@ -181,7 +196,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     filter(get(marker_col) %in% markers) %>%
     group_by(id, get(marker_col)) %>%
     count() %>%
-    rename(marker=`get(marker_col)`) %>%
+    rename(marker = `get(marker_col)`) %>%
     mutate(n = if_else(n > 1, 1, n)) %>% # only count 1 per strain
     ungroup() %>%
     right_join(pheno_binary, by = "id") %>%

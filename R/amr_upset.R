@@ -1,15 +1,36 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Generate a Series of Plots for AMR Gene and Combination Analysis
 #'
 #' This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence. It also outputs a table summarizing the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
 #' @param binary_matrix A data frame containing the original binary matrix output from the `get_binary_matrix` function. Expected columns are an identifier (column 1, any name), `pheno` (class sir, with S/I/R categories to colour points), `mic` (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).
 #' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.
-#' @param order A character string indicating the order of the combinations on the x-axis. Options are: - "" (default): decreasing frequency of combinations - "genes": order by the number of genes in each combination - "value": order by the median assay value (MIC or disk zone) for each combination.
+#' @param order A character string indicating the order of the combinations on the x-axis. Options are:
+#' - "" (default): decreasing frequency of combinations
+#' - "genes": order by the number of genes in each combination
+#' - "value": order by the median assay value (MIC or disk zone) for each combination.
 #' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is FALSE.
 #' @param print_set_size Logical indicating whether, if `plot_set_size` is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.
 #' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the `pheno` column in the input file). Default is TRUE.
 #' @param print_category_counts Logical indicating whether, if `plot_category` is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is FALSE.
 #' @param boxplot_colour Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".
-#' @param assay A character string indicating whether to plot MIC or disk diffusion data. Must be one of: - "mic": plot MIC data stored in column `mic` - "disk": plot disk diffusion data stored in column `disk`
+#' @param assay A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
+#' - "mic": plot MIC data stored in column `mic`
+#' - "disk": plot disk diffusion data stored in column `disk`
 #' @importFrom AMR as.mic scale_color_sir scale_fill_sir scale_y_mic
 #' @importFrom dplyr any_of arrange desc distinct filter group_by if_else left_join mutate n pull relocate row_number select summarise ungroup
 #' @importFrom forcats fct_rev
@@ -68,10 +89,10 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     unite("combination_id", genes[1]:genes[length(genes)], remove = FALSE) # add in combinations
 
   # Make matrix longer
-  binary_matrix <- binary_matrix_wide %>% 
+  binary_matrix <- binary_matrix_wide %>%
     pivot_longer(cols = genes[1]:genes[length(genes)], names_to = "genes") %>%
-    mutate(genes=gsub("\\.\\.", ":", genes)) %>% 
-    mutate(genes=gsub("`", "", genes))
+    mutate(genes = gsub("\\.\\.", ":", genes)) %>%
+    mutate(genes = gsub("`", "", genes))
 
   ### Counts per combination, for bar plot - X axis = combination. Y axis = number of strains ###
   # This first to filter on combinations with enough data
@@ -128,7 +149,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     filter(value == 1) %>%
     mutate(u = length(unique(genes))) %>%
     filter(genes %in% gene.order.desc) %>%
-    mutate(genes = factor(genes, levels = gene.order.desc, ordered = T))
+    mutate(genes = factor(genes, levels = gene.order.desc, ordered = TRUE))
 
   # get only those with > 1
   multi_genes_combination_ids <- multi_genes_combination_id_all %>%
@@ -138,7 +159,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       min = min(genes),
       max = max(genes)
     ) %>%
-    ungroup() 
+    ungroup()
 
   ### Set order of combination_id <- x axis
   # Default = decreasing frequency
@@ -241,14 +262,14 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   }
 
   ### Dot plot of combinations
-  
+
   g3 <- binary_matrix <- binary_matrix %>%
     mutate(binary_comb = if_else(value > 0, 1, 0)) %>%
     ggplot(aes(x = combination_id, y = fct_rev(genes))) +
     geom_point(aes(size = binary_comb), show.legend = FALSE) +
     theme_bw() +
     scale_size_continuous(range = c(-1, 2)) +
-    scale_y_discrete(name="Marker") +
+    scale_y_discrete(name = "Marker") +
     geom_segment(
       data = multi_genes_combination_ids,
       aes(
@@ -300,27 +321,26 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   print(final_plot)
 
   # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
-  if (assay=="mic") {
+  if (assay == "mic") {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
       summarise(
-        median = median(as.double(as.mic(mic, keep_operators = FALSE)), na.rm=T),
-        q25 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.25, na.rm=T),
-        q75 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.75, na.rm=T),
-        ppv = mean(R, na.rm = T),
-        R = sum(R, na.rm = T),
+        median = median(as.double(as.mic(mic, keep_operators = FALSE)), na.rm = TRUE),
+        q25 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.25, na.rm = TRUE),
+        q75 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.75, na.rm = TRUE),
+        ppv = mean(R, na.rm = TRUE),
+        R = sum(R, na.rm = TRUE),
         n = n()
       )
-  }
-  else {
+  } else {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
       summarise(
-        median = median(as.double(as.disk(disk)), na.rm=T),
-        q25 = stats::quantile(as.double(as.disk(disk)), 0.25, na.rm=T),
-        q75 = stats::quantile(as.double(as.disk(disk)), 0.75, na.rm=T),
-        ppv = mean(R, na.rm = T),
-        R = sum(R, na.rm = T),
+        median = median(as.double(as.disk(disk)), na.rm = TRUE),
+        q25 = stats::quantile(as.double(as.disk(disk)), 0.25, na.rm = TRUE),
+        q75 = stats::quantile(as.double(as.disk(disk)), 0.75, na.rm = TRUE),
+        ppv = mean(R, na.rm = TRUE),
+        R = sum(R, na.rm = TRUE),
         n = n()
       )
   }
@@ -344,8 +364,8 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     mutate(marker_count = if_else(is.na(marker_count), 0, marker_count)) %>%
     relocate(marker_list, .before = median) %>%
     relocate(marker_count, .before = median) %>%
-    mutate(marker_list=gsub("\\.\\.", ":", marker_list)) %>% 
-    mutate(marker_list=gsub("`", "", marker_list))
+    mutate(marker_list = gsub("\\.\\.", ":", marker_list)) %>%
+    mutate(marker_list = gsub("`", "", marker_list))
 
   return(list(plot = final_plot, summary = summary))
 }

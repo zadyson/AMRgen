@@ -25,3 +25,5 @@
 ^tests/testthat/_snaps$
 ^CRAN-SUBMISSION$
 ^data-raw$
+^logo\.png$
+^docs$

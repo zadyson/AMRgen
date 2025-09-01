@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Generate a Stacked Bar Plot of MIC Values Colored by Gene Symbol for Each Antibiotic
 #'
 #' This function creates a stacked bar plot using `ggplot2`, where the x-axis represents MIC (Minimum Inhibitory Concentration) values, the y-axis represents their frequency, and the bars are colored by the gene symbols. The plot is faceted by antibiotic.
@@ -31,17 +47,17 @@
 #' )
 #' }
 barplot_mic_gen <- function(pheno_data, geno_data,
-                                   # provides specifics or a single name if it's the same in both
-                                   pathogen_mo,
-                                   abs_to_plot, # list of drugs you want to plot, using three letter codes
-                                   pheno_sample_col = NULL, geno_sample_col = NULL, # default is null and assume first col in each, otherwise user
-                                   measure_method = "mic",
-                                   breakpoint_source = "EUCAST 2025",
-                                   breakpoint_type = "ECOFF",
-                                   color_by = "gene", # alt.: 'class'
-                                   plot_title = "Frequency distribution of values for different genotypes",
-                                   leg_pos = "bottom",
-                                   ncol_leg = min(2, round(length(unique(geno_data$marker)) / 10))) {
+                            # provides specifics or a single name if it's the same in both
+                            pathogen_mo,
+                            abs_to_plot, # list of drugs you want to plot, using three letter codes
+                            pheno_sample_col = NULL, geno_sample_col = NULL, # default is null and assume first col in each, otherwise user
+                            measure_method = "mic",
+                            breakpoint_source = "EUCAST 2025",
+                            breakpoint_type = "ECOFF",
+                            color_by = "gene", # alt.: 'class'
+                            plot_title = "Frequency distribution of values for different genotypes",
+                            leg_pos = "bottom",
+                            ncol_leg = min(2, round(length(unique(geno_data$marker)) / 10))) {
   # todo:
   # add a lot more parameters (ggplot2)
 

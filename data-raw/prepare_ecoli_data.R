@@ -1,8 +1,8 @@
 # subset of NCBI AST data that has already been re-interpreted using import_ncbi_ast
 # provided for testing solo_ppv_analysis and amr_upset functions
 ecoli_ast <- read_tsv("ecoli_pheno.tsv.gz") %>%
-  import_ncbi_ast(interpret=T, ecoff=T, default_guideline="CLSI") %>%
-  filter(`Scientific name`="Escherichia coli") %>% 
+  import_ncbi_ast(interpret = TRUE, ecoff = TRUE, default_guideline = "CLSI") %>%
+  filter(`Scientific name` = "Escherichia coli") %>%
   filter(pheno != "NI")
 
 # small dataframe that mimics a raw import of NCBI AST tab-delim file
@@ -21,6 +21,6 @@ ecoli_ast <- ecoli_ast %>%
 # provided for testing import_amrfp, solo_ppv_analysis and amr_upset functions
 ecoli_geno_raw <- read_tsv("ecoli_geno.tsv.gz")
 
-usethis::use_data(ecoli_ast, internal = F, overwrite = TRUE)
-usethis::use_data(ecoli_ast_raw, internal = F, overwrite = TRUE)
-usethis::use_data(ecoli_geno_raw, internal = F, overwrite = TRUE)
+usethis::use_data(ecoli_ast, internal = FALSE, overwrite = TRUE)
+usethis::use_data(ecoli_ast_raw, internal = FALSE, overwrite = TRUE)
+usethis::use_data(ecoli_geno_raw, internal = FALSE, overwrite = TRUE)

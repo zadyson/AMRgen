@@ -9,7 +9,7 @@ compare_geno_pheno_id(
   pheno_data,
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
-  rename_id_cols = F
+  rename_id_cols = FALSE
 )
 }
 \arguments{
@@ -40,9 +40,10 @@ This function compares genotype (\code{geno_data}) and phenotype (\code{pheno_da
 geno_table <- import_amrfp(ecoli_geno_raw, "Name")
 head(ecoli_ast)
 result <- compare_geno_pheno_id(geno_table,
-                                ecoli_ast,
-                                geno_sample_col = "Name",
-                                pheno_sample_col = "id")
+  ecoli_ast,
+  geno_sample_col = "Name",
+  pheno_sample_col = "id"
+)
 print(result$pheno_unique)
 print(result$geno_unique)
 print(result$overlap_ids)

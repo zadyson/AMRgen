@@ -7,8 +7,8 @@
 import_ncbi_ast(
   input,
   sample_col = "#BioSample",
-  interpret = F,
-  ecoff = F,
+  interpret = FALSE,
+  ecoff = FALSE,
   default_guideline = "EUCAST"
 )
 }

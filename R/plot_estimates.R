@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Plot Estimates from a Table of Results
 #'
 #' This function creates a ggplot object visualizing logistic regression coefficients with their 95% confidence intervals. Significant markers are highlighted based on a specified p-value threshold.
@@ -309,8 +325,7 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          sir_col = "pheno", ecoff_col = "ecoff",
                          maf = 10, glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
-                         axis_label_size = 9, marker_col="marker") {
-
+                         axis_label_size = 9, marker_col = "marker") {
   bin_mat <- get_binary_matrix(
     geno_table = geno_table,
     pheno_table = pheno_table,
@@ -325,16 +340,24 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 
   if (glm) {
     print("Fitting logistic regression models using glm")
-    modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = T) >= maf)), family = stats::binomial(link = "logit"))
-    modelR <- glm_details(modelR) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
-    modelNWT <- glm(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = T) >= maf)), family = stats::binomial(link = "logit"))
-    modelNWT <- glm_details(modelNWT) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
+    modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
+    modelR <- glm_details(modelR) %>%
+      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+      mutate(marker = gsub("`", "", marker))
+    modelNWT <- glm(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
+    modelNWT <- glm_details(modelNWT) %>%
+      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+      mutate(marker = gsub("`", "", marker))
   } else {
     print("Fitting logistic regression models using logistf")
-    modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = T) >= maf)), pl = FALSE)
-    modelR <- logistf_details(modelR) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
-    modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = T) >= maf)), pl = FALSE)
-    modelNWT <- logistf_details(modelNWT) %>% mutate(marker=gsub("\\.\\.", ":", marker)) %>% mutate(marker=gsub("`", "", marker))
+    modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+    modelR <- logistf_details(modelR) %>%
+      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+      mutate(marker = gsub("`", "", marker))
+    modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+    modelNWT <- logistf_details(modelNWT) %>%
+      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+      mutate(marker = gsub("`", "", marker))
   }
 
   plot <- compare_estimates(modelR, modelNWT,

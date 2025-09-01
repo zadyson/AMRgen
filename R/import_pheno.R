@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 #' Import and Process AST Data from an NCBI File
 #'
 #' This function imports an antibiotic susceptibility testing (AST) dataset, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to determine susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
@@ -32,7 +48,7 @@
 #' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret = TRUE, ecoff = TRUE)
 #' head(pheno)
 #' }
-import_ncbi_ast <- function(input, sample_col = "#BioSample", interpret = F, ecoff = F, default_guideline = "EUCAST") {
+import_ncbi_ast <- function(input, sample_col = "#BioSample", interpret = FALSE, ecoff = FALSE, default_guideline = "EUCAST") {
   ast <- process_input(input)
 
   # find id column

@@ -1,3 +1,19 @@
+# ===================================================================== #
+#  Licensed as GPL-v3.0.                                                #
+#                                                                       #
+#  Developed as part of the AMRverse (https://github.com/AMRverse):     #
+#  https://github.com/AMRverse/AMRgen                                   #
+#                                                                       #
+#  We created this package for both routine data analysis and academic  #
+#  research and it was publicly released in the hope that it will be    #
+#  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
+#                                                                       #
+#  This R package is free software; you can freely use and distribute   #
+#  it for both personal and commercial purposes under the terms of the  #
+#  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
+#  the Free Software Foundation.                                        #
+# ===================================================================== #
+
 # # hAMRonize function & test code
 # # Zoe A. Dyson (zoe.dyson@lshtm.ac.uk)
 # # Last updated 14/01/2025
@@ -21,8 +37,8 @@
 # conda_install(
 #   envname = "amrgen-reticulate",
 #   packages = "hAMRonization",
-#   forge = T,
-#   pip = T
+#   forge = TRUE,
+#   pip = TRUE
 # )
 
 # # select python environment
@@ -36,6 +52,7 @@
 #' @param user_input_filename the name of the genotypic AMR data file
 #'
 #' @return A data frame containing 'harmonized' AMR genotype data
+#' @keywords internal
 #'
 #' @examples
 #' \dontrun{
@@ -51,10 +68,10 @@ harmonize_data <- function(user_software_name,
                            user_database_version,
                            user_input_filename) {
   # send user input data to python
-  r_to_py(user_input_filename, convert = T)
-  r_to_py(user_software_name, convert = T)
-  r_to_py(user_software_version, convert = T)
-  r_to_py(user_database_version, convert = T)
+  r_to_py(user_input_filename, convert = TRUE)
+  r_to_py(user_software_name, convert = TRUE)
+  r_to_py(user_software_version, convert = TRUE)
+  r_to_py(user_database_version, convert = TRUE)
 
   # import python libraries
   py_run_string("import hAMRonization")
