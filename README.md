@@ -23,6 +23,7 @@ The [AMRgen website](https://AMRverse.github.io/AMRgen/index.html) has full func
 -   **Modular and Extensible**: Leverages the robust foundation of the AMR package, including antibiotic selectors and clinical breakpoint interpretations.
 
 > Planned for development
+
 -   **NCBI-Compliant Export**: Export phenotype data to NCBI-compliant antibiogram format.
 -   **Expanded Data Import**: Import and parse phenotype data from other tools (e.g. CARD, ResFinder).
 

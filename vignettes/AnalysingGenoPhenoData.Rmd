@@ -16,10 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(AMRgen)
-```
-
 # Introduction
 
 `AMRgen` is a comprehensive R package designed to integrate antimicrobial resistance genotype and phenotype data. It provides tools to:
@@ -34,6 +30,11 @@ library(AMRgen)
 
 This vignette walks through a basic workflow using example datasets included in the `AMRgen` package, and explains how to wrangle your own data files into the right formats to use the same workflow.
 
+Start by loading the package:
+
+```{r setup}
+library(AMRgen)
+```
 
 ## 1. Genotype table
 The `import_amrfp()` function lets you load genotype data from AMRFinderPlus outputs, and process it to generate an object with the key columns needed to work with the `AMRgen` package.
@@ -104,7 +105,14 @@ The genotype and phenotype tables can include data related to many different dru
 # Get matrix combining phenotype data for ciprofloxacin, binary calls for R/NWT phenotype,
 #    and genotype presence/absence data for all markers associated with the relevant drug
 #    class (which are labelled "Quinolones" in AMRfinderplus).
-cip_bin <- get_binary_matrix(ecoli_geno, ecoli_ast, antibiotic = "Ciprofloxacin", drug_class_list = c("Quinolones"), sir_col = "pheno", keep_assay_values = TRUE, keep_assay_values_from = "mic")
+cip_bin <- get_binary_matrix(ecoli_geno,
+  ecoli_ast,
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = "Quinolones",
+  sir_col = "pheno",
+  keep_assay_values = TRUE,
+  keep_assay_values_from = "mic"
+)
 
 # check format
 head(cip_bin)
@@ -189,7 +197,12 @@ The function returns 4 objects:
 
 ``` {r solo_ppv_analysis, fig.height=8}
 # Run a solo PPV analysis
-soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic = "Ciprofloxacin", drug_class_list = c("Quinolones"), sir_col = "pheno")
+soloPPV_cipro <- solo_ppv_analysis(ecoli_geno,
+  ecoli_ast,
+  antibiotic = "Ciprofloxacin",
+  drug_class_list = "Quinolones",
+  sir_col = "pheno"
+)
 
 # Output table
 soloPPV_cipro$solo_stats
@@ -215,7 +228,11 @@ The function returns 2 objects:
 ``` {r amr_upset, fig.height=8}
 # Compare ciprofloxacin MIC data with quinolone marker combinations,
 #    using the binary matrix we constructed earlier via get_binary_matrix()
-cipro_mic_upset <- amr_upset(cip_bin, min_set_size = 2, assay = "mic", order = "value")
+cipro_mic_upset <- amr_upset(cip_bin,
+  min_set_size = 2,
+  assay = "mic",
+  order = "value"
+)
 
 # Output table
 cipro_mic_upset$summary
