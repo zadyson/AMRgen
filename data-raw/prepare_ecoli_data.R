@@ -16,7 +16,7 @@ ecoli_ast_raw <- ecoli_ast %>%
 ecoli_ast <- ecoli_ast %>%
   select(id, spp_pheno, pheno, drug_agent, mic, disk, guideline)
 
-# set of AMRfinderplus (v3.12.8, DB 2024-01-31.1) genotype results sourced from AllTheBacteria
+# set of AMRFinderPlus (v3.12.8, DB 2024-01-31.1) genotype results sourced from AllTheBacteria
 # for the same biosamples as ecoli_ast
 # provided for testing import_amrfp, solo_ppv_analysis and amr_upset functions
 ecoli_geno_raw <- read_tsv("ecoli_geno.tsv.gz")

@@ -26,11 +26,11 @@
 #' @return For `as.gene`, an object of class `"gene"`.
 #' @export
 #' @examples
-#' \dontrun{
 #' # Create a gene object
 #' gene <- as.gene(c("gene1", "gene2"))
-#' print(gene)
+#' gene
 #'
+#' \dontrun{
 #' # Parse AMR data
 #' parsed_data <- import_amrfp("path/to/input_table.tsv", "SampleID")
 #' }

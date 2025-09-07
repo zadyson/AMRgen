@@ -16,11 +16,11 @@ For \code{as.gene}, an object of class \code{"gene"}.
 Functions to create a custom "gene" class and parse AMR data.
 }
 \examples{
-\dontrun{
 # Create a gene object
 gene <- as.gene(c("gene1", "gene2"))
-print(gene)
+gene
 
+\dontrun{
 # Parse AMR data
 parsed_data <- import_amrfp("path/to/input_table.tsv", "SampleID")
 }

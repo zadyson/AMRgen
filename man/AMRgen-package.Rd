@@ -13,6 +13,7 @@ Useful links:
 \itemize{
   \item \url{https://AMRverse.github.io/AMRgen/}
   \item \url{https://github.com/AMRverse/AMRgen}
+  \item Report bugs at \url{https://github.com/AMRverse/AMRgen/issues}
 }
 
 }

@@ -59,14 +59,14 @@
 
 #' E. coli Genotype Example Data
 #'
-#' Genotypes called using AMRfinderPlus (v3.12.8, DB 2024-01-31.1), sourced from the AllTheBacteria project.
-#' @format ## `ecoli_geno_raw` A data frame with `r NROW(ecoli_geno_raw)` rows and `r NCOL(ecoli_geno_raw)` columns representing genotyping results from AMRfinderPlus.
+#' Genotypes called using AMRFinderPlus (v3.12.8, DB 2024-01-31.1), sourced from the AllTheBacteria project.
+#' @format ## `ecoli_geno_raw` A data frame with `r NROW(ecoli_geno_raw)` rows and `r NCOL(ecoli_geno_raw)` columns representing genotyping results from AMRFinderPlus.
 #' Columns include:
 #' - `Name`: Sample identifier.
 #' - `Gene symbol`: Gene symbol in NCBI RefGene.
 #' - `Hierarchy node`: Node in NCBI hierarchy.
 #' - `Class`, `Subclass`: Drug class(es) associated with the marker (from NCBI RefGene).
 #' - `% Coverage of reference sequence`, `% Identity to reference sequence`, `Accession of closest sequence`: Sequence match information.
-#' - ...: Additional metadata columns from the AMRfinderPlus output.
+#' - ...: Additional metadata columns from the AMRFinderPlus output.
 #' @source <https://github.com/ncbi/amr/wiki/Interpreting-results>
 "ecoli_geno_raw"

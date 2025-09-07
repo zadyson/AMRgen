@@ -40,11 +40,11 @@ library(AMRgen)
 The `import_amrfp()` function lets you load genotype data from AMRFinderPlus outputs, and process it to generate an object with the key columns needed to work with the `AMRgen` package.
 
 ``` {r import_amrfp}
-# Example AMRfinderplus genotyping output
+# Example AMRFinderPlus genotyping output
 ecoli_geno_raw
 
-# Load AMRfinderplus output
-#    (replace 'ecoli_geno_raw' with the filepath for any AMRfinderplus output)
+# Load AMRFinderPlus output
+#    (replace 'ecoli_geno_raw' with the filepath for any AMRFinderPlus output)
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 # Check the format of the processed genotype table
@@ -53,7 +53,7 @@ head(ecoli_geno)
 
 The genotype table has one row for each genetic marker detected in an input genome, i.e. one per strain/marker combination.
 
-If your genotype data is not in AMRfinderplus format, you can wrangle other input data files into the necessary format.
+If your genotype data is not in AMRFinderPlus format, you can wrangle other input data files into the necessary format.
 
 The essential columns for a genotype table to work with `AMRgen` functions are:
 
@@ -63,7 +63,7 @@ The essential columns for a genotype table to work with `AMRgen` functions are:
 
 * `drug_class`: character string giving the antibiotic class associated with this marker
 
-NOTE: You should consider whether you have genomes with no AMR markers detected by genotyping, and how to make sure these are include in your analyses. E.g. AMRfinderplus will output one row per genome/marker combination, but if you have a genome with no markers detected, there will be no row at all for that genome in the concatenated output file. If your species has core genes included in AMRfinderplus this probably won't be a problem as you would expect some calls for every genome (e.g. AMRfinderplus will report blaSHV, oqxA, oqxB, fosA in all Klebsiella pneumoniae genomes, so all input genomes will appear in the concatenated output file). An easy solution is to run a check to make sure that all genome names in your input dataset are represented in the genotype table, and if any are missing add empty rows for these using e.g. `tibble(Name=missing_samples) %>% bind_rows(genotype_table)`.
+NOTE: You should consider whether you have genomes with no AMR markers detected by genotyping, and how to make sure these are include in your analyses. E.g. AMRFinderPlus will output one row per genome/marker combination, but if you have a genome with no markers detected, there will be no row at all for that genome in the concatenated output file. If your species has core genes included in AMRFinderPlus this probably won't be a problem as you would expect some calls for every genome (e.g. AMRFinderPlus will report blaSHV, oqxA, oqxB, fosA in all Klebsiella pneumoniae genomes, so all input genomes will appear in the concatenated output file). An easy solution is to run a check to make sure that all genome names in your input dataset are represented in the genotype table, and if any are missing add empty rows for these using e.g. `tibble(Name=missing_samples) %>% bind_rows(genotype_table)`.
 
 ## 2. Phenotype table
 The `import_ncbi_ast()` function imports AST data from NCBI format files.
@@ -104,7 +104,7 @@ The genotype and phenotype tables can include data related to many different dru
 ``` {r get_binary_matrix}
 # Get matrix combining phenotype data for ciprofloxacin, binary calls for R/NWT phenotype,
 #    and genotype presence/absence data for all markers associated with the relevant drug
-#    class (which are labelled "Quinolones" in AMRfinderplus).
+#    class (which are labelled "Quinolones" in AMRFinderPlus).
 cip_bin <- get_binary_matrix(
   ecoli_geno,
   ecoli_ast,

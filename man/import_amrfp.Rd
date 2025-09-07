@@ -33,7 +33,7 @@ This processing ensures compatibility with downstream AMR analysis workflows.
 }
 \examples{
 \dontrun{
-# small example E. coli AMRfinderplus data
+# small example E. coli AMRFinderPlus data
 ecoli_geno_raw
 
 # import first few rows of this data frame and parse it as AMRfp data

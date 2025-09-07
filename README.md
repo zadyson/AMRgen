@@ -4,17 +4,17 @@
 
 <img src="logo.png" width="200" align="right" alt="AMRgen">
 
-**AMRgen** is an open-source R package designed to bridge the gap between genotypic and phenotypic antimicrobial resistance (AMR) data. Developed as an extension to the [AMR R package](https://amr-for-r.org), it provides tools to interpret AMR genes, integrate these findings with antimicrobial susceptibility test (AST) data, and calculate genotype-phenotype associations.
+**AMRgen** is an open-source R package designed to **bridge the gap between genotypic and phenotypic antimicrobial resistance (AMR) data**. Developed as an extension to the [AMR R package](https://amr-for-r.org), it provides tools to interpret AMR genes, integrate these findings with antimicrobial susceptibility test (AST) data, and calculate genotype-phenotype associations.
 
 This package is developed in collaboration with the ESGEM-AMR Working Group and is tailored for researchers and healthcare professionals tackling AMR globally.
 
-The [AMRgen website](https://AMRverse.github.io/AMRgen/index.html) has full function [documentation](https://AMRverse.github.io/AMRgen/reference/index.html) and a [Vignette](https://AMRverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
+The [AMRgen website](https://AMRverse.github.io/AMRgen) has full function [documentation](https://AMRverse.github.io/AMRgen/reference/index.html) and a [Vignette](https://AMRverse.github.io/AMRgen/articles/AnalysingGenoPhenoData.html) working through analysing geno/pheno data using key functions.
 
 ------------------------------------------------------------------------
 
 ## Key Features
 
--   **Import Genotype and Phenotype Data**: Import from common formats (NCBI AST for phenotypes; AMRfinderplus and hAMRonization for genotypes
+-   **Import Genotype and Phenotype Data**: Import from common formats (NCBI AST for phenotypes; AMRFinderPlus and hAMRonization for genotypes
 -   **Genotype-Phenotype Integration**: Links AMR gene presence with phenotypic resistance profiles, enabling deeper insights into resistance mechanisms.
 -   **Automated EUCAST MIC Distribution Integration**: Fetch MIC distribution data directly from [EUCAST](https://mic.eucast.org) for seamless comparison with local susceptibility data.
 -   **Visualisation**: Generate powerful UpSet plots to identify intersections of AMR gene presence and phenotypic resistance, highlighting multidrug resistance patterns.
@@ -57,7 +57,7 @@ library(AMRgen)
 #  (already imported via import_ncbi_ast() and re-interpreted with as.sir())
 ecoli_ast
 
-# Import matching E. coli AMRfinderplus data from AllTheBacteria
+# Import matching E. coli AMRFinderPlus data from AllTheBacteria
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 # Calculate positive predictive value for ciprofloxacin resistance
