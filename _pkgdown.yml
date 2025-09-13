@@ -95,7 +95,6 @@ reference:
     contents:
       - matches("plot")
       - amr_upset
-      - amr_complexUpset
 
   - title: "Data"
     desc: >
