@@ -21,7 +21,7 @@ on:
   push:
     branches: '**'
 
-name: check-current
+name: check-current-dev-pkgs
 
 jobs:
   R-code-check:
