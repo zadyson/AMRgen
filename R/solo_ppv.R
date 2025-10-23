@@ -57,8 +57,9 @@
 #' soloPPV_cipro$combined_plot
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
-                              geno_sample_col = NULL, pheno_sample_col = NULL, sir_col = NULL,
-                              marker_col = "marker", keep_assay_values = TRUE, min = 1,
+                              geno_sample_col = NULL, pheno_sample_col = NULL, 
+                              sir_col = NULL, ecoff_col = NULL,
+                              marker_col="marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
   # check there is a SIR column specified
@@ -73,8 +74,12 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   amr_binary <- get_binary_matrix(geno_table, pheno_table,
     antibiotic = antibiotic,
     drug_class_list = drug_class_list,
-    geno_sample_col = geno_sample_col, pheno_sample_col = pheno_sample_col,
-    sir_col = sir_col, keep_assay_values = keep_assay_values, marker_col = marker_col
+    geno_sample_col = geno_sample_col, 
+    pheno_sample_col = pheno_sample_col,
+    sir_col = sir_col, 
+    ecoff_col = ecoff_col,
+    keep_assay_values = keep_assay_values, 
+    marker_col=marker_col
   )
 
   # get solo markers
