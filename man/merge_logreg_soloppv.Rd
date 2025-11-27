@@ -4,7 +4,7 @@
 \alias{merge_logreg_soloppv}
 \title{Merge Logistic Regression and Solo PPV Statistics}
 \usage{
-merge_logreg_soloppv(model, solo_stats, title = NULL)
+merge_logreg_soloppv(model, solo_stats, title = NULL, plot = TRUE)
 }
 \arguments{
 \item{model}{A data frame containing logistic regression model statistics.}

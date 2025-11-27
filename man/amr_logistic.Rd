@@ -67,6 +67,7 @@ Performs logistic regression to analyze the relationship between genetic markers
 result <- amr_logistic(
   geno_table = import_amrfp(ecoli_geno_raw, "Name"),
   pheno_table = ecoli_ast,
+  sir_col = "pheno_clsi",
   antibiotic = "Ciprofloxacin",
   drug_class_list = c("Quinolones"),
   maf = 10

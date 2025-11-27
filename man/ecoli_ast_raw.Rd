@@ -5,7 +5,7 @@
 \alias{ecoli_ast_raw}
 \title{E. coli NCBI AST Example Data}
 \format{
-\subsection{\code{ecoli_ast_raw} A data frame with 10 rows and 18 columns representing unprocessed data from the NCBI AST browser.}{
+\subsection{\code{ecoli_ast_raw} A data frame with 10 rows and 21 columns representing unprocessed data from the NCBI AST browser.}{
 
 Columns include:
 \itemize{

@@ -92,7 +92,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
   }
   if (!is.ab(pheno_table$drug_agent)) {
-    print(paste("converting", deparse(substitute(pheno_table)), "column `drug_agent` to class `ab`"))
+    cat(paste("converting", deparse(substitute(pheno_table)), "column `drug_agent` to class `ab`\n"))
     pheno_table <- pheno_table %>% mutate(drug_agent = as.ab(drug_agent))
   }
 
@@ -125,7 +125,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
       slice_head(n = 1) %>%
       ungroup()
     if (nrow(pheno_matched) < pheno_matched_rows_unfiltered) {
-      print("Some samples had multiple phenotype rows, taking the most resistant only")
+      cat("Some samples had multiple phenotype rows, taking the most resistant only\n")
     }
   }
   if (!most_resistant) { # take least resistant
@@ -136,7 +136,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
       slice_head(n = 1) %>%
       ungroup()
     if (nrow(pheno_matched) < pheno_matched_rows_unfiltered) {
-      print("Some samples had multiple phenotype rows, taking the least resistant only")
+      cat("Some samples had multiple phenotype rows, taking the least resistant only\n")
     }
   }
 
@@ -165,23 +165,23 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   # replace NWT with ecoff-based definition if available
   if (!is.null(ecoff_col)) {
     if (ecoff_col %in% colnames(pheno_binary)) {
-      print(paste("Defining NWT using ecoff column provided:", ecoff_col))
+      cat(paste("Defining NWT using ecoff column provided:", ecoff_col,"\n"))
       pheno_binary <- pheno_binary %>%
         mutate(NWT = case_when(
-          as.sir(get(sir_col)) == "R" ~ 1,
-          as.sir(get(sir_col)) == "I" ~ 1,
-          as.sir(get(sir_col)) == "S" ~ 0,
+          as.sir(get(ecoff_col)) == "R" ~ 1,
+          as.sir(get(ecoff_col)) == "I" ~ 1,
+          as.sir(get(ecoff_col)) == "S" ~ 0,
           TRUE ~ NA
         ))
     } else {
-      print("Defining NWT as I/R vs 0, as no ECOFF column defined")
+      cat("Defining NWT as I/R vs 0, as no ECOFF column defined\n")
     }
   }
 
   pheno_binary <- pheno_binary %>% select(id, R, NWT)
 
-  # check there are some non-NA values for phenotype call
-  if (sum(!is.na(pheno_binary[, 2])) == 0) {
+  # check there are some non-NA values for R/NWT calls
+  if (sum(!is.na(pheno_binary$R)) == 0 & sum(!is.na(pheno_binary$NWT)) == 0) {
     stop(paste("No samples with both genotype data and non-NA phenotype interpretation values for", antibiotic, "in input", deparse(substitute(pheno_table))))
   }
 
@@ -215,7 +215,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
         select(id, any_of(keep_assay_values_from)) %>%
         full_join(geno_binary, by = "id")
     } else {
-      print(paste("No specified assay columns found:", keep_assay_values_from))
+      cat(paste("No specified assay columns found:", keep_assay_values_from,"\n"))
     }
     if ("mic" %in% colnames(geno_binary)) {
       geno_binary <- geno_binary %>% mutate(mic = as.mic(mic))
@@ -227,10 +227,18 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # add SIR values unless switched off
   if (keep_SIR) {
-    geno_binary <- pheno_matched %>%
-      select(id, any_of(sir_col)) %>%
-      mutate(pheno = as.sir(get(sir_col))) %>%
-      select(id, pheno) %>%
+    sir_binary <- pheno_matched %>%
+      select(id, any_of(c(sir_col, ecoff_col))) %>%
+      mutate(pheno = as.sir(get(sir_col)))
+    
+    if(!is.null(ecoff_col)) {
+      if(ecoff_col %in% colnames(sir_binary)) {
+        sir_binary <- sir_binary %>% mutate(ecoff=as.sir(get(ecoff_col)))
+      }
+    }
+    
+    geno_binary <- sir_binary %>% 
+      select(id, any_of(c("pheno", "ecoff"))) %>%
       full_join(geno_binary, by = "id")
   }
 

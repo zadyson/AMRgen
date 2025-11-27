@@ -12,6 +12,7 @@ solo_ppv_analysis(
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
   sir_col = NULL,
+  ecoff_col = "ecoff",
   marker_col = "marker",
   keep_assay_values = TRUE,
   min = 1,
@@ -34,6 +35,8 @@ solo_ppv_analysis(
 \item{pheno_sample_col}{A character string (optional) specifying the column name in \code{pheno_table} containing sample identifiers. Defaults to \code{NULL}, in which case it is assumed the first column contains identifiers.}
 
 \item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
+
+\item{ecoff_col}{A character string (optional) specifying the column name in \code{pheno_table} that contains resistance interpretations (SIR) made against the ECOFF rather than a clinical breakpoint. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
 
 \item{marker_col}{A character string specifying the column name in \code{geno_table} containing the marker identifiers. Defaults to \code{"marker"}.}
 

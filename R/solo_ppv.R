@@ -24,6 +24,7 @@
 #' @param geno_sample_col A character string (optional) specifying the column name in `geno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param pheno_sample_col A character string (optional) specifying the column name in `pheno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
+#' @param ecoff_col A character string (optional) specifying the column name in `pheno_table` that contains resistance interpretations (SIR) made against the ECOFF rather than a clinical breakpoint. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
 #' @param marker_col A character string specifying the column name in `geno_table` containing the marker identifiers. Defaults to `"marker"`.
 #' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
@@ -58,7 +59,7 @@
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL, 
-                              sir_col = NULL, ecoff_col = NULL,
+                              sir_col = NULL, ecoff_col = "ecoff",
                               marker_col="marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
@@ -84,46 +85,61 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # get solo markers
   marker_counts <- amr_binary %>%
-    select(-any_of(c("id", "pheno", "R", "NWT", "mic", "disk"))) %>%
+    select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>%
     rowSums()
 
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
-    pivot_longer(!any_of(c("id", "pheno", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
+    pivot_longer(!any_of(c("id", "pheno", "ecoff", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
     mutate(marker = gsub("\\.\\.", ":", marker)) %>%
     mutate(marker = gsub("`", "", marker)) %>%
     filter(value == 1) %>%
-    filter(!is.na(pheno))
+    filter(dplyr::if_any(any_of(c("ecoff", "pheno")), ~ !is.na(.)))
 
   if (nrow(solo_binary) == 0) {
     stop("No solo markers found")
   }
 
   # summarise numerator, denominator, proportion, 95% CI - for R and NWT
-  solo_stats_R <- solo_binary %>%
-    group_by(marker) %>%
-    summarise(
-      x = sum(R, na.rm = TRUE),
-      n = n(),
-      p = x / n,
-      se = sqrt(p * (1 - p) / n),
-      ci.lower = max(0, p - 1.96 * se),
-      ci.upper = min(1, p + 1.96 * se)
-    ) %>%
-    mutate(category = "R")
-
-  solo_stats_NWT <- solo_binary %>%
-    group_by(marker) %>%
-    summarise(
-      x = sum(NWT),
-      n = n(),
-      p = x / n,
-      se = sqrt(p * (1 - p) / n),
-      ci.lower = max(0, p - 1.96 * se),
-      ci.upper = min(1, p + 1.96 * se)
-    ) %>%
-    mutate(category = "NWT")
-
+  
+  if (sum(!is.na(solo_binary$pheno)) > 0) {
+    solo_stats_R <- solo_binary %>%
+      group_by(marker) %>%
+      summarise(
+        x = sum(R, na.rm = TRUE),
+        n = sum(pheno %in% c("S", "I", "R", "SDD")),
+        p = x / n,
+        se = sqrt(p * (1 - p) / n),
+        ci.lower = max(0, p - 1.96 * se),
+        ci.upper = min(1, p + 1.96 * se)
+      ) %>%
+      mutate(category = "R")
+  }
+  else {
+    solo_stats_R <- tibble(marker=character(), x=double(), n=integer(),
+                            p=double(), se=double(), ci.lower=double(),
+                            ci.upper=double(), category=character())
+  }
+  
+  if (sum(!is.na(solo_binary$ecoff)) > 0) {
+    solo_stats_NWT <- solo_binary %>%
+      group_by(marker) %>%
+      summarise(
+        x = sum(NWT, na.rm=TRUE),
+        n = sum(ecoff %in% c("S", "I", "R", "SDD")),
+        p = x / n,
+        se = sqrt(p * (1 - p) / n),
+        ci.lower = max(0, p - 1.96 * se),
+        ci.upper = min(1, p + 1.96 * se)
+      ) %>%
+      mutate(category = "NWT")
+  }
+  else {
+    solo_stats_NWT <- tibble(marker=character(), x=double(), n=integer(),
+                             p=double(), se=double(), ci.lower=double(),
+                             ci.upper=double(), category=character())
+  }
+  
   solo_stats <- bind_rows(solo_stats_R, solo_stats_NWT) %>%
     relocate(category, .before = x) %>%
     rename(ppv = p)
@@ -131,20 +147,39 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   # plots
   markers_to_plot <- unique(solo_stats$marker[solo_stats$n >= min])
 
-  solo_pheno_plot <- solo_binary %>%
-    filter(marker %in% markers_to_plot) %>%
-    ggplot(aes(y = marker, fill = pheno)) +
-    geom_bar(stat = "count", position = "fill") +
-    # scale_fill_manual(values = plot_cols) +
-    scale_fill_sir() +
-    geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
-    scale_y_discrete(limits = markers_to_plot) +
-    theme_light() +
-    theme(
-      axis.text.x = element_text(size = axis_label_size),
-      axis.text.y = element_text(size = axis_label_size)
-    ) +
-    labs(y = "", x = "Proportion", fill = "Phenotype")
+  if (sum(!is.na(solo_binary$pheno)) > 0) { # if we have S/I/R call, plot it
+    solo_pheno_plot <- solo_binary %>%
+      filter(marker %in% markers_to_plot) %>%
+      filter(!is.na(pheno)) %>%
+      ggplot(aes(y = marker, fill = pheno)) +
+      geom_bar(stat = "count", position = "fill") +
+      # scale_fill_manual(values = plot_cols) +
+      scale_fill_sir() +
+      geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
+      scale_y_discrete(limits = markers_to_plot) +
+      theme_light() +
+      theme(
+        axis.text.x = element_text(size = axis_label_size),
+        axis.text.y = element_text(size = axis_label_size)
+      ) +
+      labs(y = "", x = "Proportion", fill = "Phenotype")
+  } else if(sum(!is.na(solo_binary$ecoff)) > 0) { # if we only have ECOFF call, plot that instead
+    solo_pheno_plot <- solo_binary %>%
+      filter(marker %in% markers_to_plot) %>%
+      filter(!is.na(ecoff)) %>%
+      ggplot(aes(y = marker, fill = ecoff)) +
+      geom_bar(stat = "count", position = "fill") +
+      # scale_fill_manual(values = plot_cols) +
+      scale_fill_sir() +
+      geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
+      scale_y_discrete(limits = markers_to_plot) +
+      theme_light() +
+      theme(
+        axis.text.x = element_text(size = axis_label_size),
+        axis.text.y = element_text(size = axis_label_size)
+      ) +
+      labs(y = "", x = "Proportion", fill = "ECOFF")
+  }
 
   ppv_plot <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>%

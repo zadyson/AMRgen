@@ -115,8 +115,7 @@ plot_estimates <- function(tbl, sig = 0.05,
 #' @importFrom ggplot2 aes element_text geom_linerange geom_point geom_vline ggplot labs position_dodge scale_color_manual scale_y_discrete theme theme_light
 #' @return A ggplot object displaying the comparison of the two sets of estimates.
 #' @export
-compare_estimates <- function(tbl1,
-                              tbl2,
+compare_estimates <- function(tbl1, tbl2,
                               title1 = NULL, title2 = NULL, title = NULL,
                               sig = 0.05,
                               colors = c("maroon", "blue4"),
@@ -126,7 +125,8 @@ compare_estimates <- function(tbl1,
                               single_plot = TRUE,
                               pd = position_dodge(width = 0.8),
                               marker_order = NULL) {
-  if (!single_plot) {
+  
+  if (!single_plot | is.null(tbl2)) { # need a solo plot for table 1
     plot1 <- plot_estimates(tbl1,
       sig = sig,
       sig_colors = c("grey", colors[1]),
@@ -135,7 +135,13 @@ compare_estimates <- function(tbl1,
       title = title1,
       axis_label_size = axis_label_size
     )
+    if (!is.null(marker_order)) {
+      plot1 <- plot1 + scale_y_discrete(limits = marker_order)
+    }
+  }
+  else {plot1 <- NULL}
 
+  if(!single_plot | is.null(tbl1)) { # need a solo plot for table 2
     plot2 <- plot_estimates(tbl2,
       sig = sig,
       sig_colors = c("grey", colors[2]),
@@ -144,14 +150,15 @@ compare_estimates <- function(tbl1,
       title = title2,
       axis_label_size = axis_label_size
     )
-
     if (!is.null(marker_order)) {
-      plot1 <- plot1 + scale_y_discrete(limits = marker_order)
       plot2 <- plot2 + scale_y_discrete(limits = marker_order)
     }
+  }
+  else {plot2 <- NULL}
 
+  if (!single_plot & !is.null(tbl1) & !is.null(tbl2)) {
     plot <- plot1 + plot2
-  } else {
+  } else if (single_plot) { # combine into one plot
     tbl1 <- tbl1 %>% mutate(group = title1)
 
     plot <- tbl2 %>%
@@ -314,6 +321,7 @@ glm_details <- function(model) {
 #' result <- amr_logistic(
 #'   geno_table = import_amrfp(ecoli_geno_raw, "Name"),
 #'   pheno_table = ecoli_ast,
+#'   sir_col = "pheno_clsi",
 #'   antibiotic = "Ciprofloxacin",
 #'   drug_class_list = c("Quinolones"),
 #'   maf = 10
@@ -326,6 +334,7 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          maf = 10, glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
                          axis_label_size = 9, marker_col = "marker") {
+  
   bin_mat <- get_binary_matrix(
     geno_table = geno_table,
     pheno_table = pheno_table,
@@ -339,37 +348,53 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   )
 
   if (glm) {
-    print("Fitting logistic regression models using glm")
-    modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
-    modelR <- glm_details(modelR) %>%
-      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
-      mutate(marker = gsub("`", "", marker))
-    modelNWT <- glm(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
-    modelNWT <- glm_details(modelNWT) %>%
-      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
-      mutate(marker = gsub("`", "", marker))
+    cat("Fitting logistic regression models using glm\n")
+    if (sum(!is.na(bin_mat$R))>0) {
+      modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
+      modelR <- glm_details(modelR) %>%
+        mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+        mutate(marker = gsub("`", "", marker))
+    }
+    if (sum(!is.na(bin_mat$NWT))>0) {
+      modelNWT <- glm(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))
+      modelNWT <- glm_details(modelNWT) %>%
+        mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+        mutate(marker = gsub("`", "", marker))
+    }
   } else {
-    print("Fitting logistic regression models using logistf")
-    modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
-    modelR <- logistf_details(modelR) %>%
-      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
-      mutate(marker = gsub("`", "", marker))
-    modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
-    modelNWT <- logistf_details(modelNWT) %>%
-      mutate(marker = gsub("\\.\\.", ":", marker)) %>%
-      mutate(marker = gsub("`", "", marker))
+    cat("Fitting logistic regression models using logistf\n")
+    if (sum(!is.na(bin_mat$R))>0) {
+      modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+      modelR <- logistf_details(modelR) %>%
+        mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+        mutate(marker = gsub("`", "", marker))
+    }
+    if (sum(!is.na(bin_mat$NWT))>0) {
+      modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+      modelNWT <- logistf_details(modelNWT) %>%
+        mutate(marker = gsub("\\.\\.", ":", marker)) %>%
+        mutate(marker = gsub("`", "", marker))
+    }
   }
 
-  plot <- compare_estimates(modelR, modelNWT,
-    single_plot = single_plot,
-    title1 = "R", title2 = "NWT",
-    colors = colors, axis_label_size = axis_label_size
-  )
-  if (single_plot) {
-    ggtitle(
-      label = paste("R and NWT for", antibiotic),
-      subtitle = paste("for", paste(drug_class_list, collapse = ","), "markers present in at least", maf, "samples")
+  if (exists("modelR") & exists("modelNWT")) { # if we have 2 models, plot them together
+    plot <- compare_estimates(modelR, modelNWT,
+                              single_plot = single_plot,
+                              title1 = "R", title2 = "NWT",
+                              colors = colors, axis_label_size = axis_label_size
     )
+    if (single_plot) {
+      ggtitle(
+        label = paste("R and NWT for", antibiotic),
+        subtitle = paste("for", paste(drug_class_list, collapse = ","), "markers present in at least", maf, "samples")
+      )
+    }
+  } else if (exists("modelR")) {
+    plot <- plot_estimates(modelR)
+    modelNWT <- NULL # need an object to return, set to null
+  } else if (!is.null("modelNWT")) {
+    plot <- plot_estimates(modelNWT)
+    modelR <- NULL # need an object to return, set to null
   }
 
   print(plot)
@@ -410,16 +435,17 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 #'   title = "Quinolone markers vs Cip R"
 #' )
 #' }
-merge_logreg_soloppv <- function(model, solo_stats, title = NULL) {
+merge_logreg_soloppv <- function(model, solo_stats, title = NULL, plot=TRUE) {
   combined <- model %>%
     full_join(solo_stats, by = "marker", suffix = c(".est", ".ppv")) %>%
     filter(marker != "(Intercept)")
 
-  plot <- plot_combined_stats(combined, title = paste(title))
+  if (plot) {
+    to_plot <- plot_combined_stats(combined, title = paste(title))
+    print(to_plot)
+  }
 
-  print(plot)
-
-  return(list(combined = combined, plot = plot))
+  return(list(combined = combined, plot = to_plot))
 }
 
 #' Plot Combined Statistics

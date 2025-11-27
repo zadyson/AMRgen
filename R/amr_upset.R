@@ -60,17 +60,30 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_colour = "grey", assay = "mic") {
+  
   # tidy up binary_matrix
-  col <- colnames(binary_matrix) # get column names
+ # col <- colnames(binary_matrix) # get column names
 
   # extract only the gene column names - need to exclude mic, disk, R, NWT (standard col names)
   # and the id column which will be the first col, doesn't matter what it's called
   # remaining columns will be the genes
-  cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno")
-  genes <- col[-1]
+ # cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno", "ecoff")
+ # genes <- col[-1]
 
   # gene names
-  genes <- setdiff(genes, cols_to_remove)
+#  genes <- setdiff(genes, cols_to_remove)
+  
+  if (sum(!is.na(binary_matrix$pheno))==0) {
+    if (sum(!is.na(binary_matrix$ecoff))>0) {
+      binary_matrix <- binary_matrix %>% mutate(pheno=ecoff)
+      cat(" Warning: no values in pheno column, colouring upset plot by ecoff column\n")
+    }
+    else {stop(" Failed to make upset plot as no values in field pheno or ecoff")}
+    colour_label = "ECOFF\ncategory"
+  } else {colour_label = "Resistance\ncategory"}
+  
+  # gene names
+  genes <- binary_matrix %>% select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>% colnames()
 
   # check with have the expected assay column, with data
   if (!(assay %in% colnames(binary_matrix))) {
@@ -211,12 +224,13 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
     theme_bw() +
     scale_size_continuous("Number of\nisolates") +
-    scale_color_sir(name = "Resistance\ncategory") +
+    scale_color_sir(name = colour_label) +
     theme(
       axis.text.x = element_blank(),
       axis.title.x = element_blank(),
       axis.ticks.x = element_blank()
     )
+    
   if (assay == "mic") {
     g1 <- g1 +
       scale_y_mic() +
