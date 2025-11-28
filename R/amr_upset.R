@@ -43,47 +43,50 @@
 #' - `summary`: A data frame summarizing each marker combination observed, including median MIC (and interquartile range), number of resistant isolates, and positive predictive value for resistance.
 #' @export
 #' @examples
-#' \dontrun{
 #' ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 #' binary_matrix <- get_binary_matrix(
 #'   geno_table = ecoli_geno,
 #'   pheno_table = ecoli_ast,
 #'   antibiotic = "Ciprofloxacin",
 #'   drug_class_list = c("Quinolones"),
-#'   sir_col = "pheno",
+#'   sir_col = "pheno_clsi",
 #'   keep_assay_values = TRUE,
 #'   keep_assay_values_from = "mic"
 #' )
+#'
 #' amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
-#' }
 amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_colour = "grey", assay = "mic") {
-  
   # tidy up binary_matrix
- # col <- colnames(binary_matrix) # get column names
+  # col <- colnames(binary_matrix) # get column names
 
   # extract only the gene column names - need to exclude mic, disk, R, NWT (standard col names)
   # and the id column which will be the first col, doesn't matter what it's called
   # remaining columns will be the genes
- # cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno", "ecoff")
- # genes <- col[-1]
+  # cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno", "ecoff")
+  # genes <- col[-1]
 
   # gene names
-#  genes <- setdiff(genes, cols_to_remove)
-  
-  if (sum(!is.na(binary_matrix$pheno))==0) {
-    if (sum(!is.na(binary_matrix$ecoff))>0) {
-      binary_matrix <- binary_matrix %>% mutate(pheno=ecoff)
+  #  genes <- setdiff(genes, cols_to_remove)
+
+  if (sum(!is.na(binary_matrix$pheno)) == 0) {
+    if (sum(!is.na(binary_matrix$ecoff)) > 0) {
+      binary_matrix <- binary_matrix %>% mutate(pheno = ecoff)
       cat(" Warning: no values in pheno column, colouring upset plot by ecoff column\n")
+    } else {
+      stop(" Failed to make upset plot as no values in field pheno or ecoff")
     }
-    else {stop(" Failed to make upset plot as no values in field pheno or ecoff")}
-    colour_label = "ECOFF\ncategory"
-  } else {colour_label = "Resistance\ncategory"}
-  
+    colour_label <- "ECOFF\ncategory"
+  } else {
+    colour_label <- "Resistance\ncategory"
+  }
+
   # gene names
-  genes <- binary_matrix %>% select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>% colnames()
+  genes <- binary_matrix %>%
+    select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>%
+    colnames()
 
   # check with have the expected assay column, with data
   if (!(assay %in% colnames(binary_matrix))) {
@@ -230,7 +233,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       axis.title.x = element_blank(),
       axis.ticks.x = element_blank()
     )
-    
+
   if (assay == "mic") {
     g1 <- g1 +
       scale_y_mic() +

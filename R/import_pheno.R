@@ -54,9 +54,8 @@
 #' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret_eucast = TRUE, ecoff = TRUE)
 #' head(pheno)
 #' }
-import_ncbi_ast <- function(input, sample_col="#BioSample", source=NULL, species=NULL, ab=NULL,
-                            interpret_eucast=FALSE, interpret_clsi=FALSE, interpret_ecoff=FALSE) {
-  
+import_ncbi_ast <- function(input, sample_col = "#BioSample", source = NULL, species = NULL, ab = NULL,
+                            interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
   ast <- process_input(input)
 
   # find id column
@@ -75,7 +74,7 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", source=NULL, species
   } else {
     cat("Warning: Expected AST platform column 'Laboratory typing platform' not found in input\n")
   }
-  
+
   # parse guideline column
   if ("Testing standard" %in% colnames(ast)) {
     ast <- ast %>% mutate(guideline = `Testing standard`)
@@ -125,10 +124,12 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", source=NULL, species
   } else {
     if (!is.null(source)) {
       ast <- ast %>% mutate(source = source)
-      cat(paste0("Setting source to user-provided value: ",source,"\n"))
-    } else {cat("Warning: Expected column 'BioProject' not found in input\n")}
+      cat(paste0("Setting source to user-provided value: ", source, "\n"))
+    } else {
+      cat("Warning: Expected column 'BioProject' not found in input\n")
+    }
   }
-  
+
   # parse phenotype SIR column
   if ("Resistance phenotype" %in% colnames(ast)) {
     ast <- ast %>% mutate(pheno_provided = as.sir(`Resistance phenotype`))
@@ -136,10 +137,10 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", source=NULL, species
     cat("Warning: Expected phenotype SIR column 'Resistance phenotype' not found in input\n")
   }
 
-  ast <- interpret_ast(ast, interpret_ecoff=interpret_ecoff, interpret_eucast=interpret_eucast, interpret_clsi=interpret_clsi, species=species, ab=ab)
-  
+  ast <- interpret_ast(ast, interpret_ecoff = interpret_ecoff, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, species = species, ab = ab)
+
   ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", "pheno_eucast", "pheno_clsi", "ecoff", "guideline", "method", "source", "pheno_provided", "spp_pheno")))
-  
+
   return(ast)
 }
 
@@ -181,11 +182,10 @@ import_ncbi_ast <- function(input, sample_col="#BioSample", source=NULL, species
 #' pheno <- import_ebi_ast("EBI_AMR_data.csv.gz", interpret_eucast = TRUE, interpret_ecoff = TRUE)
 #' head(pheno)
 #' }
-import_ebi_ast <- function(input, sample_col="phenotype-BioSample_ID", source=NULL, species=NULL, ab=NULL, 
-                           interpret_eucast=FALSE, interpret_clsi=FALSE, interpret_ecoff=FALSE) {
-  
+import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source = NULL, species = NULL, ab = NULL,
+                           interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
   ast <- process_input(input)
-  
+
   # find id column
   if (!is.null(sample_col)) {
     if (sample_col %in% colnames(ast)) {
@@ -196,72 +196,76 @@ import_ebi_ast <- function(input, sample_col="phenotype-BioSample_ID", source=NU
   } else {
     stop("Please specify the column containing sample identifiers, via parameter 'sample_col'")
   }
-  
+
   # parse disk data
-  if ("phenotype-gen_measurement" %in% colnames(ast)){
-    ast <- ast %>% 
-      mutate(disk=if_else(grepl("mm",`phenotype-gen_measurement`), 
-                         as.disk(`phenotype-gen_measurement`), NA)) %>% 
-      mutate(disk=as.disk(disk))
+  if ("phenotype-gen_measurement" %in% colnames(ast)) {
+    ast <- ast %>%
+      mutate(disk = if_else(grepl("mm", `phenotype-gen_measurement`),
+        as.disk(`phenotype-gen_measurement`), NA
+      )) %>%
+      mutate(disk = as.disk(disk))
   } else {
     ast <- ast %>% mutate(disk = as.disk(NA))
     cat("No disk data (units 'mm') found in input\n")
   }
-  
+
   # parse mic data
-  if ("phenotype-gen_measurement" %in% colnames(ast)){
-    ast <- ast %>% 
-      mutate(mic=if_else(grepl("mg/L",`phenotype-gen_measurement`), 
-                         as.mic(`phenotype-gen_measurement`), NA)) %>% 
-      mutate(mic=as.mic(mic))
+  if ("phenotype-gen_measurement" %in% colnames(ast)) {
+    ast <- ast %>%
+      mutate(mic = if_else(grepl("mg/L", `phenotype-gen_measurement`),
+        as.mic(`phenotype-gen_measurement`), NA
+      )) %>%
+      mutate(mic = as.mic(mic))
   } else {
     ast <- ast %>% mutate(mic = as.mic(NA))
     cat("No MIC data (units 'mg/L') found in input\n")
   }
-  
+
   # parse antibiotic column
   if ("phenotype-antibiotic_name" %in% colnames(ast)) {
     ast <- ast %>% mutate(drug_agent = as.ab(`phenotype-antibiotic_name`))
   } else {
     stop("Expected drug name column 'phenotype-antibiotic_name' not found in input.")
   }
-  
+
   # parse species column
   if ("phenotype-organism" %in% colnames(ast)) {
     ast <- ast %>% mutate(spp_pheno = as.mo(`phenotype-organism`))
   } else {
     cat("Warning: Expected species column 'phenotype-organism' not found in input\n")
   }
-  
+
   if ("phenotype-platform" %in% colnames(ast)) {
     ast <- ast %>% mutate(method = `phenotype-platform`)
   } else {
     cat("Warning: Expected AST platform column 'phenotype-platform' not found in input\n")
   }
-  
+
   if ("phenotype-ast_standard" %in% colnames(ast)) {
     ast <- ast %>% mutate(guideline = `phenotype-ast_standard`)
   } else {
     cat("Warning: Expected AST standard column 'phenotype-ast_standard' not found in input\n")
   }
-  
+
   if ("phenotype-AMR_associated_publications" %in% colnames(ast)) {
     ast <- ast %>% mutate(source = `phenotype-AMR_associated_publications`)
   } else {
-    if (!is.null(source)) {ast <- ast %>% mutate(source = source)}
+    if (!is.null(source)) {
+      ast <- ast %>% mutate(source = source)
+    }
     cat("Warning: Expected pubmed ID column 'phenotype-AMR_associated_publications' not found in input\n")
   }
-  
+
   if ("phenotype-resistance_phenotype" %in% colnames(ast)) {
     ast <- ast %>% mutate(pheno_provided = as.sir(`phenotype-resistance_phenotype`))
   } else {
     cat("Warning: Expected pubmed ID column 'phenotype-resistance_phenotype' not found in input\n")
   }
 
-  ast <- interpret_ast(ast, interpret_ecoff=interpret_ecoff, interpret_eucast=interpret_eucast, interpret_clsi=interpret_clsi, species=species, ab=ab)
-  
+  ast <- interpret_ast(ast, interpret_ecoff = interpret_ecoff, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, species = species, ab = ab)
+
   ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", "pheno_eucast", "pheno_clsi", "ecoff", "guideline", "method", "source", "pheno_provided", "spp_pheno")))
-  
+
   return(ast)
 }
 
@@ -286,7 +290,7 @@ import_ebi_ast <- function(input, sample_col="phenotype-BioSample_ID", source=NU
 #' @export
 #' @examples
 #' \dontrun{
-#' 
+#'
 #' # import without re-interpreting resistance
 #' pheno <- import_ei_ast(ecoli_ast_raw)
 #' head(pheno)
@@ -294,61 +298,60 @@ import_ebi_ast <- function(input, sample_col="phenotype-BioSample_ID", source=NU
 #' # interpret phenotypes
 #' pheno <- interpret_ast(pheno)
 #' }
-interpret_ast <- function(ast, interpret_ecoff=TRUE, interpret_eucast=TRUE, interpret_clsi=TRUE, species=NULL, ab=NULL) {
+interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, interpret_clsi = TRUE, species = NULL, ab = NULL) {
   if (interpret_ecoff | interpret_eucast | interpret_clsi) {
     # check we have species
     if (!is.null(species)) {
-      cat(paste0("Interpreting all data as species: ", mo_name(as.mo(species)),"\n"))
+      cat(paste0("Interpreting all data as species: ", mo_name(as.mo(species)), "\n"))
       if ("spp_pheno" %in% colnames(ast)) {
-        if (length(unique(ast$spp_pheno))>1) {
+        if (length(unique(ast$spp_pheno)) > 1) {
           cat("Warning: ignoring 'spp_pheno' column in input table, which contains multiple species:\n")
-          cat(paste(unique(ast$spp_pheno), collapse=", "))
+          cat(paste(unique(ast$spp_pheno), collapse = ", "))
           cat("\n")
-        }
-        else if (as.mo(unique(ast$spp_pheno)) != as.mo(species)) {
-          cat(paste0("Warning: ignoring 'spp_pheno' column in input table, which indicates a different species: ", unique(ast$spp_pheno),"\n"))
+        } else if (as.mo(unique(ast$spp_pheno)) != as.mo(species)) {
+          cat(paste0("Warning: ignoring 'spp_pheno' column in input table, which indicates a different species: ", unique(ast$spp_pheno), "\n"))
         }
       }
-      ast <- ast %>% mutate(spp_pheno=as.mo(species))
-    }
-    else if (!("spp_pheno" %in% colnames(ast))) {
+      ast <- ast %>% mutate(spp_pheno = as.mo(species))
+    } else if (!("spp_pheno" %in% colnames(ast))) {
       stop("Warning: Could not interpret data, need to provide 'species' parameter or 'spp_pheno' column in input table")
     }
-    
+
     # check we have antibiotic
     if (!is.null(ab)) {
-      cat(paste0("Interpreting all data as drug: ", ab_name(as.ab(ab)),"\n"))
+      cat(paste0("Interpreting all data as drug: ", ab_name(as.ab(ab)), "\n"))
       if ("drug_agent" %in% colnames(ast)) {
-        if (length(unique(ast$drug_agent))>1) {
+        if (length(unique(ast$drug_agent)) > 1) {
           cat("Warning: ignoring 'drug_agent' column in input table, which contains multiple drugs:\n")
-          cat(paste(unique(ast$drug_agent), collapse=", "))
+          cat(paste(unique(ast$drug_agent), collapse = ", "))
           cat("\n")
-        }
-        else if (as.ab(unique(ast$drug_agent)) != as.ab(ab)) {
-          cat(paste0("Warning: ignoring 'drug_agent' column in input table, which indicates a different drug: ", unique(ast$drug_agent),"\n"))
+        } else if (as.ab(unique(ast$drug_agent)) != as.ab(ab)) {
+          cat(paste0("Warning: ignoring 'drug_agent' column in input table, which indicates a different drug: ", unique(ast$drug_agent), "\n"))
         }
       }
-      ast <- ast %>% mutate(drug_agent=as.ab(ab))
-    }
-    else if (!("drug_agent" %in% colnames(ast))) {
+      ast <- ast %>% mutate(drug_agent = as.ab(ab))
+    } else if (!("drug_agent" %in% colnames(ast))) {
       stop("Warning: Could not interpret data, need to provide 'species' parameter or 'spp_pheno' column in input table")
     }
-    
+
     # interpret data
     if (interpret_eucast) {
-        ast <- ast %>% mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="EUCAST", .names="pheno_eucast_mic")) %>%
-                  mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="EUCAST", .names="pheno_eucast_disk")) %>%
-                  mutate(pheno_eucast=coalesce(pheno_eucast_mic, pheno_eucast_disk))
+      ast <- ast %>%
+        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic")) %>%
+        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_disk")) %>%
+        mutate(pheno_eucast = coalesce(pheno_eucast_mic, pheno_eucast_disk))
     }
     if (interpret_clsi) {
-        ast <- ast %>% mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="CLSI", .names="pheno_clsi_mic")) %>%
-                  mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="CLSI", .names="pheno_clsi_disk")) %>%
-                  mutate(pheno_clsi=coalesce(pheno_clsi_mic, pheno_clsi_disk))
+      ast <- ast %>%
+        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic")) %>%
+        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_disk")) %>%
+        mutate(pheno_clsi = coalesce(pheno_clsi_mic, pheno_clsi_disk))
     }
     if (interpret_ecoff) {
-        ast <- ast %>% mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="EUCAST", breakpoint_type = "ECOFF", .names="ecoff_mic")) %>%
-                  mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline="EUCAST", breakpoint_type = "ECOFF", .names="ecoff_disk")) %>%
-                  mutate(ecoff=coalesce(ecoff_mic, ecoff_disk))
+      ast <- ast %>%
+        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic")) %>%
+        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_disk")) %>%
+        mutate(ecoff = coalesce(ecoff_mic, ecoff_disk))
     }
   }
   return(ast)
@@ -358,7 +361,7 @@ interpret_ast <- function(ast, interpret_ecoff=TRUE, interpret_eucast=TRUE, inte
 #'
 #' This function imports an antibiotic susceptibility testing (AST) dataset, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be commpressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
 #' @param input A string representing a dataframe, or a path to an input file, containing the AST data in EBI antibiogram format. These files can be downloaded from the EBI AMR browser, e.g. https://www.ebi.ac.uk/amr/data/?view=experiments
-#' @param format A string indicating the format of the data, either "ebi" (default) or "ncbi". This determines whether the data is passed on to the `import_ebi_ast` or `import_ncbi_ast`()` function to process. 
+#' @param format A string indicating the format of the data, either "ebi" (default) or "ncbi". This determines whether the data is passed on to the `import_ebi_ast` or `import_ncbi_ast`()` function to process.
 #' @param interpret_eucast A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against ECOFF human breakpoints. These will be reported in a new column `pheno_eucast`, of class 'sir'.
 #' @param interpret_clsi A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against CLSI human breakpoints. These will be reported in a new column `pheno_clsi`, of class 'sir'.
 #' @param interpret_ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion values, against epidemiological cut-off (ECOFF) values. These will be reported in a new column `ecoff`, of class 'sir' and coded as 'R' (nonwildtype) or 'S' (wildtype).
@@ -394,20 +397,19 @@ interpret_ast <- function(ast, interpret_ecoff=TRUE, interpret_eucast=TRUE, inte
 #' pheno <- import_ei_ast(ecoli_ast_raw, interpret_eucast = TRUE, interpret_ecoff = TRUE)
 #' head(pheno)
 #' }
-import_ast <- function(input, format="ebi", interpret_eucast=FALSE, 
-                       interpret_clsi=FALSE, interpret_ecoff=FALSE, 
-                       species=NULL, ab=NULL) {
-  
-  if(format=="ebi") {
+import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
+                       interpret_clsi = FALSE, interpret_ecoff = FALSE,
+                       species = NULL, ab = NULL) {
+  if (format == "ebi") {
     cat("Reading in as EBI AST format\n")
-    ast <- import_ebi_ast(input, interpret_eucast=interpret_eucast, interpret_clsi=interpret_clsi, interpret_ecoff=interpret_ecoff, species=species, ab=ab)
+    ast <- import_ebi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
   }
-  if(format=="ncbi") {
+  if (format == "ncbi") {
     cat("Reading in as NCBI AST format\n")
-    ast <- import_ncbi_ast(input, interpret_eucast=interpret_eucast, interpret_clsi=interpret_clsi, interpret_ecoff=interpret_ecoff, species=species, ab=ab)
+    ast <- import_ncbi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
   }
-  
+
   ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", "pheno_eucast", "pheno_clsi", "ecoff", "guideline", "method", "source", "pheno_provided", "spp_pheno")))
-  
+
   return(ast)
 }

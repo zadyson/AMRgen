@@ -10,21 +10,15 @@
 Columns include:
 \itemize{
 \item \code{id}: Sample identifier, imported from the \verb{#BioSample} column in the raw input.
-\item \code{spp_pheno}: Species identifier, interpreted from \verb{Scientific name} using \code{as.mo}, used to interpret \code{ecoff} and \code{pheno} columns.
 \item \code{drug_agent}: Antibiotic code, interpreted from \code{Antibiotic} using \code{as.ab}, used to interpret \code{ecoff} and \code{pheno} columns.
-\item \code{ecoff}: WT/NWT classification, interpreted using \code{as.sir}.
-\item \code{pheno}: S/I/R classification, interpreted using \code{as.sir}.
 \item \code{mic}: Minimum inhibitory concentration, formatted using \code{as.mic}, used to interpret \code{ecoff} and \code{pheno} columns.
 \item \code{disk}: Disk diffusion zone, formatted using \code{as.disk}, used to interpret \code{ecoff} and \code{pheno} columns.
+\item \code{pheno_clsi}: S/I/R classification according to CLSI, interpreted using \code{as.sir}.
+\item \code{ecoff}: WT/NWT classification, interpreted using \code{as.sir}.
 \item \code{guideline}: Interpretation guidelines used to interpret \code{ecoff} and \code{pheno} columns.
-\item \verb{Scientific name}: Species identifier, from input file.
-\item \code{Antibiotic}: Antibiotic name, from input file.
-\item \verb{Testing standard}: Interpretation standard (EUCAST or CLSI), from input file.
-\item \verb{Measurement sign}: Measurement sign (>, <, =, etc.) relating to MIC measurement, from input file.
-\item \code{MIC (mg/L)}: Minimum inhibitory concentration, from input file.
-\item \verb{Disk diffusion (mm)}: Disk diffusion zone, from input file.
-\item \verb{Resistance phenotype}: Resistance call (SIR), from input file.
-\item ...: Additional metadata columns from the NCBI AST export.
+\item \code{method}: Test method, one of: "Etest', "Microscan', "Phoenix', "Phoenix NMIC-203 card', "Sensititer', "Sensititre', "Vitek'.
+\item \code{pheno_provided}: ??
+\item \code{spp_pheno}: Species identifier, interpreted from \verb{Scientific name} using \code{as.mo}, used to interpret \code{ecoff} and \code{pheno} columns.
 }
 }
 }

@@ -58,9 +58,9 @@
 #' soloPPV_cipro$combined_plot
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
-                              geno_sample_col = NULL, pheno_sample_col = NULL, 
+                              geno_sample_col = NULL, pheno_sample_col = NULL,
                               sir_col = NULL, ecoff_col = "ecoff",
-                              marker_col="marker", keep_assay_values = TRUE, min = 1,
+                              marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
   # check there is a SIR column specified
@@ -75,12 +75,12 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   amr_binary <- get_binary_matrix(geno_table, pheno_table,
     antibiotic = antibiotic,
     drug_class_list = drug_class_list,
-    geno_sample_col = geno_sample_col, 
+    geno_sample_col = geno_sample_col,
     pheno_sample_col = pheno_sample_col,
-    sir_col = sir_col, 
+    sir_col = sir_col,
     ecoff_col = ecoff_col,
-    keep_assay_values = keep_assay_values, 
-    marker_col=marker_col
+    keep_assay_values = keep_assay_values,
+    marker_col = marker_col
   )
 
   # get solo markers
@@ -101,7 +101,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
 
   # summarise numerator, denominator, proportion, 95% CI - for R and NWT
-  
+
   if (sum(!is.na(solo_binary$pheno)) > 0) {
     solo_stats_R <- solo_binary %>%
       group_by(marker) %>%
@@ -114,18 +114,19 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
         ci.upper = min(1, p + 1.96 * se)
       ) %>%
       mutate(category = "R")
+  } else {
+    solo_stats_R <- tibble(
+      marker = character(), x = double(), n = integer(),
+      p = double(), se = double(), ci.lower = double(),
+      ci.upper = double(), category = character()
+    )
   }
-  else {
-    solo_stats_R <- tibble(marker=character(), x=double(), n=integer(),
-                            p=double(), se=double(), ci.lower=double(),
-                            ci.upper=double(), category=character())
-  }
-  
+
   if (sum(!is.na(solo_binary$ecoff)) > 0) {
     solo_stats_NWT <- solo_binary %>%
       group_by(marker) %>%
       summarise(
-        x = sum(NWT, na.rm=TRUE),
+        x = sum(NWT, na.rm = TRUE),
         n = sum(ecoff %in% c("S", "I", "R", "SDD")),
         p = x / n,
         se = sqrt(p * (1 - p) / n),
@@ -133,13 +134,14 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
         ci.upper = min(1, p + 1.96 * se)
       ) %>%
       mutate(category = "NWT")
+  } else {
+    solo_stats_NWT <- tibble(
+      marker = character(), x = double(), n = integer(),
+      p = double(), se = double(), ci.lower = double(),
+      ci.upper = double(), category = character()
+    )
   }
-  else {
-    solo_stats_NWT <- tibble(marker=character(), x=double(), n=integer(),
-                             p=double(), se=double(), ci.lower=double(),
-                             ci.upper=double(), category=character())
-  }
-  
+
   solo_stats <- bind_rows(solo_stats_R, solo_stats_NWT) %>%
     relocate(category, .before = x) %>%
     rename(ppv = p)
@@ -163,7 +165,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
         axis.text.y = element_text(size = axis_label_size)
       ) +
       labs(y = "", x = "Proportion", fill = "Phenotype")
-  } else if(sum(!is.na(solo_binary$ecoff)) > 0) { # if we only have ECOFF call, plot that instead
+  } else if (sum(!is.na(solo_binary$ecoff)) > 0) { # if we only have ECOFF call, plot that instead
     solo_pheno_plot <- solo_binary %>%
       filter(marker %in% markers_to_plot) %>%
       filter(!is.na(ecoff)) %>%

@@ -85,7 +85,7 @@
 get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_list, keep_SIR = TRUE,
                               keep_assay_values = FALSE, keep_assay_values_from = c("mic", "disk"),
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = "pheno", ecoff_col = "ecoff", marker_col = "marker",
+                              sir_col = "pheno_clsi", ecoff_col = "ecoff", marker_col = "marker",
                               most_resistant = TRUE) {
   # check we have a drug_agent column with class ab
   if (!("drug_agent" %in% colnames(pheno_table))) {
@@ -118,6 +118,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # take single representative phenotype row per sample
   pheno_matched_rows_unfiltered <- nrow(pheno_matched)
+  print(pheno_matched)
   if (most_resistant) { # take most resistant
     pheno_matched <- pheno_matched %>%
       arrange(desc(get(sir_col)), desc(mic)) %>%
@@ -165,7 +166,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   # replace NWT with ecoff-based definition if available
   if (!is.null(ecoff_col)) {
     if (ecoff_col %in% colnames(pheno_binary)) {
-      cat(paste("Defining NWT using ecoff column provided:", ecoff_col,"\n"))
+      cat(paste("Defining NWT using ecoff column provided:", ecoff_col, "\n"))
       pheno_binary <- pheno_binary %>%
         mutate(NWT = case_when(
           as.sir(get(ecoff_col)) == "R" ~ 1,
@@ -215,7 +216,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
         select(id, any_of(keep_assay_values_from)) %>%
         full_join(geno_binary, by = "id")
     } else {
-      cat(paste("No specified assay columns found:", keep_assay_values_from,"\n"))
+      cat(paste("No specified assay columns found:", keep_assay_values_from, "\n"))
     }
     if ("mic" %in% colnames(geno_binary)) {
       geno_binary <- geno_binary %>% mutate(mic = as.mic(mic))
@@ -230,14 +231,14 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     sir_binary <- pheno_matched %>%
       select(id, any_of(c(sir_col, ecoff_col))) %>%
       mutate(pheno = as.sir(get(sir_col)))
-    
-    if(!is.null(ecoff_col)) {
-      if(ecoff_col %in% colnames(sir_binary)) {
-        sir_binary <- sir_binary %>% mutate(ecoff=as.sir(get(ecoff_col)))
+
+    if (!is.null(ecoff_col)) {
+      if (ecoff_col %in% colnames(sir_binary)) {
+        sir_binary <- sir_binary %>% mutate(ecoff = as.sir(get(ecoff_col)))
       }
     }
-    
-    geno_binary <- sir_binary %>% 
+
+    geno_binary <- sir_binary %>%
       select(id, any_of(c("pheno", "ecoff"))) %>%
       full_join(geno_binary, by = "id")
   }

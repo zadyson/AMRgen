@@ -38,21 +38,15 @@
 #' @format ## `ecoli_ast` A data frame with `r NROW(ecoli_ast)` rows and `r NCOL(ecoli_ast)` columns representing reinterpreted data from the NCBI AST browser.
 #' Columns include:
 #' - `id`: Sample identifier, imported from the `#BioSample` column in the raw input.
-#' - `spp_pheno`: Species identifier, interpreted from `Scientific name` using `as.mo`, used to interpret `ecoff` and `pheno` columns.
 #' - `drug_agent`: Antibiotic code, interpreted from `Antibiotic` using `as.ab`, used to interpret `ecoff` and `pheno` columns.
-#' - `ecoff`: WT/NWT classification, interpreted using `as.sir`.
-#' - `pheno`: S/I/R classification, interpreted using `as.sir`.
 #' - `mic`: Minimum inhibitory concentration, formatted using `as.mic`, used to interpret `ecoff` and `pheno` columns.
 #' - `disk`: Disk diffusion zone, formatted using `as.disk`, used to interpret `ecoff` and `pheno` columns.
+#' - `pheno_clsi`: S/I/R classification according to CLSI, interpreted using `as.sir`.
+#' - `ecoff`: WT/NWT classification, interpreted using `as.sir`.
 #' - `guideline`: Interpretation guidelines used to interpret `ecoff` and `pheno` columns.
-#' - `Scientific name`: Species identifier, from input file.
-#' - `Antibiotic`: Antibiotic name, from input file.
-#' - `Testing standard`: Interpretation standard (EUCAST or CLSI), from input file.
-#' - `Measurement sign`: Measurement sign (>, <, =, etc.) relating to MIC measurement, from input file.
-#' - `MIC (mg/L)`: Minimum inhibitory concentration, from input file.
-#' - `Disk diffusion (mm)`: Disk diffusion zone, from input file.
-#' - `Resistance phenotype`: Resistance call (SIR), from input file.
-#' - ...: Additional metadata columns from the NCBI AST export.
+#' - `method`: Test method, one of: `r toString(paste0('"', stats::na.omit(sort(unique(ecoli_ast$method))), "'"))`.
+#' - `pheno_provided`: ??
+#' - `spp_pheno`: Species identifier, interpreted from `Scientific name` using `as.mo`, used to interpret `ecoff` and `pheno` columns.
 #' @source <https://www.ncbi.nlm.nih.gov/pathogens/ast>
 "ecoli_ast"
 

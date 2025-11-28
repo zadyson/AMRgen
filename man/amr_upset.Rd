@@ -55,17 +55,16 @@ A list containing the following elements:
 This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from a given binary matrix. It creates several plots, including MIC distributions, a bar plot for the percentage of strains per combination, a dot plot for gene combinations in strains, and a plot for gene prevalence. It also outputs a table summarizing the MIC distribution (median, lower, upper) and number resistant, for each marker combination.
 }
 \examples{
-\dontrun{
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 binary_matrix <- get_binary_matrix(
   geno_table = ecoli_geno,
   pheno_table = ecoli_ast,
   antibiotic = "Ciprofloxacin",
   drug_class_list = c("Quinolones"),
-  sir_col = "pheno",
+  sir_col = "pheno_clsi",
   keep_assay_values = TRUE,
   keep_assay_values_from = "mic"
 )
+
 amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
-}
 }

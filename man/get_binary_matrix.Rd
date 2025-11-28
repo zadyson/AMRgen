@@ -14,7 +14,7 @@ get_binary_matrix(
   keep_assay_values_from = c("mic", "disk"),
   geno_sample_col = NULL,
   pheno_sample_col = NULL,
-  sir_col = "pheno",
+  sir_col = "pheno_clsi",
   ecoff_col = "ecoff",
   marker_col = "marker",
   most_resistant = TRUE
