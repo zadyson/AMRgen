@@ -92,7 +92,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
     stop(paste("input", deparse(substitute(pheno_table)), "must have a column labelled `drug_agent`"))
   }
   if (!is.ab(pheno_table$drug_agent)) {
-    cat(paste("converting", deparse(substitute(pheno_table)), "column `drug_agent` to class `ab`\n"))
+    cat(paste(" Converting", deparse(substitute(pheno_table)), "column `drug_agent` to class `ab` in binary matrix\n"))
     pheno_table <- pheno_table %>% mutate(drug_agent = as.ab(drug_agent))
   }
 
@@ -100,12 +100,12 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   if (as.ab(antibiotic) %in% pheno_table$drug_agent) {
     pheno_table <- pheno_table %>% filter(drug_agent == as.ab(antibiotic))
   } else {
-    stop(paste("antibiotic ", antibiotic, " was not found in input: ", pheno_table))
+    stop(paste("antibiotic ", antibiotic, " was not found in input: ", deparse(substitute(pheno_table))))
   }
 
   # check we have some geno hits for markers relevant to the drug class/es
   if (!("drug_class" %in% colnames(geno_table))) {
-    stop(paste("input", geno_table, "must have a column labelled `drug_class`"))
+    stop(paste("input", deparse(substitute(geno_table)), "must have a column labelled `drug_class`"))
   }
   if (sum(drug_class_list %in% geno_table$drug_class) == 0) {
     stop(paste("No markers matching drug class", paste(drug_class_list, collapse = ","), "were identified in input geno_table"))
@@ -118,7 +118,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   # take single representative phenotype row per sample
   pheno_matched_rows_unfiltered <- nrow(pheno_matched)
-  print(pheno_matched)
+
   if (most_resistant) { # take most resistant
     pheno_matched <- pheno_matched %>%
       arrange(desc(get(sir_col)), desc(mic)) %>%
@@ -126,7 +126,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
       slice_head(n = 1) %>%
       ungroup()
     if (nrow(pheno_matched) < pheno_matched_rows_unfiltered) {
-      cat("Some samples had multiple phenotype rows, taking the most resistant only\n")
+      cat(" Some samples had multiple phenotype rows, taking the most resistant only for binary matrix\n")
     }
   }
   if (!most_resistant) { # take least resistant
@@ -166,7 +166,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
   # replace NWT with ecoff-based definition if available
   if (!is.null(ecoff_col)) {
     if (ecoff_col %in% colnames(pheno_binary)) {
-      cat(paste("Defining NWT using ecoff column provided:", ecoff_col, "\n"))
+      cat(paste(" Defining NWT in binary matrix using ecoff column provided:", ecoff_col, "\n"))
       pheno_binary <- pheno_binary %>%
         mutate(NWT = case_when(
           as.sir(get(ecoff_col)) == "R" ~ 1,
@@ -175,7 +175,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
           TRUE ~ NA
         ))
     } else {
-      cat("Defining NWT as I/R vs 0, as no ECOFF column defined\n")
+      cat(" Defining NWT in binary matrix as I/R vs 0, as no ECOFF column defined\n")
     }
   }
 
@@ -216,7 +216,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
         select(id, any_of(keep_assay_values_from)) %>%
         full_join(geno_binary, by = "id")
     } else {
-      cat(paste("No specified assay columns found:", keep_assay_values_from, "\n"))
+      cat(paste(" No specified assay columns found to include in binary matrix:", keep_assay_values_from, "\n"))
     }
     if ("mic" %in% colnames(geno_binary)) {
       geno_binary <- geno_binary %>% mutate(mic = as.mic(mic))

@@ -59,31 +59,10 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_colour = "grey", assay = "mic") {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  # tidy up binary_matrix
-  # col <- colnames(binary_matrix) # get column names
-
-  # extract only the gene column names - need to exclude mic, disk, R, NWT (standard col names)
-  # and the id column which will be the first col, doesn't matter what it's called
-  # remaining columns will be the genes
-  # cols_to_remove <- c("mic", "disk", "R", "NWT", "pheno", "ecoff")
-  # genes <- col[-1]
-
-  # gene names
-  #  genes <- setdiff(genes, cols_to_remove)
 
   if (sum(!is.na(binary_matrix$pheno)) == 0) {
     if (sum(!is.na(binary_matrix$ecoff)) > 0) {
       binary_matrix <- binary_matrix %>% mutate(pheno = ecoff)
-=======
-=======
->>>>>>> Stashed changes
-  
-  if (sum(!is.na(binary_matrix$pheno))==0) {
-    if (sum(!is.na(binary_matrix$ecoff))>0) {
-      binary_matrix <- binary_matrix %>% mutate(pheno=ecoff)
->>>>>>> Stashed changes
       cat(" Warning: no values in pheno column, colouring upset plot by ecoff column\n")
     } else {
       stop(" Failed to make upset plot as no values in field pheno or ecoff")
