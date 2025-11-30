@@ -18,7 +18,7 @@ amr_logistic(
   single_plot = TRUE,
   colors = c("maroon", "blue4"),
   axis_label_size = 9,
-  marker_col = "marker"
+  marker_col = "marker.label"
 )
 }
 \arguments{

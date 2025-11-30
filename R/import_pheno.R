@@ -280,7 +280,7 @@ import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source 
 #' @param species (optional) Name of the species to use for phenotype interpretation. By default, the organism field in the input file will be assumed to specify the species for each sample, but if this is missing or you want to override it in the interpretation step, you may provide a single species name via this parameter.
 #' @param ab (optional) Name of the antibiotic to use for phenotype interpretation. By default, the antibiotic field in the input file will be assumed to specify the antibiotic for each sample, but if this is missing or you want to override it in the interpretation step, you may provide a single antibiotic name via this parameter.
 #' @importFrom AMR as.ab as.disk as.mic as.mo as.sir
-#' @importFrom dplyr coalesce mutate
+#' @importFrom dplyr across coalesce mutate
 #' @return A copy of the input table, with additional columns:
 #' - `pheno_eucast`: The phenotype newly interpreted against EUCAST human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.
 #' - `pheno_clsi`: The phenotype newly interpreted against CLSI human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.

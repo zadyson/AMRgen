@@ -59,6 +59,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_colour = "grey", assay = "mic") {
+<<<<<<< Updated upstream
   # tidy up binary_matrix
   # col <- colnames(binary_matrix) # get column names
 
@@ -74,6 +75,12 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   if (sum(!is.na(binary_matrix$pheno)) == 0) {
     if (sum(!is.na(binary_matrix$ecoff)) > 0) {
       binary_matrix <- binary_matrix %>% mutate(pheno = ecoff)
+=======
+  
+  if (sum(!is.na(binary_matrix$pheno))==0) {
+    if (sum(!is.na(binary_matrix$ecoff))>0) {
+      binary_matrix <- binary_matrix %>% mutate(pheno=ecoff)
+>>>>>>> Stashed changes
       cat(" Warning: no values in pheno column, colouring upset plot by ecoff column\n")
     } else {
       stop(" Failed to make upset plot as no values in field pheno or ecoff")
@@ -92,9 +99,11 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   if (!(assay %in% colnames(binary_matrix))) {
     stop(paste("input", deparse(substitute(binary_matrix)), "must have a column labelled ", assay))
   }
+  
   data_rows <- binary_matrix %>%
     filter(!is.na(get(assay))) %>%
     nrow()
+  
   if (data_rows == 0) {
     stop(paste("input", deparse(substitute(binary_matrix)), "has no non-NA values in column ", assay))
   }
@@ -339,16 +348,23 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
 
   # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
   if (assay == "mic") {
-    summary <- binary_matrix_wide %>%
-      group_by(combination_id) %>%
-      summarise(
-        median = median(as.double(as.mic(mic, keep_operators = FALSE)), na.rm = TRUE),
-        q25 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.25, na.rm = TRUE),
-        q75 = stats::quantile(as.double(as.mic(mic, keep_operators = FALSE)), 0.75, na.rm = TRUE),
-        ppv = mean(R, na.rm = TRUE),
-        R = sum(R, na.rm = TRUE),
-        n = n()
-      )
+      summary <- binary_matrix_wide %>%
+        group_by(combination_id) %>%
+        summarise( #note these medians are not meaningful if all expressed as ranges
+          median_ignoreRanges = median(mic, na.rm = TRUE),
+          q25_ignoreRanges = stats::quantile(mic, 0.25, na.rm = TRUE),
+          q75_ignoreRanges = stats::quantile(mic, 0.75, na.rm = TRUE),
+          n = n()
+        )
+      summary <- binary_matrix_wide %>%
+        filter(!grepl("<|>", as.character(mic))) %>%
+        group_by(combination_id) %>%
+        summarise(
+          median_excludeRangeValues = median(mic, na.rm = TRUE),
+          q25_excludeRangeValues = stats::quantile(mic, 0.25, na.rm = TRUE),
+          q75_excludeRangeValues = stats::quantile(mic, 0.75, na.rm = TRUE),
+          n_excludeRangeValues = n()
+        ) %>% left_join(summary, by="combination_id")
   } else {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
@@ -356,10 +372,27 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
         median = median(as.double(as.disk(disk)), na.rm = TRUE),
         q25 = stats::quantile(as.double(as.disk(disk)), 0.25, na.rm = TRUE),
         q75 = stats::quantile(as.double(as.disk(disk)), 0.75, na.rm = TRUE),
-        ppv = mean(R, na.rm = TRUE),
-        R = sum(R, na.rm = TRUE),
-        n = n()
+        n = n(),
+        n_exclRangeValues = sum(!grepl("<|>", as.character(mic)))
       )
+  }
+  if ("NWT" %in% colnames(binary_matrix_wide)) {
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise(
+        NWT.ppv = mean(NWT, na.rm = TRUE),
+        NWT = sum(NWT, na.rm = TRUE)
+      ) %>%
+      right_join(summary, by="combination_id")
+  }
+  if ("R" %in% colnames(binary_matrix_wide)) {
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise(
+        R.ppv = mean(R, na.rm = TRUE),
+        R = sum(R, na.rm = TRUE)
+      ) %>%
+      right_join(summary, by="combination_id")
   }
 
   # get names for summary
@@ -379,8 +412,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     select(-combination_id) %>%
     mutate(marker_list = if_else(is.na(marker_list), "-", marker_list)) %>%
     mutate(marker_count = if_else(is.na(marker_count), 0, marker_count)) %>%
-    relocate(marker_list, .before = median) %>%
-    relocate(marker_count, .before = median) %>%
+    relocate(marker_list, marker_count, n) %>%
     mutate(marker_list = gsub("\\.\\.", ":", marker_list)) %>%
     mutate(marker_list = gsub("`", "", marker_list))
 

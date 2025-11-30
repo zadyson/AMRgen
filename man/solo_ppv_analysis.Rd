@@ -18,7 +18,8 @@ solo_ppv_analysis(
   min = 1,
   axis_label_size = 9,
   pd = position_dodge(width = 0.8),
-  plot_cols = c(R = "IndianRed", NWT = "navy")
+  plot_cols = c(R = "maroon", S = "skyblue", I = "gold", NWT = "navy"),
+  ecoff_cols = c(WT = "skyblue", NWT = "navy", NI = "gold")
 )
 }
 \arguments{

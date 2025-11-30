@@ -71,8 +71,9 @@ The `import_ncbi_ast()` function imports AST data from NCBI format files.
 ``` {r import_ncbi_ast}
 # Example E. coli AST data from NCBI
 # This one has already been imported and phenotypes interpreted from assay data
-# You can make your own from NCBI format data using:
-#    import_ncbi_ast("filepath/AST.tsv", interpret=T)
+# You can make your own from NCBI of EBI antibiogram format data using e.g.:
+#    import_ast("filepath/AST.tsv", format="ncbi", interpret_clsi=T)
+#    import_ast("filepath/AST.tsv", format="ebi", interpret_eucast=T)
 ecoli_ast
 
 head(ecoli_ast)

@@ -334,7 +334,12 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          sir_col = "pheno", ecoff_col = "ecoff",
                          maf = 10, glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
+<<<<<<< Updated upstream
                          axis_label_size = 9, marker_col = "marker") {
+=======
+                         axis_label_size = 9, marker_col = "marker.label") {
+  
+>>>>>>> Stashed changes
   bin_mat <- get_binary_matrix(
     geno_table = geno_table,
     pheno_table = pheno_table,
@@ -346,7 +351,7 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     ecoff_col = ecoff_col,
     marker_col = marker_col
   )
-
+  
   if (glm) {
     cat("Fitting logistic regression models using glm\n")
     if (sum(!is.na(bin_mat$R)) > 0) {
@@ -362,21 +367,36 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
         mutate(marker = gsub("`", "", marker))
     }
   } else {
+<<<<<<< Updated upstream
     cat("Fitting logistic regression models using logistf\n")
     if (sum(!is.na(bin_mat$R)) > 0) {
       modelR <- logistf::logistf(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+=======
+    cat("...Fitting logistic regression model to R using logistf\n")
+    if (sum(!is.na(bin_mat$R))>0) {
+      to_fit <- bin_mat %>% filter(!is.na(R)) %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf))
+      modelR <- logistf::logistf(R ~ ., data = to_fit, pl = FALSE)
+>>>>>>> Stashed changes
       modelR <- logistf_details(modelR) %>%
         mutate(marker = gsub("\\.\\.", ":", marker)) %>%
         mutate(marker = gsub("`", "", marker))
     }
+<<<<<<< Updated upstream
     if (sum(!is.na(bin_mat$NWT)) > 0) {
       modelNWT <- logistf::logistf(NWT ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), pl = FALSE)
+=======
+    cat("...Fitting logistic regression model to NWT using logistf\n")
+    if (sum(!is.na(bin_mat$NWT))>0) {
+      to_fit <- bin_mat %>% filter(!is.na(NWT)) %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf))
+      modelNWT <- logistf::logistf(NWT ~ ., data = to_fit, pl = FALSE)
+>>>>>>> Stashed changes
       modelNWT <- logistf_details(modelNWT) %>%
         mutate(marker = gsub("\\.\\.", ":", marker)) %>%
         mutate(marker = gsub("`", "", marker))
     }
   }
 
+  cat("Generating plots\n")
   if (exists("modelR") & exists("modelNWT")) { # if we have 2 models, plot them together
     plot <- compare_estimates(modelR, modelNWT,
       single_plot = single_plot,
@@ -391,11 +411,11 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     }
   } else if (exists("modelR")) {
     plot <- plot_estimates(modelR)
-    modelNWT <- NULL # need an object to return, set to null
-  } else if (!is.null("modelNWT")) {
+  } else if (exists("modelNWT")) {
     plot <- plot_estimates(modelNWT)
-    modelR <- NULL # need an object to return, set to null
   }
+  if (!exists("modelNWT")) {modelNWT <- NULL} # need an object to return, set to null
+  if (!exists("modelR")) {modelR <- NULL} # need an object to return, set to null
 
   print(plot)
 

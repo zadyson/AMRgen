@@ -62,7 +62,9 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               sir_col = NULL, ecoff_col = "ecoff",
                               marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
-                              plot_cols = c("R" = "IndianRed", "NWT" = "navy")) {
+                              plot_cols = c("R"="maroon", "S"="skyblue", "I"="gold",
+                                            "NWT"="navy"),
+                              ecoff_cols = c("WT"="skyblue", "NWT"="navy", "NI"="gold")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -147,7 +149,9 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     rename(ppv = p)
 
   # plots
-  markers_to_plot <- unique(solo_stats$marker[solo_stats$n >= min])
+  
+  # markers with minimum number for either pheno or ecoff
+  markers_to_plot <- solo_stats %>% filter(n>=min) %>% pull(marker) %>% unique()
 
   if (sum(!is.na(solo_binary$pheno)) > 0) { # if we have S/I/R call, plot it
     solo_pheno_plot <- solo_binary %>%
@@ -155,7 +159,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       filter(!is.na(pheno)) %>%
       ggplot(aes(y = marker, fill = pheno)) +
       geom_bar(stat = "count", position = "fill") +
-      # scale_fill_manual(values = plot_cols) +
+      #scale_fill_manual(values = plot_cols) +
       scale_fill_sir() +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
@@ -171,8 +175,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       filter(!is.na(ecoff)) %>%
       ggplot(aes(y = marker, fill = ecoff)) +
       geom_bar(stat = "count", position = "fill") +
-      # scale_fill_manual(values = plot_cols) +
       scale_fill_sir() +
+      #scale_fill_manual(values = ecoff_cols) +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
       theme_light() +
@@ -183,6 +187,15 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       labs(y = "", x = "Proportion", fill = "ECOFF")
   }
 
+  labels <- solo_stats %>%
+    filter(marker %in% markers_to_plot) %>% 
+    select(marker, category, n) %>%
+    pivot_wider(id_cols=marker, names_from = category, values_from=n) %>%
+    mutate(labels = paste0("(n=", R, ",", NWT , ")"))
+  
+  labels_vector <- labels$labels
+  names(labels_vector) <- labels$marker
+  
   ppv_plot <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>%
     ggplot(aes(y = marker, group = category, col = category)) +
@@ -190,7 +203,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +
     geom_point(aes(x = ppv), position = pd) +
     theme_bw() +
-    scale_y_discrete(limits = markers_to_plot, labels = paste0("(n=", solo_stats$n[solo_stats$marker %in% markers_to_plot], ")"), position = "right") +
+    scale_y_discrete(limits = markers_to_plot, labels = labels_vector[markers_to_plot], position = "right") +
     labs(y = "", x = "Solo PPV", col = "Category") +
     scale_colour_manual(values = plot_cols) +
     theme(
@@ -208,5 +221,5 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   print(combined_plot)
 
-  return(list(solo_stats = solo_stats, combined_plot = combined_plot, solo_binary = solo_binary, amr_binary = amr_binary))
+  return(list(solo_stats = solo_stats, combined_plot = combined_plot, solo_binary = solo_binary, amr_binary = amr_binary, plot_order=labels_vector[markers_to_plot]))
 }
