@@ -60,6 +60,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_colour = "grey", assay = "mic") {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   # tidy up binary_matrix
   # col <- colnames(binary_matrix) # get column names
 
@@ -76,6 +77,8 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     if (sum(!is.na(binary_matrix$ecoff)) > 0) {
       binary_matrix <- binary_matrix %>% mutate(pheno = ecoff)
 =======
+=======
+>>>>>>> Stashed changes
   
   if (sum(!is.na(binary_matrix$pheno))==0) {
     if (sum(!is.na(binary_matrix$ecoff))>0) {
