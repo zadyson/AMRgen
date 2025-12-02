@@ -125,6 +125,7 @@ compare_estimates <- function(tbl1, tbl2,
                               single_plot = TRUE,
                               pd = position_dodge(width = 0.8),
                               marker_order = NULL) {
+  
   if (!single_plot | is.null(tbl2)) { # need a solo plot for table 1
     plot1 <- plot_estimates(tbl1,
       sig = sig,
@@ -332,7 +333,7 @@ glm_details <- function(model) {
 amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          geno_sample_col = NULL, pheno_sample_col = NULL,
                          sir_col = "pheno", ecoff_col = "ecoff",
-                         maf = 10, glm = FALSE, single_plot = TRUE,
+                         maf = 10, fit_glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
                          axis_label_size = 9, marker_col = "marker.label") {
   
@@ -348,7 +349,7 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     marker_col = marker_col
   )
   
-  if (glm) {
+  if (fit_glm) {
     cat("Fitting logistic regression models using glm\n")
     if (sum(!is.na(bin_mat$R)) > 0) {
       modelR <- glm(R ~ ., data = bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(where(~ sum(., na.rm = TRUE) >= maf)), family = stats::binomial(link = "logit"))

@@ -89,6 +89,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   marker_counts <- amr_binary %>%
     select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>%
     rowSums()
+  
 
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
@@ -190,10 +191,18 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   labels <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>% 
     select(marker, category, n) %>%
-    pivot_wider(id_cols=marker, names_from = category, values_from=n) %>%
-    mutate(labels = paste0("(n=", R, ",", NWT , ")"))
+    pivot_wider(id_cols=marker, names_from = category, values_from=n)
   
-  labels_vector <- labels$labels
+  if ("R" %in% colnames(labels) & "NWT" %in% colnames(labels)) {
+    labels_vector <- paste0("(n=", labels$R, ",", labels$NWT , ")")
+  } else if ("R" %in% colnames(labels)) {
+    labels_vector <- paste0("(n=", labels$R, ")")
+  } else if ("NWT" %in% colnames(labels)) {
+    labels_vector <- paste0("(n=", labels$NWT, ")")
+  } else {
+    labels_vector <- rep("", nrow(labels))
+  }
+  
   names(labels_vector) <- labels$marker
   
   ppv_plot <- solo_stats %>%
