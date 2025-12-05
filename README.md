@@ -14,7 +14,7 @@ The [AMRgen website](https://AMRverse.github.io/AMRgen) has full function [docum
 
 ## Key Features
 
--   **Import Genotype and Phenotype Data**: Import from common formats (NCBI AST for phenotypes; AMRFinderPlus and hAMRonization for genotypes
+-   **Import Genotype and Phenotype Data**: Import from common formats (NCBI or EBI antibiogram format for phenotypes; AMRFinderPlus and hAMRonization for genotypes
 -   **Genotype-Phenotype Integration**: Links AMR gene presence with phenotypic resistance profiles, enabling deeper insights into resistance mechanisms.
 -   **Automated EUCAST MIC Distribution Integration**: Fetch MIC distribution data directly from [EUCAST](https://mic.eucast.org) for seamless comparison with local susceptibility data.
 -   **Visualisation**: Generate powerful UpSet plots to identify intersections of AMR gene presence and phenotypic resistance, highlighting multidrug resistance patterns.
@@ -62,7 +62,7 @@ ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 # Calculate positive predictive value for ciprofloxacin resistance
 #  (for all quinolone-associated genotype markers)
-soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno")
+soloPPV_cipro <- solo_ppv_analysis(ecoli_geno, ecoli_ast, antibiotic="Ciprofloxacin", drug_class_list=c("Quinolones"), sir_col="pheno_clsi")
 
 # Do upset plot of ciprofloxacin MIC vs quinolone genotype marker combinations
 #  (for combinations observed at least 5 times)
@@ -70,7 +70,8 @@ cip_upset <- amr_upset(soloPPV_cipro$amr_binary, min_set_size=5, assay="mic", or
 
 # Do logistic regression of ciprofloxacin resistance as a function of presence/absence of quinolone-associated markers
 #  (for markers observed at least 10 times)
-models <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"), pheno_table = ecoli_ast, 
+models <- amr_logistic(geno_table = import_amrfp(ecoli_geno_raw, "Name"),
+                       pheno_table = ecoli_ast, sir_col="pheno_clsi",
                        antibiotic = "Ciprofloxacin", drug_class_list = c("Quinolones"), maf=10)
 
 ```
