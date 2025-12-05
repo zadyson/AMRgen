@@ -331,27 +331,63 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
       }
       ast <- ast %>% mutate(drug_agent = as.ab(ab))
     } else if (!("drug_agent" %in% colnames(ast))) {
-      stop("Warning: Could not interpret data, need to provide 'species' parameter or 'spp_pheno' column in input table")
+      stop("Warning: Could not interpret data, need to provide 'species' parameter or 'drug_agent' column in input table")
     }
 
     # interpret data
     if (interpret_eucast) {
-      ast <- ast %>%
-        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic")) %>%
-        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_disk")) %>%
-        mutate(pheno_eucast = coalesce(pheno_eucast_mic, pheno_eucast_disk))
+      if ("mic" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic"))
+      }
+      if ("disk" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_disk"))
+      }
+      if (("pheno_eucast_mic" %in% colnames(ast)) & ("pheno_eucast_disk" %in% colnames(ast))) {
+        ast <- ast %>%
+          mutate(pheno_eucast = coalesce(pheno_eucast_mic, pheno_eucast_disk))
+      } else if ("pheno_eucast_mic" %in% colnames(ast)) {
+        ast <- ast %>% rename(pheno_eucast=pheno_eucast_mic)
+      } else if ("pheno_eucast_disk" %in% colnames(ast)) {
+        ast <- ast %>% rename(pheno_eucast=pheno_eucast_disk)
+      }
     }
     if (interpret_clsi) {
-      ast <- ast %>%
-        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic")) %>%
-        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_disk")) %>%
-        mutate(pheno_clsi = coalesce(pheno_clsi_mic, pheno_clsi_disk))
+      if ("mic" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic"))
+      }
+      if ("disk" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_disk"))
+      }
+      if (("pheno_clsi_mic" %in% colnames(ast)) & ("pheno_clsi_disk" %in% colnames(ast))) {
+        ast <- ast %>%
+          mutate(pheno_clsi = coalesce(pheno_clsi_mic, pheno_clsi_disk))
+      } else if ("pheno_clsi_mic" %in% colnames(ast)) {
+        ast <- ast %>% rename(pheno_clsi=pheno_clsi_mic)
+      } else if ("pheno_eucast_disk" %in% colnames(ast)) {
+        ast <- ast %>% rename(pheno_clsi_disk=pheno_clsi_disk)
+      }
     }
     if (interpret_ecoff) {
-      ast <- ast %>%
-        mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic")) %>%
-        mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_disk")) %>%
-        mutate(ecoff = coalesce(ecoff_mic, ecoff_disk))
+      if ("mic" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic"))
+      }
+      if ("disk" %in% colnames(ast)) {
+        ast <- ast %>%
+          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_disk"))
+      }
+      if (("ecoff_mic" %in% colnames(ast)) & ("ecoff_disk" %in% colnames(ast))) {
+        ast <- ast %>%
+          mutate(ecoff = coalesce(ecoff_mic, ecoff_disk))
+      } else if ("ecoff_mic" %in% colnames(ast)) {
+        ast <- ast %>% rename(ecoff=ecoff_mic)
+      } else if ("ecoff_disk" %in% colnames(ast)) {
+        ast <- ast %>% rename(ecoff=ecoff_disk)
+      }
     }
   }
   return(ast)
