@@ -40,13 +40,19 @@ A copy of the input table, with additional columns:
 This function applies human EUCAST or CLSI breakpoints, and/or ECOFF, to interpret AST data.
 }
 \examples{
-\dontrun{
-
 # import without re-interpreting resistance
-pheno <- import_ei_ast(ecoli_ast_raw)
+pheno <- import_ncbi_ast(ecoli_ast_raw)
 head(pheno)
 
 # interpret phenotypes
 pheno <- interpret_ast(pheno)
+
+\dontrun{
+pheno <- read_csv("AST.csv") \%>\% 
+  mutate(drug_agent=as.ab(antibiotic)) \%>\% # convert antibiotic field to 'drug_agent' of class 'ab'
+  mutate(mic=paste0(sign,MIC)) \%>\% 
+  mutate(mic=as.mic(mic)) # create a single 'mic' column of class 'mic'
+  
+pheno <- interpret_ast(pheno, species="Escherichia coli")
 }
 }

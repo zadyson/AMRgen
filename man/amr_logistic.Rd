@@ -14,7 +14,7 @@ amr_logistic(
   sir_col = "pheno",
   ecoff_col = "ecoff",
   maf = 10,
-  glm = FALSE,
+  fit_glm = FALSE,
   single_plot = TRUE,
   colors = c("maroon", "blue4"),
   axis_label_size = 9,
@@ -40,7 +40,7 @@ amr_logistic(
 
 \item{maf}{(Optional) An integer specifying the minimum allele frequency (MAF) threshold. Markers with a MAF lower than this value will be excluded. Defaults to 10.}
 
-\item{glm}{(Optional) Change to TRUE to fit model with glm. Otherwise fit model with logistf (default).}
+\item{fit_glm}{(Optional) Change to TRUE to fit model with glm. Otherwise fit model with logistf (default).}
 
 \item{single_plot}{(Optional) A logical value. If \code{TRUE}, a single plot is produced comparing the estimates for resistance (\code{R}) and non-resistance (\code{NWT}). Otherwise, two plots are printed side-by-side. Defaults to \code{TRUE}.}
 

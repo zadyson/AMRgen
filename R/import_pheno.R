@@ -42,7 +42,6 @@
 #' - `source`: The source of each data point (renamed from `BioProject` in the input file, or replaced with a single value passed in as the 'source' parameter).
 #' @export
 #' @examples
-#' \dontrun{
 #' # small example E. coli AST data from NCBI
 #' ecoli_ast_raw
 #'
@@ -51,9 +50,8 @@
 #' head(pheno)
 #'
 #' # import and re-interpret resistance (S/I/R) and WT/NWT (vs ECOFF) using AMR package
-#' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret_eucast = TRUE, ecoff = TRUE)
+#' pheno <- import_ncbi_ast(ecoli_ast_raw, interpret_eucast = TRUE, interpret_ecoff = TRUE)
 #' head(pheno)
-#' }
 import_ncbi_ast <- function(input, sample_col = "#BioSample", source = NULL, species = NULL, ab = NULL,
                             interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
   ast <- process_input(input)
@@ -289,14 +287,20 @@ import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source 
 #' - `drug_agent`: The antibiotic used in the test, formatted using the `as.ab` function (either taken from the input table, or the single value specified by 'ab' parameter)..
 #' @export
 #' @examples
-#' \dontrun{
-#'
 #' # import without re-interpreting resistance
-#' pheno <- import_ei_ast(ecoli_ast_raw)
+#' pheno <- import_ncbi_ast(ecoli_ast_raw)
 #' head(pheno)
 #'
 #' # interpret phenotypes
 #' pheno <- interpret_ast(pheno)
+#' 
+#' \dontrun{
+#' pheno <- read_csv("AST.csv") %>% 
+#'   mutate(drug_agent=as.ab(antibiotic)) %>% # convert antibiotic field to 'drug_agent' of class 'ab'
+#'   mutate(mic=paste0(sign,MIC)) %>% 
+#'   mutate(mic=as.mic(mic)) # create a single 'mic' column of class 'mic'
+#'   
+#' pheno <- interpret_ast(pheno, species="Escherichia coli")
 #' }
 interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, interpret_clsi = TRUE, species = NULL, ab = NULL) {
   if (interpret_ecoff | interpret_eucast | interpret_clsi) {
@@ -421,21 +425,19 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
 #' - `source`: The source of each data point (from the publications or bioproject field in the input file, or replaced with a single value passed in as the 'source' parameter).
 #' @export
 #' @examples
-#' \dontrun{
 #' # small example E. coli AST data from NCBI
 #' ecoli_ast_raw
 #'
 #' # import without re-interpreting resistance
-#' pheno <- import_ei_ast(ecoli_ast_raw)
+#' pheno <- import_ast(ecoli_ast_raw, format="ncbi")
 #' head(pheno)
 #'
 #' # import and re-interpret resistance (S/I/R) and WT/NWT (vs ECOFF) using AMR package
-#' pheno <- import_ei_ast(ecoli_ast_raw, interpret_eucast = TRUE, interpret_ecoff = TRUE)
+#' pheno <- import_ast(ecoli_ast_raw, format="ncbi", interpret_eucast = TRUE, interpret_ecoff = TRUE)
 #' head(pheno)
-#' }
 import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
                        interpret_clsi = FALSE, interpret_ecoff = FALSE,
-                       species = NULL, ab = NULL) {
+                       species = NULL, ab = NULL, source=NULL) {
   if (format == "ebi") {
     cat("Reading in as EBI AST format\n")
     ast <- import_ebi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
@@ -445,6 +447,7 @@ import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
     ast <- import_ncbi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
   }
 
+  if (!is.null(source)) { ast <- ast %>% mutate(source=source)}
   ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", "pheno_eucast", "pheno_clsi", "ecoff", "guideline", "method", "source", "pheno_provided", "spp_pheno")))
 
   return(ast)

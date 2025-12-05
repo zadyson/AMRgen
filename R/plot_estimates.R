@@ -304,7 +304,7 @@ glm_details <- function(model) {
 #' @param sir_col (Optional) A character string specifying the column in `pheno_table` that contains the phenotype values (e.g., resistance/susceptibility). Defaults to `"pheno"`.
 #' @param ecoff_col (Optional) A character string specifying the column in `pheno_table` containing the ECOFF (epidemiological cutoff) values. Defaults to `"ecoff"`.
 #' @param maf (Optional) An integer specifying the minimum allele frequency (MAF) threshold. Markers with a MAF lower than this value will be excluded. Defaults to 10.
-#' @param glm (Optional) Change to TRUE to fit model with glm. Otherwise fit model with logistf (default).
+#' @param fit_glm (Optional) Change to TRUE to fit model with glm. Otherwise fit model with logistf (default).
 #' @param single_plot (Optional) A logical value. If `TRUE`, a single plot is produced comparing the estimates for resistance (`R`) and non-resistance (`NWT`). Otherwise, two plots are printed side-by-side. Defaults to `TRUE`.
 #' @param colors (Optional) A vector of two colors, to use for R and NWT models in the plots. Defaults to `c("maroon", "blue4")`.
 #' @param axis_label_size (Optional) A numeric value controlling the size of axis labels in the plot. Defaults to 9.

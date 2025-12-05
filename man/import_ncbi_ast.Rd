@@ -53,7 +53,6 @@ A data frame with the processed AST data, including additional columns:
 This function imports an antibiotic susceptibility testing (AST) dataset, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be commpressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
 }
 \examples{
-\dontrun{
 # small example E. coli AST data from NCBI
 ecoli_ast_raw
 
@@ -62,7 +61,6 @@ pheno <- import_ncbi_ast(ecoli_ast_raw)
 head(pheno)
 
 # import and re-interpret resistance (S/I/R) and WT/NWT (vs ECOFF) using AMR package
-pheno <- import_ncbi_ast(ecoli_ast_raw, interpret_eucast = TRUE, ecoff = TRUE)
+pheno <- import_ncbi_ast(ecoli_ast_raw, interpret_eucast = TRUE, interpret_ecoff = TRUE)
 head(pheno)
-}
 }
