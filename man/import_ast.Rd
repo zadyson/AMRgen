@@ -16,7 +16,7 @@ import_ast(
 )
 }
 \arguments{
-\item{input}{A string representing a dataframe, or a path to an input file, containing the AST data in EBI antibiogram format. These files can be downloaded from the EBI AMR browser, e.g. https://www.ebi.ac.uk/amr/data/?view=experiments}
+\item{input}{A string representing a dataframe, or a path to an input file, containing the AST data in EBI or NCBI antibiogram format. These files can be downloaded from the EBI AMR browser, e.g. https://www.ebi.ac.uk/amr/data/?view=experiments or NCBI browser e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas\%20aeruginosa.}
 
 \item{format}{A string indicating the format of the data, either "ebi" (default) or "ncbi". This determines whether the data is passed on to the \code{import_ebi_ast} or \code{import_ncbi_ast}()` function to process.}
 
@@ -50,7 +50,7 @@ A data frame with the processed AST data, including additional columns:
 }
 }
 \description{
-This function imports an antibiotic susceptibility testing (AST) dataset, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be commpressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
+This function imports an antibiotic susceptibility testing (AST) dataset in either EBI or NCBI antibiogram format, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be commpressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
 }
 \examples{
 # small example E. coli AST data from NCBI
