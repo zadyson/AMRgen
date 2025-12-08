@@ -78,13 +78,14 @@ reference:
     contents:
       - starts_with("compare")
       - matches("eucast")
-      - solo_ppv_analysis
       - merge_logreg_soloppv
+      - interpret_ast
 
-  - title: "Modelling"
+  - title: "Modelling and analysis"
     desc: >
       Statistical models for resistance prediction and inference, including logistic regression and Firth regression.
     contents:
+      - solo_ppv_analysis
       - amr_logistic
       - glm_details
       - logistf_details
