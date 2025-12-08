@@ -12,6 +12,8 @@ merge_logreg_soloppv(model, solo_stats, title = NULL, plot = TRUE)
 \item{solo_stats}{A data frame containing solo PPV statistics.}
 
 \item{title}{An optional title for the plot.}
+
+\item{plot}{Logical indicating whether to generate the plot.}
 }
 \value{
 A list containing:

@@ -419,6 +419,7 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 #' This function merges logistic regression model statistics with solo PPV statistics and creates a combined plot.
 #' @param model A data frame containing logistic regression model statistics.
 #' @param solo_stats A data frame containing solo PPV statistics.
+#' @param plot Logical indicating whether to generate the plot.
 #' @param title An optional title for the plot.
 #' @importFrom dplyr filter full_join
 #' @return A list containing:

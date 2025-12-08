@@ -63,8 +63,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
                               plot_cols = c("R"="maroon", "S"="skyblue", "I"="gold",
-                                            "NWT"="navy"),
-                              ecoff_cols = c("WT"="skyblue", "NWT"="navy", "NI"="gold")) {
+                                            "NWT"="navy")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -177,7 +176,6 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       ggplot(aes(y = marker, fill = ecoff)) +
       geom_bar(stat = "count", position = "fill") +
       scale_fill_sir() +
-      #scale_fill_manual(values = ecoff_cols) +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
       theme_light() +
