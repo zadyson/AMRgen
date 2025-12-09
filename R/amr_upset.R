@@ -346,7 +346,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
           q25_excludeRangeValues = stats::quantile(mic, 0.25, na.rm = TRUE),
           q75_excludeRangeValues = stats::quantile(mic, 0.75, na.rm = TRUE),
           n_excludeRangeValues = n()
-        ) %>% left_join(summary, by="combination_id")
+        ) %>% right_join(summary, by="combination_id")
   } else {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
