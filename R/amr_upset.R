@@ -74,7 +74,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
 
   # gene names
   genes <- binary_matrix %>%
-    select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>%
+    select(-any_of(c("id", "pheno", "ecoff", "R", "I", "NWT", "mic", "disk"))) %>%
     colnames()
 
   # check with have the expected assay column, with data
@@ -364,6 +364,15 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       summarise(
         NWT.ppv = mean(NWT, na.rm = TRUE),
         NWT = sum(NWT, na.rm = TRUE)
+      ) %>%
+      right_join(summary, by="combination_id")
+  }
+  if ("I" %in% colnames(binary_matrix_wide)) {
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise(
+        I.ppv = mean(I, na.rm = TRUE),
+        I = sum(I, na.rm = TRUE)
       ) %>%
       right_join(summary, by="combination_id")
   }

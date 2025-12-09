@@ -25,6 +25,7 @@
 #' @param pheno_sample_col A character string (optional) specifying the column name in `pheno_table` containing sample identifiers. Defaults to `NULL`, in which case it is assumed the first column contains identifiers.
 #' @param sir_col A character string specifying the column name in `pheno_table` that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
 #' @param ecoff_col A character string (optional) specifying the column name in `pheno_table` that contains resistance interpretations (SIR) made against the ECOFF rather than a clinical breakpoint. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
+#' @param icat A logical indicating whether to calculate PPV for "I" (if such a category exists in the phenotype column) (default FALSE).
 #' @param marker_col A character string specifying the column name in `geno_table` containing the marker identifiers. Defaults to `"marker"`.
 #' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
@@ -37,6 +38,7 @@
 #' @importFrom ggplot2 aes after_stat element_text geom_bar geom_linerange geom_point geom_text geom_vline ggplot ggtitle labs position_dodge position_fill scale_colour_manual scale_y_discrete theme theme_bw theme_light xlim
 #' @importFrom tidyr pivot_longer
 #' @importFrom patchwork plot_layout
+#' @importFrom forcats fct_relevel
 #' @return A list containing the following elements:
 #' - `solo_stats`: A dataframe summarizing the PPV for resistance (R vs S/I) and NWT (R/I vs S), including the number of positive hits, sample size, PPV, and 95% confidence intervals for each marker.
 #' - `combined_plot`: A combined ggplot object showing the PPV plot for the solo markers, and a bar plot for the phenotype distribution.
@@ -59,11 +61,10 @@
 #' }
 solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                               geno_sample_col = NULL, pheno_sample_col = NULL,
-                              sir_col = NULL, ecoff_col = "ecoff",
+                              sir_col = NULL, ecoff_col = "ecoff", icat = FALSE,
                               marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
-                              plot_cols = c("R"="maroon", "S"="skyblue", "I"="gold",
-                                            "NWT"="navy")) {
+                              plot_cols = c("R"="maroon", "I"="skyblue", "NWT"="navy")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -84,15 +85,23 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     marker_col = marker_col
   )
 
+  if (icat & ("I" %in% amr_binary$pheno)) { ### TO DO: CHECK HOW TO DO THIS WITH COLNAME
+    amr_binary <- amr_binary %>%
+      mutate(I=case_when(pheno %in% c("I", "R") ~ 1, 
+                         pheno == "S" ~ 0,
+                         TRUE ~ NA)) %>%
+      relocate(I, .after=R)
+  } else {icat <- FALSE}
+  
   # get solo markers
   marker_counts <- amr_binary %>%
-    select(-any_of(c("id", "pheno", "ecoff", "R", "NWT", "mic", "disk"))) %>%
+    select(-any_of(c("id", "pheno", "ecoff", "R", "I", "NWT", "mic", "disk"))) %>%
     rowSums()
   
 
   solo_binary <- amr_binary %>%
     filter(marker_counts == 1) %>%
-    pivot_longer(!any_of(c("id", "pheno", "ecoff", "R", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
+    pivot_longer(!any_of(c("id", "pheno", "ecoff", "R", "I", "NWT", "solo", "mic", "disk")), names_to = "marker") %>%
     mutate(marker = gsub("\\.\\.", ":", marker)) %>%
     mutate(marker = gsub("`", "", marker)) %>%
     filter(value == 1) %>%
@@ -123,6 +132,26 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       ci.upper = double(), category = character()
     )
   }
+  
+  if (icat & sum(!is.na(solo_binary$pheno)) > 0) {
+    solo_stats_I <- solo_binary %>%
+      group_by(marker) %>%
+      summarise(
+        x = sum(I, na.rm = TRUE),
+        n = sum(pheno %in% c("S", "I", "R", "SDD")),
+        p = x / n,
+        se = sqrt(p * (1 - p) / n),
+        ci.lower = max(0, p - 1.96 * se),
+        ci.upper = min(1, p + 1.96 * se)
+      ) %>%
+      mutate(category = "I")
+  } else {
+    solo_stats_I <- tibble(
+      marker = character(), x = double(), n = integer(),
+      p = double(), se = double(), ci.lower = double(),
+      ci.upper = double(), category = character()
+    )
+  }
 
   if (sum(!is.na(solo_binary$ecoff)) > 0) {
     solo_stats_NWT <- solo_binary %>%
@@ -144,7 +173,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     )
   }
 
-  solo_stats <- bind_rows(solo_stats_R, solo_stats_NWT) %>%
+  solo_stats <- bind_rows(solo_stats_R, solo_stats_I) %>% 
+    bind_rows(solo_stats_NWT) %>%
     relocate(category, .before = x) %>%
     rename(ppv = p)
 
@@ -159,7 +189,6 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       filter(!is.na(pheno)) %>%
       ggplot(aes(y = marker, fill = pheno)) +
       geom_bar(stat = "count", position = "fill") +
-      #scale_fill_manual(values = plot_cols) +
       scale_fill_sir() +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
@@ -202,9 +231,13 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
   
   names(labels_vector) <- labels$marker
-  
-  ppv_plot <- solo_stats %>%
+    
+  suppressWarnings(solo_stats_toplot <- solo_stats %>%
     filter(marker %in% markers_to_plot) %>%
+    mutate(category=forcats::fct_relevel(category,"NWT",after=Inf)) 
+    )
+    
+  ppv_plot <-solo_stats_toplot %>%
     ggplot(aes(y = marker, group = category, col = category)) +
     geom_vline(xintercept = 0.5, linetype = 2) +
     geom_linerange(aes(xmin = ci.lower, xmax = ci.upper), position = pd) +

@@ -13,12 +13,13 @@ solo_ppv_analysis(
   pheno_sample_col = NULL,
   sir_col = NULL,
   ecoff_col = "ecoff",
+  icat = FALSE,
   marker_col = "marker",
   keep_assay_values = TRUE,
   min = 1,
   axis_label_size = 9,
   pd = position_dodge(width = 0.8),
-  plot_cols = c(R = "maroon", S = "skyblue", I = "gold", NWT = "navy")
+  plot_cols = c(R = "maroon", I = "skyblue", NWT = "navy")
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ solo_ppv_analysis(
 \item{sir_col}{A character string specifying the column name in \code{pheno_table} that contains the resistance interpretation (SIR) data. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
 
 \item{ecoff_col}{A character string (optional) specifying the column name in \code{pheno_table} that contains resistance interpretations (SIR) made against the ECOFF rather than a clinical breakpoint. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).}
+
+\item{icat}{A logical indicating whether to calculate PPV for "I" (if such a category exists in the phenotype column) (default FALSE).}
 
 \item{marker_col}{A character string specifying the column name in \code{geno_table} containing the marker identifiers. Defaults to \code{"marker"}.}
 
