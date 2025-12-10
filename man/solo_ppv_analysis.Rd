@@ -19,7 +19,8 @@ solo_ppv_analysis(
   min = 1,
   axis_label_size = 9,
   pd = position_dodge(width = 0.8),
-  plot_cols = c(R = "maroon", I = "skyblue", NWT = "navy")
+  plot_cols = c(R = "maroon", I = "skyblue", NWT = "navy"),
+  excludeRanges = c("NWT")
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ solo_ppv_analysis(
 \item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.}
 
 \item{plot_cols}{A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").}
+
+\item{excludeRanges}{Vector of phenotype categories (comprised of "R", "I", "NWT") for which we should ignore MIC values expressed as ranges when calculating PPVs. Default c("NWT"), as calling against ECOFF with the AMR package currently does not interpret ranges correctly. To include MICs expressed as ranges set this to NULL.}
 }
 \value{
 A list containing the following elements:

@@ -32,6 +32,7 @@
 #' @param pd Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.
 #' @param axis_label_size Font size for axis labels in the PPV plot (default 9).
 #' @param keep_assay_values A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix. Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to `TRUE`.
+#' @param excludeRanges Vector of phenotype categories (comprised of "R", "I", "NWT") for which we should ignore MIC values expressed as ranges when calculating PPVs. Default c("NWT"), as calling against ECOFF with the AMR package currently does not interpret ranges correctly. To include MICs expressed as ranges set this to NULL.
 #' @details The function analyzes the predictive power of individual AMR markers that belong to a specified drug class and are uniquely associated with one class. The phenotype data are matched with genotype presence/absence and then stratified to compute PPV for resistance and non-wild-type interpretations. It also generates plots to aid in interpretation.
 #' @importFrom AMR scale_fill_sir
 #' @importFrom dplyr any_of bind_rows filter group_by mutate n relocate rename select summarise
