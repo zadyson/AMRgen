@@ -64,7 +64,8 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               sir_col = NULL, ecoff_col = "ecoff", icat = FALSE,
                               marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
-                              plot_cols = c("R"="maroon", "I"="skyblue", "NWT"="navy")) {
+                              plot_cols = c("R"="maroon", "I"="skyblue", "NWT"="navy"),
+                              excludeRanges=c("NWT")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -112,9 +113,16 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
 
   # summarise numerator, denominator, proportion, 95% CI - for R and NWT
+  
+  if (sum(c("R", "I", "NWT") %in% excludeRanges)>0  & "mic" %in% colnames(solo_binary)) {
+    solo_binary_norange <- solo_binary %>% filter(!grepl("<",mic))
+  } else {solo_binary_norange=NULL}
 
   if (sum(!is.na(solo_binary$pheno)) > 0) {
-    solo_stats_R <- solo_binary %>%
+    if ("R" %in% excludeRanges & "mic" %in% colnames(solo_binary)) {
+      solo_binary_R <- solo_binary_norange
+    } else {solo_binary_R <- solo_binary}
+    solo_stats_R <- solo_binary_R %>%
       group_by(marker) %>%
       summarise(
         x = sum(R, na.rm = TRUE),
@@ -134,7 +142,10 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
   
   if (icat & sum(!is.na(solo_binary$pheno)) > 0) {
-    solo_stats_I <- solo_binary %>%
+    if ("I" %in% excludeRanges & "mic" %in% colnames(solo_binary)) {
+      solo_binary_I <- solo_binary_norange
+    } else {solo_binary_I <- solo_binary}
+    solo_stats_I <- solo_binary_I %>%
       group_by(marker) %>%
       summarise(
         x = sum(I, na.rm = TRUE),
@@ -154,7 +165,10 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   }
 
   if (sum(!is.na(solo_binary$ecoff)) > 0) {
-    solo_stats_NWT <- solo_binary %>%
+    if ("NWT" %in% excludeRanges & "mic" %in% colnames(solo_binary)) {
+      solo_binary_NWT <- solo_binary_norange
+    } else {solo_binary_NWT <- solo_binary}
+    solo_stats_NWT <- solo_binary_NWT %>%
       group_by(marker) %>%
       summarise(
         x = sum(NWT, na.rm = TRUE),
@@ -184,7 +198,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
   markers_to_plot <- solo_stats %>% filter(n>=min) %>% pull(marker) %>% unique()
 
   if (sum(!is.na(solo_binary$pheno)) > 0) { # if we have S/I/R call, plot it
-    solo_pheno_plot <- solo_binary %>%
+    solo_pheno_plot <- solo_binary_R %>%
       filter(marker %in% markers_to_plot) %>%
       filter(!is.na(pheno)) %>%
       ggplot(aes(y = marker, fill = pheno)) +
@@ -199,7 +213,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       ) +
       labs(y = "", x = "Proportion", fill = "Phenotype")
   } else if (sum(!is.na(solo_binary$ecoff)) > 0) { # if we only have ECOFF call, plot that instead
-    solo_pheno_plot <- solo_binary %>%
+    solo_pheno_plot <- solo_binary_NWT %>%
       filter(marker %in% markers_to_plot) %>%
       filter(!is.na(ecoff)) %>%
       ggplot(aes(y = marker, fill = ecoff)) +
@@ -261,5 +275,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
 
   print(combined_plot)
 
-  return(list(solo_stats = solo_stats, combined_plot = combined_plot, solo_binary = solo_binary, amr_binary = amr_binary, plot_order=labels_vector[markers_to_plot]))
+  return(list(solo_stats = solo_stats, combined_plot = combined_plot, 
+              solo_binary = solo_binary, solo_binary_norange = solo_binary_norange, 
+              amr_binary = amr_binary, plot_order=labels_vector[markers_to_plot]))
 }
