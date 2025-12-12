@@ -138,11 +138,11 @@ utils::globalVariables(c(
 #' @importFrom readr read_tsv
 process_input <- function(input) {
   if (is.character(input) && file.exists(input)) {
-    # Get the full file extension (e.g., "csv.gz" or "tsv")
-    full_extension <- tolower(tools::file_ext(input))
-    if (full_extension %in% paste(rep(c("tsv", "txt"), 5), c(rep("", 2), rep(".gz", 2), rep(".bz2", 2), rep(".xz", 2), rep(".zip", 2)), sep = "")) {
+    tsv_ext <- paste(rep(c("tsv", "txt"), 5), c(rep("", 2), rep(".gz", 2), rep(".bz2", 2), rep(".xz", 2), rep(".zip", 2)), sep="", collapse = "|")
+    csv_ext <- paste(rep("csv", 5), c("", ".gz", ".bz2", ".xz", ".zip"), sep = "", collapse = "|")
+    if (grepl(tsv_ext, input)) {
       data <- readr::read_tsv(input)
-    } else if (full_extension %in% paste(rep("csv", 5), c("", ".gz", ".bz2", ".xz", ".zip"), sep = "")) {
+    } else if (grepl(csv_ext, input)) {
       data <- readr::read_csv(input)
     }
   } else if (is.data.frame(input)) {
