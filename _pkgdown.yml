@@ -89,6 +89,8 @@ reference:
       - amr_logistic
       - glm_details
       - logistf_details
+      - getBreakpoints
+      - checkBreakpoints
 
   - title: "Visualisation & Reporting"
     desc: >
@@ -96,6 +98,7 @@ reference:
     contents:
       - matches("plot")
       - amr_upset
+      - assay_by_var
 
   - title: "Data"
     desc: >

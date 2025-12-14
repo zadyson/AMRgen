@@ -131,7 +131,8 @@ utils::globalVariables(c(
   "user",
   "value",
   "variation type",
-  "x"
+  "x",
+  "site"
 ))
 
 
@@ -177,4 +178,14 @@ font_italic <- function(..., collapse = " ") {
   } else {
     txt
   }
+}
+
+# Helper functions
+safe_execute <- function(expr) {
+  tryCatch({
+    expr
+  }, error = function(e) {
+    message("Error in executing command: ", e$message)
+    return(NULL)
+  })
 }
