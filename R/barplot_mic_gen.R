@@ -188,3 +188,71 @@ barplot_mic_gen <- function(pheno_data, geno_data,
 # questions
 # can we really expect the input data to look like this?
 # should the user be able to pass all the parameters you theoretically could to ggplot2?
+
+
+
+assay_by_var <- function(pheno_table, antibiotic, measure="mic", var="method", 
+                         species=NULL, marker_free_strains=NULL, bp_site=NULL, 
+                         colour_by=NULL,
+                         cols=c(range="maroon", value="navy", `NA`="grey")) {
+  if (measure %in% colnames(pheno_table)) {
+    pheno_table <- pheno_table %>%
+      filter(!is.na(get(measure))) %>%
+      filter(drug_agent==as.ab(antibiotic)) %>%
+      arrange(get(measure))
+  } else {stop(paste0("No '", measure, "' column in input table"))}
+  if (!(var %in% colnames(pheno_table))) {
+    stop(paste0("No '", var, "' column in input table"))
+  }
+  
+  # if species provided, check breakpoints to annotate plot
+  if (!is.null(species)) {
+    if (measure %in% c("mic", "disk")) {
+      ecoff <- safe_execute(getBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, "ECOFF") %>% filter(method==toupper(measure)) %>% pull(breakpoint_S))
+      bp_S <- safe_execute(unlist(checkBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[1]))
+      bp_R <- safe_execute(unlist(checkBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[2]))
+      if (measure=="mic") {subtitle=paste("ECOFF:", ecoff, "S <=", bp_S, "R>", bp_R)}
+      else if (measure=="disk") {subtitle=paste("ECOFF:", ecoff, "S >=", bp_S, "R<", bp_R)}
+    } else {subtitle=NULL}
+  } else {subtitle=NULL}
+  
+  # plot distribution per variable
+  if (nrow(pheno_table)>0) {
+    plot_all <- pheno_table %>%
+      mutate(range=if_else(grepl("<",get(measure)), "range", "value")) %>%
+      ggplot(aes(x=factor(!!sym(measure)), fill=range)) +
+      geom_bar() +
+      labs(x="Measurement", y="count", fill="Value", subtitle=subtitle,
+           title=paste(antibiotic, "assay distributions for all samples")) +
+      theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))
+    if (!is.null(cols)) {
+      plot_all <- plot_all + scale_fill_manual(values=cols)
+    }
+    if (pheno_table %>% filter(!is.na(get(var))) %>% nrow() > 0) {
+      plot_all <- plot_all + facet_wrap(~get(var), ncol=1, scales="free_y")
+    }
+  } else {plot_all <- NULL}
+  
+  # samples with no markers
+  if (!is.null(marker_free_strains)) {
+    pheno_table_nomarkers <- pheno_table %>% filter(id %in% marker_free_strains)
+    if (nrow(pheno_table_nomarkers)>0) {
+      plot_nomarkers <- pheno_table_nomarkers %>%
+        mutate(range=if_else(grepl("<",get(measure)), "range", "value")) %>%
+        ggplot(aes(x=factor(!!sym(measure)), fill=range)) +
+        geom_bar() +
+        labs(x="Measurement", y="count", fill="Value", subtitle=subtitle,
+             title=paste(antibiotic, "assay distributions for samples with no markers identified")) +
+        theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))
+      if (!is.null(cols)) {
+        plot_nomarkers <- plot_nomarkers + scale_fill_manual(values=cols)
+      }
+      if (pheno_table_nomarkers %>% filter(!is.na(get(var))) %>% nrow()>0) {
+        plot_nomarkers <- plot_nomarkers + facet_wrap(~get(var), ncol=1, scales="free_y")
+      }
+    } else {plot_nomarkers <- NULL}
+  } else {plot_nomarkers <- NULL}
+  
+  return(list(plot_nomarkers=plot_nomarkers, plot=plot_all))
+}
+
