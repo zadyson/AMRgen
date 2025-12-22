@@ -202,6 +202,7 @@ barplot_mic_gen <- function(pheno_data, geno_data,
 #' @param ecoff (optional) ECOFF breakpoint
 #' @param marker_free_strains (optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.
 #' @param cols (optional) Manual colour scale to use for plot. If NULL, `colour_by` variable is of class 'sir', bars will by default be coloured using standard SIR colours.
+#' @importFrom ggplot2 aes element_text facet_wrap geom_bar geom_vline ggplot labs theme scale_fill_manual
 #' @return A list containing
 #' \item{plot}{Main plot with all samples that have assay data for the given antibiotic}
 #' \item{plot_nomarkers}{Additional plot showing only those samples listed in `marker_free_strains`}
