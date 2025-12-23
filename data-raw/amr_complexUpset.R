@@ -37,8 +37,7 @@
 #' @importFrom AMR as.ab as.mic as.mo scale_y_mic
 #' @importFrom ComplexUpset intersection_size upset
 #' @importFrom dplyr across all_of filter mutate pull rename
-#' @importFrom ggplot2 aes element_text geom_count geom_hline ggplot labs scale_colour_manual theme
-#' @importFrom rlang sym
+#' @importFrom ggplot2 aes element_text geom_count geom_hline ggplot labs scale_colour_manual theme sym
 #' @importFrom patchwork plot_layout
 #' @return A `ggplot` object displaying the Upset plot.
 #' @export
