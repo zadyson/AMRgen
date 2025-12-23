@@ -8,11 +8,15 @@ assay_by_var(
   pheno_table,
   antibiotic,
   measure = "mic",
-  var = "method",
+  facet_var = NULL,
   species = NULL,
-  marker_free_strains = NULL,
   bp_site = NULL,
-  cols = c(range = "maroon", value = "navy", `NA` = "grey")
+  bp_S = NULL,
+  bp_R = NULL,
+  ecoff = NULL,
+  marker_free_strains = NULL,
+  colour_by = NULL,
+  cols = NULL
 )
 }
 \arguments{
@@ -22,15 +26,23 @@ assay_by_var(
 
 \item{measure}{Field name containing the assay measurements to plot (default "mic").}
 
-\item{var}{Field name containing a field to facet on (default "method").}
+\item{facet_var}{(optional) Field name containing a field to facet on (default NULL).}
 
 \item{species}{(optional) Name of species, so we can retrieve breakpoints to print at the top of the plot to help interpret it.}
 
+\item{bp_site}{(optional) Breakpoint site to retrieve (only relevant if also supplying \code{species} to retrieve breakpoints, and not supplying breakpoints via \code{bp_S}, \code{bp_R}, \code{ecoff}).}
+
+\item{bp_S}{(optional) S breakpoint}
+
+\item{bp_R}{(optional) R breakpoint}
+
+\item{ecoff}{(optional) ECOFF breakpoint}
+
 \item{marker_free_strains}{(optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.}
 
-\item{bp_site}{(optional) Breakpoint site to retrieve (only relevant if also supplying species to retrieve breakpoints).}
+\item{colour_by}{(optional) Field name containing a field to colour bars by (default NULL, which will colour each bar to indicate whether the value is expressed as a range or not)}
 
-\item{cols}{(optional) Manual colour scale to use for plot.}
+\item{cols}{(optional) Manual colour scale to use for plot. If NULL, \code{colour_by} variable is of class 'sir', bars will by default be coloured using standard SIR colours.}
 }
 \value{
 A list containing

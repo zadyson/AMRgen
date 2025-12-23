@@ -14,6 +14,8 @@
 #' @examples
 #' getBreakpoints("Escherichia coli", "EUCAST 2024", "Ciprofloxacin")
 #'
+#' @importFrom AMR as.mo as.ab
+#' @importFrom dplyr filter
 #' @export
 getBreakpoints <- function(species, guide="EUCAST 2024", antibiotic, type_filter="human") {
   bp <- AMR::clinical_breakpoints %>% filter(guideline==guide & mo==AMR::as.mo(species) & ab==AMR::as.ab(antibiotic)) %>% filter(type==type_filter)
@@ -61,6 +63,7 @@ getBreakpoints <- function(species, guide="EUCAST 2024", antibiotic, type_filter
 #' checkBreakpoints(species="Escherichia coli", guide="EUCAST 2024", 
 #'                       antibiotic="Ciprofloxacin", assay="MIC")
 #'
+#' @importFrom dplyr filter arrange first
 #' @export
 checkBreakpoints <- function(species, guide="EUCAST 2024", antibiotic, assay="MIC", bp_site=NULL) {
   breakpoints <- getBreakpoints(species, guide, antibiotic) %>% filter(method==assay)
