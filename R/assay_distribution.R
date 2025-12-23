@@ -28,16 +28,38 @@
 #' @param bp_S (optional) S breakpoint
 #' @param bp_R (optional) R breakpoint
 #' @param ecoff (optional) ECOFF breakpoint
+#' @param guideline (optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')
 #' @param marker_free_strains (optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.
 #' @param cols (optional) Manual colour scale to use for plot. If NULL, `colour_by` variable is of class 'sir', bars will by default be coloured using standard SIR colours.
 #' @importFrom ggplot2 aes element_text facet_wrap geom_bar geom_vline ggplot labs theme scale_fill_manual sym
 #' @return A list containing
 #' \item{plot}{Main plot with all samples that have assay data for the given antibiotic}
 #' \item{plot_nomarkers}{Additional plot showing only those samples listed in `marker_free_strains`}
+#' @examples
+#' # plot MIC distribution, highlighting values expressed as ranges
+#' assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+#'                 measure="mic")
+#' 
+#' # colour by SIR interpretion recorded in column 'pheno_clsi'
+#' assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+#'                 measure="mic", colour_by = "pheno_clsi")
+#' 
+#' # look up ECOFF and CLSI breakpoints and annotate these on the plot
+#' assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+#'                 measure="mic", colour_by = "pheno_clsi", 
+#'                 species="E. coli", guideline="CLSI 2025")
+#' 
+#' # facet by method
+#' assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+#'                 measure="mic", colour_by = "pheno_clsi", 
+#'                 species="E. coli", guideline="CLSI 2025", 
+#'                 facet_var ="method")
+#' 
 #' @export
 assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL, 
                          species=NULL, bp_site=NULL, bp_S=NULL, bp_R=NULL, ecoff=NULL,
-                         marker_free_strains=NULL, colour_by=NULL, cols=NULL) {
+                         guideline="EUCAST 2025", marker_free_strains=NULL, 
+                         colour_by=NULL, cols=NULL) {
   if (measure %in% colnames(pheno_table)) {
     pheno_table <- pheno_table %>%
       filter(!is.na(get(measure))) %>%
@@ -67,13 +89,15 @@ assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL,
   if (!is.null(species) & is.null(bp_S) & is.null(bp_R) & is.null(ecoff)) {
     if (measure %in% c("mic", "disk")) {
       ecoff <- safe_execute(getBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, "ECOFF") %>% filter(method==toupper(measure)) %>% pull(breakpoint_S))
-      bp_S <- safe_execute(unlist(checkBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[1]))
-      bp_R <- safe_execute(unlist(checkBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[2]))
+      bp_S <- safe_execute(unlist(c[1]))
+      bp_R <- safe_execute(unlist(checkBreakpoints(species=species, guide=guideline, antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[2]))
     } 
   } 
   if (!is.null(bp_S) | !is.null(bp_R) | !is.null(ecoff)) {
-    if (measure=="mic") {subtitle=paste("ECOFF:", ecoff, "S <=", bp_S, "R>", bp_R)}
-    else if (measure=="disk") {subtitle=paste("ECOFF:", ecoff, "S >=", bp_S, "R<", bp_R)}
+    if (measure=="mic" & grepl("EUCAST", guideline)) {subtitle=paste("ECOFF:", ecoff, "S <=", bp_S, "R>", bp_R)}
+    else if (measure=="mic") {subtitle=paste("ECOFF:", ecoff, "S <=", bp_S, "R>=", bp_R)}
+    else if (measure=="disk" & grepl("EUCAST", guideline)) {subtitle=paste("ECOFF:", ecoff, "S >=", bp_S, "R<", bp_R)}
+    else if (measure=="disk") {subtitle=paste("ECOFF:", ecoff, "S >=", bp_S, "R<=", bp_R)}
   } else {subtitle=NULL}
   
   pheno_data <- pheno_table %>% count(factor(!!sym(measure)), !!sym(colour_by))

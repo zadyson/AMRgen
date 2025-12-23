@@ -14,6 +14,7 @@ assay_by_var(
   bp_S = NULL,
   bp_R = NULL,
   ecoff = NULL,
+  guideline = "EUCAST 2025",
   marker_free_strains = NULL,
   colour_by = NULL,
   cols = NULL
@@ -38,6 +39,8 @@ assay_by_var(
 
 \item{ecoff}{(optional) ECOFF breakpoint}
 
+\item{guideline}{(optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')}
+
 \item{marker_free_strains}{(optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.}
 
 \item{colour_by}{(optional) Field name containing a field to colour bars by (default NULL, which will colour each bar to indicate whether the value is expressed as a range or not)}
@@ -51,4 +54,25 @@ A list containing
 }
 \description{
 This function creates a stacked bar plot using \code{ggplot2}, where the x-axis represents MIC (Minimum Inhibitory Concentration) or disk values, the y-axis indicates their frequency, and the bars are colored by a variable (by default, colours indicate whether the assay value is expressed as a range or not). Plots can optionally be faceted on an additional categorical variable. If breakpoints are provided, or species and drug are provided so we can extract EUCAST breakpoints, vertical lines indicating the S/R breakpoints and ECOFF will be added to the plot.
+}
+\examples{
+# plot MIC distribution, highlighting values expressed as ranges
+assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+                measure="mic")
+
+# colour by SIR interpretion recorded in column 'pheno_clsi'
+assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+                measure="mic", colour_by = "pheno_clsi")
+
+# look up ECOFF and CLSI breakpoints and annotate these on the plot
+assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+                measure="mic", colour_by = "pheno_clsi", 
+                species="E. coli", guideline="CLSI 2025")
+
+# facet by method
+assay_by_var(pheno_table=ecoli_ast, antibiotic="Ciprofloxacin", 
+                measure="mic", colour_by = "pheno_clsi", 
+                species="E. coli", guideline="CLSI 2025", 
+                facet_var ="method")
+
 }
