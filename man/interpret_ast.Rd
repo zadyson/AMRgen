@@ -18,7 +18,7 @@ interpret_ast(
 
 \item{interpret_ecoff}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion values, against epidemiological cut-off (ECOFF) values. These will be reported in a new column \code{ecoff}, of class 'sir' and coded as 'R' (nonwildtype) or 'S' (wildtype).}
 
-\item{interpret_eucast}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against ECOFF human breakpoints. These will be reported in a new column \code{pheno_eucast}, of class 'sir'.}
+\item{interpret_eucast}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column \code{pheno_eucast}, of class 'sir'.}
 
 \item{interpret_clsi}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against CLSI human breakpoints. These will be reported in a new column \code{pheno_clsi}, of class 'sir'.}
 

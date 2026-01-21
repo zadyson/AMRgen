@@ -89,6 +89,7 @@ import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_d
       ))
   } else {
     in_table_label <- in_table_mutation %>% mutate(marker.label = NA, node = NA)
+    cat("WARNING: `Element subtype` field not present in input file, cannot create marker.label.\n")
   }
 
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
