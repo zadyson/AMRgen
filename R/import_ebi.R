@@ -30,18 +30,20 @@
 # # Load packages
 # invisible(lapply(packages, library, character.only = TRUE))
 
-#' @title import_ebi
+#' Download antimicrobial genotype data from the EBI AMR Portal
 #'
-#' @param user_genus
-#' @param user_release
-#' @param user_antibiotic_name
-#'
+#' This function will retrieve genotype data from the EBI AMR Portal, https://www.ebi.ac.uk/amr. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. See https://www.ebi.ac.uk/amr/about/#AMR-Genotypes for more information.
+#' @param user_genus String specifying a bacterial genus to download data for (default NULL, will pull all taxa)
+#' @param user_release String specifying the data release to download (default NULL, will pull latest release)
+#' @param user_antibiotic_name String specifying an antibiotic to download data for (default NULL, will pull all antibiotics).
+#' @importFrom arrow read_parquet
+#' @importFrom RCurl getBinaryURL getURL
 #' @return A data frame containing EBI genotype data
 #' @keywords internal
 #'
 #' @examples
 #' \dontrun{
-#' import_ebi(
+#' amp_sal_ebi <- import_ebi(
 #'     user_genus="Salmonella",
 #'     user_release="2025-12",
 #'     user_antibiotic_name="ampicillin"
@@ -53,18 +55,18 @@ import_ebi <- function(user_genus=NULL, user_release=NULL, user_antibiotic_name=
   ebi_url <- "ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/"
 
   if (!is.null(user_release)){
-    ebi_geno <- getBinaryURL(print(gsub("ftp\\:", "https\\:", paste0(ebi_url,user_release,"/","genotype.parquet"))))
-    ebi_geno <- read_parquet(ebi_geno)
+    ebi_geno <- RCurl::getBinaryURL(print(gsub("ftp\\:", "https\\:", paste0(ebi_url,user_release,"/","genotype.parquet"))))
+    ebi_geno <- arrow::read_parquet(ebi_geno)
     
   }else{
   
     # get list of releases
-    folders <- str_split(getURL(ebi_url, dirlistonly = TRUE), "\n")[[1]]
+    folders <- str_split(RCurl::getURL(ebi_url, dirlistonly = TRUE), "\n")[[1]]
     # get latest
     latest_release <- folders[!folders %in% c("releases.yml", "")] %>% 
       max()
-    ebi_geno <- getBinaryURL(gsub("ftp\\:", "https\\:", paste0(ebi_url,latest_release,"/","genotype.parquet")))
-    ebi_geno <- read_parquet(ebi_geno)
+    ebi_geno <- RCurl::getBinaryURL(gsub("ftp\\:", "https\\:", paste0(ebi_url,latest_release,"/","genotype.parquet")))
+    ebi_geno <- arrow::read_parquet(ebi_geno)
     
   }
   
