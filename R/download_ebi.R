@@ -14,7 +14,7 @@
 #  the Free Software Foundation.                                        #
 # ===================================================================== #
 
-# # Download EBI data
+# # Download EBI genotype data
 # # Zoe A. Dyson (zoe.dyson@lshtm.ac.uk)
 # # Last updated 28/01/2026
 #
@@ -49,7 +49,7 @@
 #'     user_antibiotic_name="ampicillin"
 #' )
 #' }
-import_ebi <- function(user_genus=NULL, user_release=NULL, user_antibiotic_name=NULL) {
+download_ebi_geno <- function(user_genus=NULL, user_release=NULL, user_antibiotic_name=NULL) {
   
   # EBI source url
   ebi_url <- "ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/"
