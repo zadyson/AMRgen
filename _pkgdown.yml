@@ -71,6 +71,7 @@ reference:
       - get_binary_matrix
       - as.gene
       - gtdb.mo
+      - format_ast
 
   - title: "Resistance Interpretation"
     desc: >
