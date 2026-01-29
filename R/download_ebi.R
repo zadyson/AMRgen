@@ -32,10 +32,12 @@
 
 #' Download antimicrobial genotype data from the EBI AMR Portal
 #'
-#' This function will retrieve genotype data from the EBI AMR Portal, https://www.ebi.ac.uk/amr. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. See https://www.ebi.ac.uk/amr/about/#AMR-Genotypes for more information.
-#' @param user_genus String specifying a bacterial genus to download data for (default NULL, will pull all taxa)
-#' @param user_release String specifying the data release to download (default NULL, will pull latest release)
-#' @param user_antibiotic_name String specifying an antibiotic to download data for (default NULL, will pull all antibiotics).
+#' This function will retrieve genotype data from the EBI AMR Portal, https://www.ebi.ac.uk/amr. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. See https://www.ebi.ac.uk/amr/about/#AMR-Genotypes for more information, and https://github.com/ncbi/amr/wiki/class-subclass for valid class and subclass terms.
+#' @param user_genus String specifying a bacterial genus to return data for (default NULL, will pull all taxa)
+#' @param user_subclass String specifying an antibiotic subclass to filter on (default NULL, check NCBI Subclass for valid terms).
+#' @param user_class String specifying an antibiotic subclass to filter on (default NULL, check NCBI Class for valid terms).
+#' @param user_antibiotic_name String specifying an antibiotic to return data for (default NULL, will pull all antibiotics).
+#' @param user_release String specifying the data release to download (default NULL, will pull latest release).
 #' @importFrom arrow read_parquet
 #' @importFrom RCurl getBinaryURL getURL
 #' @return A data frame containing EBI genotype data
@@ -43,13 +45,15 @@
 #'
 #' @examples
 #' \dontrun{
+#' ebi_genotypes <- import_ebi()
+#' 
 #' amp_sal_ebi <- import_ebi(
 #'     user_genus="Salmonella",
 #'     user_release="2025-12",
-#'     user_antibiotic_name="ampicillin"
+#'     user_subclass="beta-lactam"
 #' )
 #' }
-download_ebi_geno <- function(user_genus=NULL, user_release=NULL, user_antibiotic_name=NULL) {
+download_ebi_geno <- function(user_genus=NULL, user_subclass=NULL, user_class=NULL, user_antibiotic_name=NULL, user_release=NULL) {
   
   # EBI source url
   ebi_url <- "ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/"
@@ -58,7 +62,7 @@ download_ebi_geno <- function(user_genus=NULL, user_release=NULL, user_antibioti
     ebi_geno <- RCurl::getBinaryURL(print(gsub("ftp\\:", "https\\:", paste0(ebi_url,user_release,"/","genotype.parquet"))))
     ebi_geno <- arrow::read_parquet(ebi_geno)
     
-  }else{
+  } else {
   
     # get list of releases
     folders <- str_split(RCurl::getURL(ebi_url, dirlistonly = TRUE), "\n")[[1]]
@@ -76,8 +80,14 @@ download_ebi_geno <- function(user_genus=NULL, user_release=NULL, user_antibioti
       filter(genus==user_genus)
   }
   
-  # filter by genus if required
-  if (!is.null(user_antibiotic_name)){
+  # filter by subclass/class/antibiotic as required
+  if (!is.null(user_subclass)){
+    ebi_geno <- ebi_geno %>% 
+      filter(subclass==user_subclass)
+  } else if (!is.null(user_class)){
+    ebi_geno <- ebi_geno %>% 
+      filter(class==user_class)
+  } else if (!is.null(user_antibiotic_name)){
     ebi_geno <- ebi_geno %>% 
       filter(antibiotic_name==user_antibiotic_name)
   }
