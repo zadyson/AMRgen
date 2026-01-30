@@ -2,7 +2,7 @@
 % Please edit documentation in R/import_pheno.R
 \name{import_ebi_ast}
 \alias{import_ebi_ast}
-\title{Import and Process AST Data from an EBI File}
+\title{Import and Process AST Data from files downloaded from the EBI AMR portal website}
 \usage{
 import_ebi_ast(
   input,
@@ -50,7 +50,11 @@ A data frame with the processed AST data, including additional columns:
 }
 }
 \description{
-This function imports an antibiotic susceptibility testing (AST) dataset, processes the data, and optionally interprets the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be compressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF). If expected columns are not found warnings will be given, and interpretation may not be possible.
+This function imports an antibiotic susceptibility testing (AST) dataset that has been downloaded from the EBI AMR portal website (https://www.ebi.ac.uk/amr/data/?view=experiments)
+Data downloaded from the EBI AMR Portal FTP site (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/), either directly or via the function \code{download_ebi()}, is formatted differently and can instead be processed using the \code{import_ebi_ast_ftp()} function.
+}
+\details{
+This function will process the data, and optionally interpret the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be compressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF).
 }
 \examples{
 \dontrun{

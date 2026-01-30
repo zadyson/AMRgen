@@ -442,7 +442,7 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
 import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
                        interpret_clsi = FALSE, interpret_ecoff = FALSE,
                        species = NULL, ab = NULL, source=NULL) {
-  if (format == "ebi_web" | "ebi") {
+  if (format %in% c("ebi_web", "ebi")) {
     cat("Reading in as EBI AST format downloaded from the web portal\n")
     ast <- import_ebi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
   }
@@ -619,7 +619,7 @@ format_ast <- function(input,
 #'
 #' This function will import antibiotic susceptibility testing (AST) data suitable for downstream use with AMRgen analysis functions. The expected input is phenotype data retrieved from the EBI AMR Portal FTP site (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/) either directly or via the function `download_ebi()`.
 #' Note that files downloaded from the EBI AMR Portal web browser (https://www.ebi.ac.uk/amr/data/?view=experiments) are formatted differently and can be imported with the function `import_ebi_ast()`
-#' @param ebi_dat 
+#' @param input A string representing the input dataframe, or a path to an input file, to be processed.
 #' @param interpret_eucast A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column `pheno_eucast`, of class 'sir'.
 #' @param interpret_clsi A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against CLSI human breakpoints. These will be reported in a new column `pheno_clsi`, of class 'sir'.
 #' @param interpret_ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion values, against epidemiological cut-off (ECOFF) values. These will be reported in a new column `ecoff`, of class 'sir' and coded as 'R' (nonwildtype) or 'S' (wildtype).
@@ -637,11 +637,14 @@ format_ast <- function(input,
 #' # reformat to simplify use with AMRgen functions
 #' pheno_salmonella <- import_ebi_ast_ftp(pheno_salmonella)
 #' }
-import_ebi_ast_ftp <- function(ebi_dat,
+import_ebi_ast_ftp <- function(input,
                                interpret_eucast = FALSE, 
                                interpret_clsi = FALSE, 
                                interpret_ecoff = FALSE) {
-  ebi_dat_reformat <- ebi_dat %>% 
+  
+  ast <- process_input(input)
+  
+  ast <- ast %>% 
     mutate(mic=if_else(measurement_units=="mg/L", 
                        paste0(measurement_sign, measurement),
                        NA)) %>%
@@ -661,5 +664,5 @@ import_ebi_ast_ftp <- function(ebi_dat,
                interpret_clsi = interpret_clsi, 
                interpret_ecoff = interpret_ecoff) 
   
-  return(ebi_dat_reformat)
+  return(ast)
 }
