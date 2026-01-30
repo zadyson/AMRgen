@@ -623,7 +623,6 @@ format_ast <- function(input,
 #' @param interpret_eucast A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column `pheno_eucast`, of class 'sir'.
 #' @param interpret_clsi A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against CLSI human breakpoints. These will be reported in a new column `pheno_clsi`, of class 'sir'.
 #' @param interpret_ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion values, against epidemiological cut-off (ECOFF) values. These will be reported in a new column `ecoff`, of class 'sir' and coded as 'R' (nonwildtype) or 'S' (wildtype).
-#' @param rename_cols A logical value (default is TRUE). If `TRUE`, the function will rename the provided columns (specified by `ab_col`, `mic_col`, `disk_col`, `species_col`, `id_col`) to the default names expected by AMRgen functions ('drug_agent', 'mic', 'disk', 'spp_pheno', 'id'), to match those output by the other `import_ast()` functions.
 #' @importFrom AMR as.ab as.disk as.mic as.mo as.sir
 #' @importFrom dplyr any_of mutate relocate
 #' @importFrom rlang is_string :=

@@ -72,7 +72,7 @@ reference:
       - as.gene
       - gtdb.mo
       - format_ast
-      - download_ebi_geno
+      - download_ebi
 
   - title: "Resistance Interpretation"
     desc: >
