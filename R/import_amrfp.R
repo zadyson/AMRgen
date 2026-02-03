@@ -46,8 +46,11 @@
 #' geno
 #' }
 import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_drugs_table) {
-  in_table <- process_input(input_table) %>%
-    mutate(marker = `Gene symbol`)
+  if ("Element symbol" %in% colnames(input_table)) {
+    in_table <- process_input(input_table) %>% mutate(marker = `Element symbol`)
+  } else if ("Gene symbol" %in% colnames(input_table)) {
+    in_table <- process_input(input_table) %>% mutate(marker = `Gene symbol`)
+  } else {stop("Input file lacks the expected 'Element symbol' (v4.0+) or 'Gene symbol' (pre-v4) column\n")}
 
   # filter to only include AMR elements
   if ("Element type" %in% colnames(in_table)) {
@@ -114,20 +117,20 @@ import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_d
 #' mutation method, then extracts and converts parts of the mutation string.
 #' Specifically designed for use within `dplyr::mutate()`.
 #'
-#' @param gene_symbol_col A character vector representing the 'Gene symbol'
+#' @param symbol_col A character vector representing the 'Gene symbol'
 #'                        column (the mutation string).
 #' @param method_col A character vector representing the 'Method' column.
 #' @return A character vector containing the formatted mutation strings
 #'         (e.g., "Ala123Trp") or NA if not applicable/match.
 #' @export
-convert_mutation <- function(gene_symbol_col, method_col) {
+convert_mutation <- function(symbol_col, method_col) {
   # Ensure inputs are treated as vectors. `mutate` will pass them as such.
   # The regex pattern for splitting the mutation string
   regex_pattern <- "^([^_]+)_([A-Za-z]+)(-?)(\\d+)([A-Za-z]+)$"
 
   # Apply str_match to the entire gene_symbol_col vector.
   # str_match is already vectorized, so it handles all rows at once.
-  result_matrix <- stringr::str_match(gene_symbol_col, regex_pattern)
+  result_matrix <- stringr::str_match(symbol_col, regex_pattern)
 
   # Convert the result matrix to a tibble immediately
   extracted_data <- tibble(

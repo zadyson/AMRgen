@@ -12,8 +12,16 @@ amr_upset(
   plot_category = TRUE,
   print_category_counts = FALSE,
   print_set_size = FALSE,
-  boxplot_colour = "grey",
-  assay = "mic"
+  boxplot_col = "grey",
+  assay = "mic",
+  SIR_col = c(S = "#3CAEA3", SDD = "#8FD6C4", I = "#F6D55C", R = "#ED553B"),
+  antibiotic = NULL,
+  species = NULL,
+  bp_site = NULL,
+  guideline = "EUCAST 2025",
+  bp_S = NULL,
+  bp_R = NULL,
+  ecoff_bp = NULL
 )
 }
 \arguments{
@@ -36,13 +44,29 @@ amr_upset(
 
 \item{print_set_size}{Logical indicating whether, if \code{plot_set_size} is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.}
 
-\item{boxplot_colour}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".}
+\item{boxplot_col}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".}
 
 \item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
 \itemize{
 \item "mic": plot MIC data stored in column \code{mic}
 \item "disk": plot disk diffusion data stored in column \code{disk}
 }}
+
+\item{SIR_col}{A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., "R", "I", "S"), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package \code{scale_colour_sir()}.}
+
+\item{antibiotic}{(optional) Name of antibiotic, so we can retrieve breakpoints to the assay value distribution plot.}
+
+\item{species}{(optional) Name of species, so we can retrieve breakpoints to add to the assay value distribution plot.}
+
+\item{bp_site}{(optional) Breakpoint site to retrieve (only relevant if also supplying \code{species} and \code{antibiotic} to retrieve breakpoints to plot, and not supplying breakpoints via \code{bp_S}, \code{bp_R}, \code{ecoff_bp}).}
+
+\item{guideline}{(optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')}
+
+\item{bp_S}{(optional) S breakpoint to add to plot (numerical).}
+
+\item{bp_R}{(optional) R breakpoint to add to plot (numerical).}
+
+\item{ecoff_bp}{(optional) ECOFF breakpoint to add to plot (numerical).}
 }
 \value{
 A list containing the following elements:

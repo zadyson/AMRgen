@@ -4,10 +4,10 @@
 \alias{convert_mutation}
 \title{Convert mutation string based on method}
 \usage{
-convert_mutation(gene_symbol_col, method_col)
+convert_mutation(symbol_col, method_col)
 }
 \arguments{
-\item{gene_symbol_col}{A character vector representing the 'Gene symbol'
+\item{symbol_col}{A character vector representing the 'Gene symbol'
 column (the mutation string).}
 
 \item{method_col}{A character vector representing the 'Method' column.}

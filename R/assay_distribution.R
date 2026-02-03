@@ -89,7 +89,7 @@ assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL,
   if (!is.null(species) & is.null(bp_S) & is.null(bp_R) & is.null(ecoff)) {
     if (measure %in% c("mic", "disk")) {
       ecoff <- safe_execute(getBreakpoints(species=species, guide="EUCAST 2025", antibiotic=antibiotic, "ECOFF") %>% filter(method==toupper(measure)) %>% pull(breakpoint_S))
-      bp_S <- safe_execute(unlist(c[1]))
+      bp_S <- safe_execute(unlist(checkBreakpoints(species=species, guide=guideline, antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[1]))
       bp_R <- safe_execute(unlist(checkBreakpoints(species=species, guide=guideline, antibiotic=antibiotic, bp_site=bp_site, assay=toupper(measure))[2]))
     } 
   } 

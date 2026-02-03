@@ -27,10 +27,18 @@
 #' @param print_set_size Logical indicating whether, if `plot_set_size` is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.
 #' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the `pheno` column in the input file). Default is TRUE.
 #' @param print_category_counts Logical indicating whether, if `plot_category` is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is FALSE.
-#' @param boxplot_colour Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".
+#' @param boxplot_col Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".
+#' @param SIR_col A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., "R", "I", "S"), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package `scale_colour_sir()`.
 #' @param assay A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
 #' - "mic": plot MIC data stored in column `mic`
 #' - "disk": plot disk diffusion data stored in column `disk`
+#' @param bp_S (optional) S breakpoint to add to plot (numerical).
+#' @param bp_R (optional) R breakpoint to add to plot (numerical).
+#' @param ecoff_bp (optional) ECOFF breakpoint to add to plot (numerical).
+#' @param antibiotic (optional) Name of antibiotic, so we can retrieve breakpoints to the assay value distribution plot.
+#' @param species (optional) Name of species, so we can retrieve breakpoints to add to the assay value distribution plot.
+#' @param bp_site (optional) Breakpoint site to retrieve (only relevant if also supplying `species` and `antibiotic` to retrieve breakpoints to plot, and not supplying breakpoints via `bp_S`, `bp_R`, `ecoff_bp`).
+#' @param guideline (optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')
 #' @importFrom AMR as.mic scale_color_sir scale_fill_sir scale_y_mic
 #' @importFrom dplyr any_of arrange desc distinct filter group_by if_else left_join mutate n pull relocate row_number select summarise ungroup
 #' @importFrom forcats fct_rev
@@ -58,7 +66,12 @@
 amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
-                      boxplot_colour = "grey", assay = "mic") {
+                      boxplot_col = "grey", assay = "mic",
+                      SIR_col=c(S = "#3CAEA3", SDD = "#8FD6C4", 
+                                    I = "#F6D55C", R = "#ED553B"),
+                      antibiotic=NULL, species=NULL, bp_site=NULL, 
+                      guideline="EUCAST 2025", 
+                      bp_S=NULL, bp_R=NULL, ecoff_bp=NULL) {
 
   if (sum(!is.na(binary_matrix$pheno)) == 0) {
     if (sum(!is.na(binary_matrix$ecoff)) > 0) {
@@ -212,18 +225,19 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
 
   ##### Plots ###
 
-  ### assay data plot (MIC/disk)
+  ### assay data plot (MIC/disk distribution)
   g1 <- ggplot(data = assay_plot, aes(x = combination_id, y = `get(assay)`)) +
-    geom_boxplot(colour = boxplot_colour) +
+    geom_boxplot(colour = boxplot_col) +
     geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
     theme_bw() +
     scale_size_continuous("Number of\nisolates") +
-    scale_color_sir(name = colour_label) +
     theme(
       axis.text.x = element_blank(),
       axis.title.x = element_blank(),
       axis.ticks.x = element_blank()
-    )
+    ) + 
+    scale_color_sir(colours_SIR = SIR_col,
+                     name=colour_label)
 
   if (assay == "mic") {
     g1 <- g1 +
@@ -232,6 +246,30 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   } else {
     g1 <- g1 +
       ylab("Disk zone (mm)")
+  }
+  
+  
+  # if species and antibiotic are provided, but breakpoints aren't, check breakpoints to annotate plot
+  if (!is.null(species) & !is.null(antibiotic) & (is.null(bp_S) | is.null(bp_R) | is.null(ecoff_bp))) {
+    if (is.null(ecoff_bp)) {
+      ecoff_bp <- safe_execute(getBreakpoints(species=as.mo(species), guide="EUCAST 2025", antibiotic=as.ab(antibiotic), "ECOFF") %>% filter(method==toupper(assay)) %>% pull(breakpoint_S))
+    }
+    if (is.null(bp_S)) {
+      bp_S <- safe_execute(unlist(checkBreakpoints(species=as.mo(species), guide=guideline, antibiotic=as.ab(antibiotic), bp_site=bp_site, assay=toupper(assay))[1]))
+    }
+    if (is.null(bp_R)) {
+      bp_R <- safe_execute(unlist(checkBreakpoints(species=as.mo(species), guide=guideline, antibiotic=as.ab(antibiotic), bp_site=bp_site, assay=toupper(assay))[2]))
+    } 
+  } 
+  
+  if (!is.null(bp_S)) {
+    g1 <- g1 + geom_hline(yintercept=bp_S)
+  }
+  if (!is.null(bp_R)) {
+    g1 <- g1 + geom_hline(yintercept=bp_R)
+  }
+  if (!is.null(ecoff_bp)) {
+    g1 <- g1 + geom_hline(yintercept=ecoff_bp, linetype=2)
   }
 
   ### Bar plot - set size
@@ -255,7 +293,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     distinct() %>%
     ggplot(aes(x = combination_id, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
-    scale_fill_sir() +
+    scale_fill_sir(colours_SIR=SIR_col) +
     theme_light() +
     labs(x = "", y = "Category") +
     theme(

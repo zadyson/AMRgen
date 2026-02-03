@@ -27,12 +27,13 @@
 #' @param ecoff_col A character string (optional) specifying the column name in `pheno_table` that contains resistance interpretations (SIR) made against the ECOFF rather than a clinical breakpoint. The values should be interpretable as "R" (resistant), "I" (intermediate), or "S" (susceptible).
 #' @param icat A logical indicating whether to calculate PPV for "I" (if such a category exists in the phenotype column) (default FALSE).
 #' @param marker_col A character string specifying the column name in `geno_table` containing the marker identifiers. Defaults to `"marker"`.
-#' @param plot_cols A named vector of colors for the plot. The names should be the phenotype categories (e.g., "R", "I", "S", "NWT"), and the values should be valid color names or hexadecimal color codes. Default colors are provided for resistant ("R"), intermediate ("I"), susceptible ("S"), and non-wild-type ("NWT").
 #' @param min Minimum number of genomes with the solo marker, to include the marker in the plot (default 1).
 #' @param pd Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.
 #' @param axis_label_size Font size for axis labels in the PPV plot (default 9).
 #' @param keep_assay_values A logical indicating whether to include columns with the raw phenotype assay data in the binary matrix. Assumes there are columns labelled "mic" and/or "disk"; these will be added to the output table if present. Defaults to `TRUE`.
 #' @param excludeRanges Vector of phenotype categories (comprised of "R", "I", "NWT") for which we should ignore MIC values expressed as ranges when calculating PPVs. Default c("NWT"), as calling against ECOFF with the AMR package currently does not interpret ranges correctly. To include MICs expressed as ranges set this to NULL.
+#' @param colours_SIR A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., "R", "I", "S"), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package `scale_colour_sir()`.
+#' @param colours_ppv A named vector of colours for the plot of PPV estimates. The names should be "R", "I" and "NWT", and the values should be valid color names or hexadecimal color codes.
 #' @details The function analyzes the predictive power of individual AMR markers that belong to a specified drug class and are uniquely associated with one class. The phenotype data are matched with genotype presence/absence and then stratified to compute PPV for resistance and non-wild-type interpretations. It also generates plots to aid in interpretation.
 #' @importFrom AMR scale_fill_sir
 #' @importFrom dplyr any_of bind_rows filter group_by mutate n relocate rename select summarise
@@ -65,8 +66,11 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
                               sir_col = NULL, ecoff_col = "ecoff", icat = FALSE,
                               marker_col = "marker", keep_assay_values = TRUE, min = 1,
                               axis_label_size = 9, pd = position_dodge(width = 0.8),
-                              plot_cols = c("R"="maroon", "I"="skyblue", "NWT"="navy"),
-                              excludeRanges=c("NWT")) {
+                              excludeRanges=c("NWT"), 
+                              colours_SIR = c(S = "#3CAEA3", SDD = "#8FD6C4", 
+                                            I = "#F6D55C", R = "#ED553B"),
+                              colours_ppv = c("R"="maroon", "I"="skyblue", 
+                                                     "NWT"="navy")) {
   # check there is a SIR column specified
   if (is.null(sir_col)) {
     stop("Please specify a column with S/I/R values, via the sir_col parameter.")
@@ -204,7 +208,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       filter(!is.na(pheno)) %>%
       ggplot(aes(y = marker, fill = pheno)) +
       geom_bar(stat = "count", position = "fill") +
-      scale_fill_sir() +
+      scale_fill_sir(colours_SIR=colours_SIR) +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
       theme_light() +
@@ -219,7 +223,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
       filter(!is.na(ecoff)) %>%
       ggplot(aes(y = marker, fill = ecoff)) +
       geom_bar(stat = "count", position = "fill") +
-      scale_fill_sir() +
+      scale_fill_sir(colours_SIR=colours_SIR) +
       geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3) +
       scale_y_discrete(limits = markers_to_plot) +
       theme_light() +
@@ -260,7 +264,7 @@ solo_ppv_analysis <- function(geno_table, pheno_table, antibiotic, drug_class_li
     theme_bw() +
     scale_y_discrete(limits = markers_to_plot, labels = labels_vector[markers_to_plot], position = "right") +
     labs(y = "", x = "Solo PPV", col = "Category") +
-    scale_colour_manual(values = plot_cols) +
+    scale_colour_manual(values = colours_ppv) +
     theme(
       axis.text.x = element_text(size = axis_label_size),
       axis.text.y = element_text(size = axis_label_size)
