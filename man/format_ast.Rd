@@ -14,6 +14,10 @@ format_ast(
   mic_col = "mic",
   disk_col = "disk",
   pheno_cols = c("ecoff", "pheno_eucast", "pheno_clsi", "pheno_provided"),
+  method_col = "method",
+  platform_col = "platform",
+  source_col = "source",
+  guideline_col = "guideline",
   interpret_eucast = FALSE,
   interpret_clsi = FALSE,
   interpret_ecoff = FALSE,
@@ -38,6 +42,14 @@ format_ast(
 \item{disk_col}{(optional, default 'disk') Name of the input data column that provides disk diffusion zone measurements. If provided, this column will be converted to disk diffusion class 'disk' via \code{as.disk()}. If the 'rename' parameter is set to TRUE, this column will also be renamed as 'disk'. If interpretation is switched on, the zone values will be interpreted against clinical breakpoints.}
 
 \item{pheno_cols}{(optional, default \code{c("ecoff", "pheno_eucast", "pheno_clsi", "pheno_provided")}) Name of the input data column/s that provides disk diffusion zone measurements (as a character vector, or single string for a single column). If provided, these columns will be converted to SIR class 'sir' via \code{as.sir()}.}
+
+\item{method_col}{(optional, default 'method') Name of the input data column that indicates the testing method used (e.g. MIC, disk diffusion). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'method'.}
+
+\item{platform_col}{(optional, default 'platform') Name of the input data column that indicates the testing platform used (e.g. Vitek, Sensititre). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'platform'.}
+
+\item{source_col}{(optional, default 'source') Name of the input data column that indicates the source of the dataset (e.g. BioProject, PMID). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'source'.}
+
+\item{guideline_col}{(optional, default 'guideline') Name of the input data column that indicates the guideline used for testing (e.g. EUCAST, CLSI). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'guideline'.}
 
 \item{interpret_eucast}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column \code{pheno_eucast}, of class 'sir'.}
 

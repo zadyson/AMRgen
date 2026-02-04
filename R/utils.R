@@ -144,7 +144,19 @@ utils::globalVariables(c(
   "measurement_units",
   "platform",
   "resistance_phenotype",
-  "subclass"
+  "subclass",
+  "Collection Date",
+  "Laboratory typing method",
+  "Organism",
+  "Organism Name",
+  "Specimen date",
+  "Testing Date",
+  "ab_code",
+  "ab_col",
+  "drug_agent_code",
+  "drug_agent_name",
+  "pheno_provided",
+  "phenotype-laboratory_typing_method"
 ))
 
 

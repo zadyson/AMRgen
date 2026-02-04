@@ -40,7 +40,8 @@ A data frame with the processed AST data, including additional columns:
 \item \code{drug_agent}: The antibiotic used in the test, formatted using the \code{as.ab} function.
 \item \code{mic}: The minimum inhibitory concentration (MIC) value, formatted using the \code{as.mic} function.
 \item \code{disk}: The disk diffusion measurement (in mm), formatted using the \code{as.disk} function.
-\item \code{method}: The AST platform recorded in the input file as the source of the measurement.
+\item \code{method}: The AST method (e.g., "MIC", "disk diffusion", "Etest", "agar dilution").
+\item \code{platform}: The AST platform/instrument (e.g., "Vitek", "Phoenix", "Sensititre").
 \item \code{guideline}: The AST standard recorded in the input file as being used for the AST assay.
 \item \code{pheno_eucast}: The phenotype newly interpreted against EUCAST human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.
 \item \code{pheno_clsi}: The phenotype newly interpreted against CLSI human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.

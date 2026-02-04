@@ -18,7 +18,7 @@ import_ast(
 \arguments{
 \item{input}{A string representing a dataframe, or a path to an input file, containing the AST data in EBI or NCBI antibiogram format. These files can be downloaded from the EBI AMR web browser (https://www.ebi.ac.uk/amr/data/?view=experiments), EBI FTP site (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/), or NCBI browser (e.g. https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas\%20aeruginosa), or from EBI using the function \code{download_ebi()}.}
 
-\item{format}{A string indicating the format of the data, either "ebi" (default), ebi_web", "ebi_ftp", or "ncbi". This determines whether the data is passed on to the \code{import_ebi_ast()} (ebi/ebi_web), \code{import_ebi_ast_ftp()} (ebi_ftp), or \code{import_ncbi_ast()} function to process.}
+\item{format}{A string indicating the format of the data: "ebi" (default), "ebi_web", "ebi_ftp", "ncbi", "vitek", or "whonet". This determines whether the data is passed on to the \code{import_ebi_ast()} (ebi/ebi_web), \code{import_ebi_ast_ftp()} (ebi_ftp), \code{import_ncbi_ast()} (ncbi), \code{import_vitek_ast()} (vitek), or \code{import_whonet_ast()} (whonet) function to process.}
 
 \item{interpret_eucast}{A logical value (default is FALSE). If \code{TRUE}, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column \code{pheno_eucast}, of class 'sir'.}
 
@@ -40,7 +40,8 @@ A data frame with the processed AST data, including additional columns:
 \item \code{drug_agent}: The antibiotic used in the test, formatted using the \code{as.ab} function.
 \item \code{mic}: The minimum inhibitory concentration (MIC) value, formatted using the \code{as.mic} function.
 \item \code{disk}: The disk diffusion measurement (in mm), formatted using the \code{as.disk} function.
-\item \code{method}: The AST platform recorded in the input file as the source of the measurement.
+\item \code{method}: The AST method (e.g., "MIC", "disk diffusion", "Etest", "agar dilution").
+\item \code{platform}: The AST platform/instrument (e.g., "Vitek", "Phoenix", "Sensititre").
 \item \code{guideline}: The AST standard recorded in the input file as being used for the AST assay.
 \item \code{pheno_eucast}: The phenotype newly interpreted against EUCAST human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.
 \item \code{pheno_clsi}: The phenotype newly interpreted against CLSI human breakpoint standards (as S/I/R), based on the MIC or disk diffusion data.
