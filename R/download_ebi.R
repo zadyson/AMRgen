@@ -33,7 +33,7 @@
 #' @importFrom RCurl getBinaryURL getURL
 #' @return A data frame containing EBI genotype data
 #' @keywords internal
-#'
+#' @export
 #' @examples
 #' \dontrun{
 #' # download all phenotype data from EBI
