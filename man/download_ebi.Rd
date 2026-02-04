@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_ebi.R
 \name{download_ebi}
 \alias{download_ebi}
-\title{Download antimicrobial genotype data from the EBI AMR Portal}
+\title{Download antimicrobial genotype or phenotype data from the EBI AMR Portal}
 \usage{
 download_ebi(
   data = "phenotype",

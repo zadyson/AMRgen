@@ -13,7 +13,7 @@
 #  GNU General Public License version 3.0 (GNU GPL-3), as published by  #
 #  the Free Software Foundation.                                        #
 # ===================================================================== #
-#' Download antimicrobial genotype data from the EBI AMR Portal
+#' Download antimicrobial genotype or phenotype data from the EBI AMR Portal
 #'
 #' This function will retrieve genotype or phenotype data from the EBI AMR Portal, via FTP. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. See https://www.ebi.ac.uk/amr/about/#AMR-Genotypes for more information, and https://github.com/ncbi/amr/wiki/class-subclass for valid class and subclass terms.
 #' Optionally, the function can also reformat the phenotype data for easy use with AMRgen functions (using `import_ebi_ast_ftp()`) and re-interpret assay measures using the latest breakpoints/ECOFF.
