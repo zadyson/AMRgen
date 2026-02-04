@@ -90,7 +90,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     select(-any_of(c("id", "pheno", "ecoff", "R", "I", "NWT", "mic", "disk"))) %>%
     colnames()
 
-  # check with have the expected assay column, with data
+  # check w have the expected assay column, with data
   if (!(assay %in% colnames(binary_matrix))) {
     stop(paste("input", deparse(substitute(binary_matrix)), "must have a column labelled ", assay))
   }
@@ -131,6 +131,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   ### data for assay plot - dot plot. X axis = combination. Y axis = MIC or disk zone #####
   assay_plot <- binary_matrix %>%
     filter(combination_id %in% comb_enough_strains) %>%
+    select(id:combination_id) %>% distinct() %>%
     group_by(combination_id, get(assay), pheno) %>%
     summarise(n = n()) # count how many at each assay value, keep pheno for colour
 

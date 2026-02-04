@@ -60,6 +60,7 @@ assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL,
                          species=NULL, bp_site=NULL, bp_S=NULL, bp_R=NULL, ecoff=NULL,
                          guideline="EUCAST 2025", marker_free_strains=NULL, 
                          colour_by=NULL, cols=NULL) {
+  
   if (measure %in% colnames(pheno_table)) {
     pheno_table <- pheno_table %>%
       filter(!is.na(get(measure))) %>%
@@ -115,7 +116,7 @@ assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL,
   # plot distribution per variable
   if (nrow(pheno_table)>0) {
     plot_all <- pheno_table %>%
-      ggplot(aes(x=factor(!!sym(measure)), fill=!!sym(colour_by))) +
+      ggplot(aes(x=factor(!!sym(measure)), fill=factor(!!sym(colour_by)))) +
       geom_bar() +
       labs(x="Measurement", y="count", fill="Value", subtitle=subtitle,
            title=paste(antibiotic, "assay distributions for all samples")) +
@@ -142,7 +143,7 @@ assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL,
     pheno_table_nomarkers <- pheno_table %>% filter(id %in% marker_free_strains)
     if (nrow(pheno_table_nomarkers)>0) {
       plot_nomarkers <- pheno_table_nomarkers %>%
-        ggplot(aes(x=factor(!!sym(measure)), fill=!!sym(colour_by))) +
+        ggplot(aes(x=factor(!!sym(measure)), fill=factor(!!sym(colour_by)))) +
         geom_bar() +
         labs(x="Measurement", y="count", fill="Value", subtitle=subtitle,
              title=paste(antibiotic, "assay distributions for samples with no markers identified")) +
