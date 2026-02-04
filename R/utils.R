@@ -132,7 +132,19 @@ utils::globalVariables(c(
   "value",
   "variation type",
   "x",
-  "site"
+  "site",
+  "AMR_associated_publications",
+  "BioSample_ID",
+  "Element symbol",
+  "antibiotic_name",
+  "ast_standard",
+  "laboratory_typing_method",
+  "measurement",
+  "measurement_sign",
+  "measurement_units",
+  "platform",
+  "resistance_phenotype",
+  "subclass"
 ))
 
 

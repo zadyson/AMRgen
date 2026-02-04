@@ -46,10 +46,13 @@
 #' geno
 #' }
 import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_drugs_table) {
-  if ("Element symbol" %in% colnames(input_table)) {
-    in_table <- process_input(input_table) %>% mutate(marker = `Element symbol`)
-  } else if ("Gene symbol" %in% colnames(input_table)) {
-    in_table <- process_input(input_table) %>% mutate(marker = `Gene symbol`)
+
+  in_table <- process_input(input_table)
+  
+  if ("Element symbol" %in% colnames(in_table)) {
+    in_table <- in_table %>% mutate(marker = `Element symbol`)
+  } else if ("Gene symbol" %in% colnames(in_table)) {
+    in_table <- in_table %>% mutate(marker = `Gene symbol`)
   } else {stop("Input file lacks the expected 'Element symbol' (v4.0+) or 'Gene symbol' (pre-v4) column\n")}
 
   # filter to only include AMR elements
