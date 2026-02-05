@@ -80,6 +80,12 @@ import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_d
     print("Need Method columns to assign to parse mutations and assign variation type")
     in_table_mutation <- in_table %>% mutate(`variation type` = NA, gene = NA, mutation = NA)
   }
+  
+  # check for nucleotide variants with negative positions, which indicates promoter variants
+  in_table_mutation <- in_table_mutation %>% 
+    mutate(`variation type`=case_when(mutation=="-" ~ `variation type`,
+                                      startsWith(mutation, "-") ~ "Promoter variant detected",
+                                      TRUE ~ `variation type`))
 
   # create AMRrules style label with node:mutation
   if ("Hierarchy node" %in% colnames(in_table_mutation) & "Element subtype" %in% colnames(in_table_mutation)) {
