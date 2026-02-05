@@ -34,7 +34,6 @@ Start by loading the package:
 
 ```{r setup}
 library(AMRgen)
-library(tidyverse)
 ```
 
 ## 1. Genotype table
@@ -216,15 +215,15 @@ colnames(cip_bin)
 This binary matrix can be used as the starting a lot of downstream analyses.
 
 For example, we can use it as input to `assay_by_var` to plot the assay distribution coloured by presence of a particular genetic marker
-``` {r assay_by_genotype}
-assay_by_var(cip_bin %>% mutate(drug_agent="CIP"), measure="mic", colour_by="parC_S80I", antibiotic="CIP")$plot
+``` {r assay_by_genotype, eval=F}
+assay_by_var(cip_bin %>% dplyr::mutate(drug_agent="CIP"), measure="mic", colour_by="parC_S80I", antibiotic="CIP")$plot
 
 # count the number of gyrA mutations per genome, and colour by that count
 gyrA_mut <- cip_bin %>% 
-  mutate(gyrA_mut = rowSums(across(contains("gyrA_") & where(is.numeric)), na.rm=T)) %>% 
+  dplyr::mutate(gyrA_mut = rowSums(across(contains("gyrA_") & where(is.numeric)), na.rm=T)) %>% 
   select(mic, gyrA_mut)
 
-mic_by_gyrA_count <- assay_by_var(gyrA_mut %>% mutate(drug_agent="CIP"), measure="mic", colour_by="gyrA_mut", antibiotic="CIP")
+mic_by_gyrA_count <- assay_by_var(gyrA_mut %>% dplyr::mutate(drug_agent="CIP"), measure="mic", colour_by="gyrA_mut", antibiotic="CIP")
 
 mic_by_gyrA_count$plot
 
@@ -233,7 +232,7 @@ marker_count <- cip_bin %>%
   mutate(marker_count = rowSums(across(where(is.numeric) & !any_of(c("R","NWT"))), na.rm=T)) %>% 
   select(mic, marker_count)
 
-mic_by_marker_count <- assay_by_var(marker_count %>% mutate(drug_agent="CIP"), measure="mic", colour_by="marker_count", antibiotic="CIP", cols=viridisLite::viridis(max(marker_count$marker_count)+1))
+mic_by_marker_count <- assay_by_var(marker_count %>% dplyr::mutate(drug_agent="CIP"), measure="mic", colour_by="marker_count", antibiotic="CIP", cols=viridisLite::viridis(max(marker_count$marker_count)+1))
 
 mic_by_marker_count$plot
 

@@ -69,6 +69,7 @@ reference:
       - starts_with("export")
       - starts_with("convert")
       - get_binary_matrix
+      - get_combo_matrix
       - as.gene
       - gtdb.mo
       - format_ast
