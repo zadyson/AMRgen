@@ -18,19 +18,18 @@
 #'
 #' This function creates a stacked bar plot using `ggplot2`, where the x-axis represents MIC (Minimum Inhibitory Concentration) or disk values, the y-axis indicates their frequency, and the bars are colored by a variable (by default, colours indicate whether the assay value is expressed as a range or not). Plots can optionally be faceted on an additional categorical variable. If breakpoints are provided, or species and drug are provided so we can extract EUCAST breakpoints, vertical lines indicating the S/R breakpoints and ECOFF will be added to the plot. 
 #' @param pheno_table Phenotype table in standard format as per import_ast().
-#' @param antibiotic Name of the antibiotic.
-#' @param measure Field name containing the assay measurements to plot (default "mic").
-#' @param facet_var (optional) Field name containing a field to facet on (default NULL).
-#' @param colour_by (optional) Field name containing a field to colour bars by (default NULL, which will colour each bar to indicate whether the value is expressed as a range or not)
-#' @param species (optional) Name of species, so we can retrieve breakpoints to print at the top of the plot to help interpret it.
-#' @param bp_site (optional) Breakpoint site to retrieve (only relevant if also supplying `species` to retrieve breakpoints, and not supplying breakpoints via `bp_S`, `bp_R`, `ecoff`).
-#' @param species (optional) Name of species, so we can retrieve breakpoints to print at the top of the plot to help interpret it.
-#' @param bp_S (optional) S breakpoint
-#' @param bp_R (optional) R breakpoint
-#' @param ecoff (optional) ECOFF breakpoint
-#' @param guideline (optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')
-#' @param marker_free_strains (optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.
+#' @param measure Name of the column with assay measurements to plot (default "mic").
+#' @param colour_by (optional) Field name containing a variable to colour bars by (default NULL, which will colour each bar to indicate whether the value is expressed as a range or not).
 #' @param cols (optional) Manual colour scale to use for plot. If NULL, `colour_by` variable is of class 'sir', bars will by default be coloured using standard SIR colours.
+#' @param facet_var (optional) Column name containing a variable to facet on (default NULL).
+#' @param antibiotic (optional) Name of an antibiotic to filter the 'drug_agent' column, and to retrieve breakpoints for.
+#' @param species (optional) Name of species, so we can retrieve breakpoints to print at the top of the plot to help interpret it.
+#' @param bp_site (optional) Breakpoint site to retrieve (only relevant if also supplying `species` and `antibiotic` to retrieve breakpoints, and not supplying breakpoints via `bp_S`, `bp_R`, `ecoff`).
+#' @param bp_S (optional) S breakpoint to plot.
+#' @param bp_R (optional) R breakpoint to plot.
+#' @param ecoff (optional) ECOFF breakpoint to plot.
+#' @param guideline (optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025').
+#' @param marker_free_strains (optional) Vector of sample names to select to get their own plot. Most useful for defining the set of strains with no known markers associated with the given antibiotic, so you can view the distribution of assay values for strains expected to be wildtype, which can help to identify issues with the assay.
 #' @importFrom ggplot2 aes element_text facet_wrap geom_bar geom_vline ggplot labs theme scale_fill_manual sym
 #' @return A list containing
 #' \item{plot}{Main plot with all samples that have assay data for the given antibiotic}
@@ -56,22 +55,29 @@
 #'                 facet_var ="method")
 #' 
 #' @export
-assay_by_var <- function(pheno_table, antibiotic, measure="mic", facet_var=NULL, 
+assay_by_var <- function(pheno_table, antibiotic=NULL, measure="mic", 
+                         colour_by=NULL, cols=NULL, facet_var=NULL, 
                          species=NULL, bp_site=NULL, bp_S=NULL, bp_R=NULL, ecoff=NULL,
-                         guideline="EUCAST 2025", marker_free_strains=NULL, 
-                         colour_by=NULL, cols=NULL) {
+                         guideline="EUCAST 2025", marker_free_strains=NULL 
+                         ) {
+  
+  if (!is.null(antibiotic)) {
+    pheno_table <- pheno_table %>% filter(drug_agent==as.ab(antibiotic))
+    if (nrow(pheno_table)==0) {stop(paste0("Antibiotic '", antibiotic, "' not found in drug_agent column"))}
+  }
   
   if (measure %in% colnames(pheno_table)) {
     pheno_table <- pheno_table %>%
       filter(!is.na(get(measure))) %>%
-      filter(drug_agent==as.ab(antibiotic)) %>%
       arrange(get(measure))
   } else {stop(paste0("No '", measure, "' column in input table"))}
+  
   if (!is.null(facet_var)){
     if (!(facet_var %in% colnames(pheno_table))) {
       stop(paste0("Facet variable '", facet_var, "' not found in input table"))
     }
   }
+  
   if (!is.null(colour_by)) {
     if(!(colour_by %in% colnames(pheno_table))) {
       cat(paste0("WARNING: Colour variable '", colour_by, "' not found in input table\n"))

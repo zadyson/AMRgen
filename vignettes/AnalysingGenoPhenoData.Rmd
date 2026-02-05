@@ -34,6 +34,7 @@ Start by loading the package:
 
 ```{r setup}
 library(AMRgen)
+library(dplyr)
 ```
 
 ## 1. Genotype table
@@ -215,7 +216,7 @@ colnames(cip_bin)
 This binary matrix can be used as the starting a lot of downstream analyses.
 
 For example, we can use it as input to `assay_by_var` to plot the assay distribution coloured by presence of a particular genetic marker
-``` {r assay_by_genotype, eval=F}
+``` {r assay_by_genotype}
 assay_by_var(cip_bin %>% dplyr::mutate(drug_agent="CIP"), measure="mic", colour_by="parC_S80I", antibiotic="CIP")$plot
 
 # count the number of gyrA mutations per genome, and colour by that count
