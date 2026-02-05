@@ -95,6 +95,9 @@ assay_by_var <- function(pheno_table, antibiotic=NULL, measure="mic",
     if(!(colour_by %in% colnames(pheno_table))) {
       cat(paste0("WARNING: Colour variable '", colour_by, "' not found in input table\n"))
       colour_by <- NULL
+    } else {
+      pheno_table <- pheno_table %>%
+        filter(!is.na(get(colour_by)))
     }
   }
   
