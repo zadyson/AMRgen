@@ -247,7 +247,6 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 }
 
 
-
 #' Generate matrix of marker combinations
 #'
 #' Given a geno-phenot binary marker matrix, output by `get_binary_matrix`,

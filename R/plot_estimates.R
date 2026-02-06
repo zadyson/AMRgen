@@ -216,7 +216,6 @@ autoplot.model_summary <- function(object,
 }
 
 
-
 #' Extract Details from a logistf Model
 #'
 #' This function extracts and formats the estimates, confidence intervals, and p-values from a fitted logistf model.
