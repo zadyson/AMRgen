@@ -74,7 +74,7 @@ export_ncbi_biosample <- function(data, file, overwrite = FALSE,
     stop("Missing required column(s): ", paste(missing_req, collapse = ", "))
   }
 
-  has_mic  <- "mic"  %in% colnames(data)
+  has_mic <- "mic" %in% colnames(data)
   has_disk <- "disk" %in% colnames(data)
   if (!has_mic && !has_disk) {
     warning("Neither 'mic' nor 'disk' column found; measurement fields will be empty.")
@@ -83,32 +83,32 @@ export_ncbi_biosample <- function(data, file, overwrite = FALSE,
   # --- build measurement columns ---
   if (has_mic) {
     mic_str <- as.character(data$mic)
-    mic_sign  <- stringr::str_match(mic_str, "^(<=?|>=?)")[, 2]
-    mic_sign  <- dplyr::if_else(is.na(mic_sign) & !is.na(mic_str) & mic_str != "NA", "=", mic_sign)
+    mic_sign <- stringr::str_match(mic_str, "^(<=?|>=?)")[, 2]
+    mic_sign <- dplyr::if_else(is.na(mic_sign) & !is.na(mic_str) & mic_str != "NA", "=", mic_sign)
     mic_value <- stringr::str_match(mic_str, "([0-9./]+)$")[, 2]
   }
 
   if (has_disk) {
-    disk_str   <- as.character(data$disk)
-    disk_sign  <- dplyr::if_else(!is.na(data$disk), "=", NA_character_)
+    disk_str <- as.character(data$disk)
+    disk_sign <- dplyr::if_else(!is.na(data$disk), "=", NA_character_)
     disk_value <- disk_str
   }
 
   # Determine sign, value, units — prefer MIC when both present
   if (has_mic && has_disk) {
-    m_sign  <- dplyr::if_else(!is.na(data$mic), mic_sign, disk_sign)
+    m_sign <- dplyr::if_else(!is.na(data$mic), mic_sign, disk_sign)
     m_value <- dplyr::if_else(!is.na(data$mic), mic_value, disk_value)
     m_units <- dplyr::if_else(!is.na(data$mic), "mg/L", dplyr::if_else(!is.na(data$disk), "mm", NA_character_))
   } else if (has_mic) {
-    m_sign  <- mic_sign
+    m_sign <- mic_sign
     m_value <- mic_value
     m_units <- dplyr::if_else(!is.na(data$mic), "mg/L", NA_character_)
   } else if (has_disk) {
-    m_sign  <- disk_sign
+    m_sign <- disk_sign
     m_value <- disk_value
     m_units <- dplyr::if_else(!is.na(data$disk), "mm", NA_character_)
   } else {
-    m_sign  <- rep(NA_character_, nrow(data))
+    m_sign <- rep(NA_character_, nrow(data))
     m_value <- rep(NA_character_, nrow(data))
     m_units <- rep(NA_character_, nrow(data))
   }
@@ -133,8 +133,10 @@ export_ncbi_biosample <- function(data, file, overwrite = FALSE,
 
   na_ab <- is.na(antibiotic) & !is.na(data$drug_agent)
   if (any(na_ab)) {
-    warning("AMR::ab_name() returned NA for some drug_agent values: ",
-            paste(unique(data$drug_agent[na_ab]), collapse = ", "))
+    warning(
+      "AMR::ab_name() returned NA for some drug_agent values: ",
+      paste(unique(data$drug_agent[na_ab]), collapse = ", ")
+    )
   }
 
   # --- assemble output ---
@@ -229,7 +231,7 @@ export_ebi_antibiogram <- function(data, file, overwrite = FALSE,
     stop("Missing required column(s): ", paste(missing_req, collapse = ", "))
   }
 
-  has_mic  <- "mic"  %in% colnames(data)
+  has_mic <- "mic" %in% colnames(data)
   has_disk <- "disk" %in% colnames(data)
   if (!has_mic && !has_disk) {
     warning("Neither 'mic' nor 'disk' column found; measurement fields will be empty.")
@@ -238,32 +240,32 @@ export_ebi_antibiogram <- function(data, file, overwrite = FALSE,
   # --- build measurement columns ---
   if (has_mic) {
     mic_str <- as.character(data$mic)
-    mic_sign  <- stringr::str_match(mic_str, "^(<=?|>=?)")[, 2]
-    mic_sign  <- dplyr::if_else(is.na(mic_sign) & !is.na(mic_str) & mic_str != "NA", "=", mic_sign)
+    mic_sign <- stringr::str_match(mic_str, "^(<=?|>=?)")[, 2]
+    mic_sign <- dplyr::if_else(is.na(mic_sign) & !is.na(mic_str) & mic_str != "NA", "=", mic_sign)
     mic_value <- stringr::str_match(mic_str, "([0-9./]+)$")[, 2]
   }
 
   if (has_disk) {
-    disk_str   <- as.character(data$disk)
-    disk_sign  <- dplyr::if_else(!is.na(data$disk), "=", NA_character_)
+    disk_str <- as.character(data$disk)
+    disk_sign <- dplyr::if_else(!is.na(data$disk), "=", NA_character_)
     disk_value <- disk_str
   }
 
   # Determine sign, value, units — prefer MIC when both present
   if (has_mic && has_disk) {
-    m_sign  <- dplyr::if_else(!is.na(data$mic), mic_sign, disk_sign)
+    m_sign <- dplyr::if_else(!is.na(data$mic), mic_sign, disk_sign)
     m_value <- dplyr::if_else(!is.na(data$mic), mic_value, disk_value)
     m_units <- dplyr::if_else(!is.na(data$mic), "mg/L", dplyr::if_else(!is.na(data$disk), "mm", NA_character_))
   } else if (has_mic) {
-    m_sign  <- mic_sign
+    m_sign <- mic_sign
     m_value <- mic_value
     m_units <- dplyr::if_else(!is.na(data$mic), "mg/L", NA_character_)
   } else if (has_disk) {
-    m_sign  <- disk_sign
+    m_sign <- disk_sign
     m_value <- disk_value
     m_units <- dplyr::if_else(!is.na(data$disk), "mm", NA_character_)
   } else {
-    m_sign  <- rep(NA_character_, nrow(data))
+    m_sign <- rep(NA_character_, nrow(data))
     m_value <- rep(NA_character_, nrow(data))
     m_units <- rep(NA_character_, nrow(data))
   }
@@ -297,8 +299,10 @@ export_ebi_antibiogram <- function(data, file, overwrite = FALSE,
 
   na_ab <- is.na(antibiotic_name) & !is.na(data$drug_agent)
   if (any(na_ab)) {
-    warning("AMR::ab_name() returned NA for some drug_agent values: ",
-            paste(unique(data$drug_agent[na_ab]), collapse = ", "))
+    warning(
+      "AMR::ab_name() returned NA for some drug_agent values: ",
+      paste(unique(data$drug_agent[na_ab]), collapse = ", ")
+    )
   }
 
   # --- assemble output ---
@@ -372,10 +376,14 @@ export_ast <- function(data, file, format = "ncbi", overwrite = FALSE,
                        pheno_col = "pheno_provided", ...) {
   format <- tolower(format)
   switch(format,
-    ncbi = export_ncbi_biosample(data, file, overwrite = overwrite,
-                                 pheno_col = pheno_col),
-    ebi  = export_ebi_antibiogram(data, file, overwrite = overwrite,
-                                  pheno_col = pheno_col, ...),
+    ncbi = export_ncbi_biosample(data, file,
+      overwrite = overwrite,
+      pheno_col = pheno_col
+    ),
+    ebi = export_ebi_antibiogram(data, file,
+      overwrite = overwrite,
+      pheno_col = pheno_col, ...
+    ),
     stop("Unsupported format '", format, "'. Use 'ncbi' or 'ebi'.")
   )
 }

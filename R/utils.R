@@ -181,7 +181,7 @@ ignore_unused_imports <- function() {
 #' @importFrom readr read_tsv
 process_input <- function(input) {
   if (is.character(input) && file.exists(input)) {
-    tsv_ext <- paste(rep(c("tsv", "txt"), 5), c(rep("", 2), rep(".gz", 2), rep(".bz2", 2), rep(".xz", 2), rep(".zip", 2)), sep="", collapse = "|")
+    tsv_ext <- paste(rep(c("tsv", "txt"), 5), c(rep("", 2), rep(".gz", 2), rep(".bz2", 2), rep(".xz", 2), rep(".zip", 2)), sep = "", collapse = "|")
     csv_ext <- paste(rep("csv", 5), c("", ".gz", ".bz2", ".xz", ".zip"), sep = "", collapse = "|")
     if (grepl(tsv_ext, input)) {
       data <- readr::read_tsv(input)
@@ -196,7 +196,7 @@ process_input <- function(input) {
     stop("Input must be either a valid file path or a dataframe.")
   }
   # strip any leading hash (e.g. NCBI AST)
-  data <- data %>%  dplyr::rename_with(~stringr::str_remove(.x, "#"))
+  data <- data %>% dplyr::rename_with(~ stringr::str_remove(.x, "#"))
   # Return the dataframe
   return(data)
 }
@@ -226,10 +226,13 @@ font_italic <- function(..., collapse = " ") {
 
 # Helper functions
 safe_execute <- function(expr) {
-  tryCatch({
-    expr
-  }, error = function(e) {
-    message("Error in executing command: ", e$message)
-    return(NULL)
-  })
+  tryCatch(
+    {
+      expr
+    },
+    error = function(e) {
+      message("Error in executing command: ", e$message)
+      return(NULL)
+    }
+  )
 }

@@ -276,13 +276,12 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 #' }
 #'
 #' @export
-get_combo_matrix <- function(binary_matrix, assay="mic") {
-  
+get_combo_matrix <- function(binary_matrix, assay = "mic") {
   # marker names
   markers <- binary_matrix %>%
     dplyr::select(-any_of(c("id", "pheno", "ecoff", "R", "I", "NWT", "mic", "disk"))) %>%
     colnames()
-  
+
   # check w have the expected assay column, with data
   if (!is.null(assay)) {
     if (!(assay %in% colnames(binary_matrix))) {
@@ -295,36 +294,37 @@ get_combo_matrix <- function(binary_matrix, assay="mic") {
       stop(paste("input", deparse(substitute(binary_matrix)), "has no non-NA values in column ", assay))
     }
   }
-  
+
   # Add in a combination column and filter to samples with the required assay data (MIC or disk) only
   if (!is.null(assay)) {
-    binary_matrix <- binary_matrix %>% filter(!is.na(get(assay))) 
+    binary_matrix <- binary_matrix %>% filter(!is.na(get(assay)))
   }
-  
+
   binary_matrix_wide <- binary_matrix %>%
-    mutate(marker_count = rowSums(across(where(is.numeric) & !any_of(c("R","NWT"))), na.rm=T)) %>%
+    mutate(marker_count = rowSums(across(where(is.numeric) & !any_of(c("R", "NWT"))), na.rm = T)) %>%
     unite("combination_id", markers[1]:markers[length(markers)], remove = FALSE) # add in combinations
-  
+
   # Make matrix longer (note this has one row per strain/gene combination regardless of gene presence)
   combo_matrix <- binary_matrix_wide %>%
     pivot_longer(cols = markers[1]:markers[length(markers)], names_to = "markers") %>%
     mutate(markers = gsub("\\.\\.", ":", markers)) %>%
     mutate(markers = gsub("`", "", markers))
-  
+
   ### Counts per combination
   combination_freq <- binary_matrix_wide %>%
     group_by(combination_id) %>%
     summarise(n = n()) %>%
     mutate(perc = 100 * n / sum(n)) # count number with each combination
-  
+
   ### Gene prevalence
   marker_freq <- combo_matrix %>%
     group_by(markers) %>%
     summarise(marker_freq = sum(value)) %>%
     arrange(desc(marker_freq))
-  
-  return(list(combination_matrix=combo_matrix, 
-              combination_freq=combination_freq,
-              marker_freq=marker_freq))
-  
+
+  return(list(
+    combination_matrix = combo_matrix,
+    combination_freq = combination_freq,
+    marker_freq = marker_freq
+  ))
 }
