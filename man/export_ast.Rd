@@ -19,7 +19,6 @@ export_ast(
 Expected columns: \code{id}, \code{drug_agent}, \code{spp_pheno}, and at least
 one phenotype column (see \code{pheno_col}). Optional columns: \code{mic},
 \code{disk}, \code{method}, \code{guideline}, \code{platform}.}
-\item{data}{A data frame in AMRgen long format.}
 
 \item{file}{File path for the output file.}
 
