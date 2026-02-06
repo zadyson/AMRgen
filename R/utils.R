@@ -259,7 +259,10 @@ send_to_github <- function() {
   q <- utils::askYesNo("Ready to push to GitHub?", prompts = c("Yes", "No", "Cancel"))
   if (isTRUE(q)) {
     system2("git", args = "add .")
-    system2("git", args = paste("commit -m", commit_msg))
+    system2("git", args = paste("commit -m '", commit_msg, "'"))
     system2("git", args = "push")
+    cli::cli_alert_success("Pushed to GitHub.")
+  } else {
+    cli::cli_alert_danger("Cancelled.")
   }
 }
