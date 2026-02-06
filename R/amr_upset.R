@@ -67,12 +67,13 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
                       boxplot_col = "grey", assay = "mic",
-                      SIR_col=c(S = "#3CAEA3", SDD = "#8FD6C4", 
-                                    I = "#F6D55C", R = "#ED553B"),
-                      antibiotic=NULL, species=NULL, bp_site=NULL, 
-                      guideline="EUCAST 2025", 
-                      bp_S=NULL, bp_R=NULL, ecoff_bp=NULL) {
-
+                      SIR_col = c(
+                        S = "#3CAEA3", SDD = "#8FD6C4",
+                        I = "#F6D55C", R = "#ED553B"
+                      ),
+                      antibiotic = NULL, species = NULL, bp_site = NULL,
+                      guideline = "EUCAST 2025",
+                      bp_S = NULL, bp_R = NULL, ecoff_bp = NULL) {
   if (sum(!is.na(binary_matrix$pheno)) == 0) {
     if (sum(!is.na(binary_matrix$ecoff)) > 0) {
       binary_matrix <- binary_matrix %>% mutate(pheno = ecoff)
@@ -94,11 +95,11 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   if (!(assay %in% colnames(binary_matrix))) {
     stop(paste("input", deparse(substitute(binary_matrix)), "must have a column labelled ", assay))
   }
-  
+
   data_rows <- binary_matrix %>%
     filter(!is.na(get(assay))) %>%
     nrow()
-  
+
   if (data_rows == 0) {
     stop(paste("input", deparse(substitute(binary_matrix)), "has no non-NA values in column ", assay))
   }
@@ -131,7 +132,8 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
   ### data for assay plot - dot plot. X axis = combination. Y axis = MIC or disk zone #####
   assay_plot <- binary_matrix %>%
     filter(combination_id %in% comb_enough_strains) %>%
-    select(id:combination_id) %>% distinct() %>%
+    select(id:combination_id) %>%
+    distinct() %>%
     group_by(combination_id, get(assay), pheno) %>%
     summarise(n = n()) # count how many at each assay value, keep pheno for colour
 
@@ -236,9 +238,11 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
       axis.text.x = element_blank(),
       axis.title.x = element_blank(),
       axis.ticks.x = element_blank()
-    ) + 
-    scale_color_sir(colours_SIR = SIR_col,
-                     name=colour_label)
+    ) +
+    scale_color_sir(
+      colours_SIR = SIR_col,
+      name = colour_label
+    )
 
   if (assay == "mic") {
     g1 <- g1 +
@@ -248,29 +252,29 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     g1 <- g1 +
       ylab("Disk zone (mm)")
   }
-  
-  
+
+
   # if species and antibiotic are provided, but breakpoints aren't, check breakpoints to annotate plot
   if (!is.null(species) & !is.null(antibiotic) & (is.null(bp_S) | is.null(bp_R) | is.null(ecoff_bp))) {
     if (is.null(ecoff_bp)) {
-      ecoff_bp <- safe_execute(getBreakpoints(species=as.mo(species), guide="EUCAST 2025", antibiotic=as.ab(antibiotic), "ECOFF") %>% filter(method==toupper(assay)) %>% pull(breakpoint_S))
+      ecoff_bp <- safe_execute(getBreakpoints(species = as.mo(species), guide = "EUCAST 2025", antibiotic = as.ab(antibiotic), "ECOFF") %>% filter(method == toupper(assay)) %>% pull(breakpoint_S))
     }
     if (is.null(bp_S)) {
-      bp_S <- safe_execute(unlist(checkBreakpoints(species=as.mo(species), guide=guideline, antibiotic=as.ab(antibiotic), bp_site=bp_site, assay=toupper(assay))[1]))
+      bp_S <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[1]))
     }
     if (is.null(bp_R)) {
-      bp_R <- safe_execute(unlist(checkBreakpoints(species=as.mo(species), guide=guideline, antibiotic=as.ab(antibiotic), bp_site=bp_site, assay=toupper(assay))[2]))
-    } 
-  } 
-  
+      bp_R <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[2]))
+    }
+  }
+
   if (!is.null(bp_S)) {
-    g1 <- g1 + geom_hline(yintercept=bp_S)
+    g1 <- g1 + geom_hline(yintercept = bp_S)
   }
   if (!is.null(bp_R)) {
-    g1 <- g1 + geom_hline(yintercept=bp_R)
+    g1 <- g1 + geom_hline(yintercept = bp_R)
   }
   if (!is.null(ecoff_bp)) {
-    g1 <- g1 + geom_hline(yintercept=ecoff_bp, linetype=2)
+    g1 <- g1 + geom_hline(yintercept = ecoff_bp, linetype = 2)
   }
 
   ### Bar plot - set size
@@ -294,7 +298,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
     distinct() %>%
     ggplot(aes(x = combination_id, fill = pheno)) +
     geom_bar(stat = "count", position = "fill") +
-    scale_fill_sir(colours_SIR=SIR_col) +
+    scale_fill_sir(colours_SIR = SIR_col) +
     theme_light() +
     labs(x = "", y = "Category") +
     theme(
@@ -369,23 +373,24 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
 
   # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
   if (assay == "mic") {
-      summary <- binary_matrix_wide %>%
-        group_by(combination_id) %>%
-        summarise( #note these medians are not meaningful if all expressed as ranges
-          median_ignoreRanges = median(mic, na.rm = TRUE),
-          q25_ignoreRanges = stats::quantile(mic, 0.25, na.rm = TRUE),
-          q75_ignoreRanges = stats::quantile(mic, 0.75, na.rm = TRUE),
-          n = n()
-        )
-      summary <- binary_matrix_wide %>%
-        filter(!grepl("<|>", as.character(mic))) %>%
-        group_by(combination_id) %>%
-        summarise(
-          median_excludeRangeValues = median(mic, na.rm = TRUE),
-          q25_excludeRangeValues = stats::quantile(mic, 0.25, na.rm = TRUE),
-          q75_excludeRangeValues = stats::quantile(mic, 0.75, na.rm = TRUE),
-          n_excludeRangeValues = n()
-        ) %>% right_join(summary, by="combination_id")
+    summary <- binary_matrix_wide %>%
+      group_by(combination_id) %>%
+      summarise( # note these medians are not meaningful if all expressed as ranges
+        median_ignoreRanges = median(mic, na.rm = TRUE),
+        q25_ignoreRanges = stats::quantile(mic, 0.25, na.rm = TRUE),
+        q75_ignoreRanges = stats::quantile(mic, 0.75, na.rm = TRUE),
+        n = n()
+      )
+    summary <- binary_matrix_wide %>%
+      filter(!grepl("<|>", as.character(mic))) %>%
+      group_by(combination_id) %>%
+      summarise(
+        median_excludeRangeValues = median(mic, na.rm = TRUE),
+        q25_excludeRangeValues = stats::quantile(mic, 0.25, na.rm = TRUE),
+        q75_excludeRangeValues = stats::quantile(mic, 0.75, na.rm = TRUE),
+        n_excludeRangeValues = n()
+      ) %>%
+      right_join(summary, by = "combination_id")
   } else {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
@@ -404,7 +409,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
         NWT.ppv = mean(NWT, na.rm = TRUE),
         NWT = sum(NWT, na.rm = TRUE)
       ) %>%
-      right_join(summary, by="combination_id")
+      right_join(summary, by = "combination_id")
   }
   if ("I" %in% colnames(binary_matrix_wide)) {
     summary <- binary_matrix_wide %>%
@@ -413,7 +418,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
         I.ppv = mean(I, na.rm = TRUE),
         I = sum(I, na.rm = TRUE)
       ) %>%
-      right_join(summary, by="combination_id")
+      right_join(summary, by = "combination_id")
   }
   if ("R" %in% colnames(binary_matrix_wide)) {
     summary <- binary_matrix_wide %>%
@@ -422,7 +427,7 @@ amr_upset <- function(binary_matrix, min_set_size = 2, order = "",
         R.ppv = mean(R, na.rm = TRUE),
         R = sum(R, na.rm = TRUE)
       ) %>%
-      right_join(summary, by="combination_id")
+      right_join(summary, by = "combination_id")
   }
 
   # get names for summary

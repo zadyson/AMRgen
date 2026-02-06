@@ -59,7 +59,6 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
                          maf = 10, fit_glm = FALSE, single_plot = TRUE,
                          colors = c("maroon", "blue4"),
                          axis_label_size = 9, marker_col = "marker.label") {
-
   bin_mat <- get_binary_matrix(
     geno_table = geno_table,
     pheno_table = pheno_table,
@@ -75,7 +74,9 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   if (fit_glm) {
     cat("...Fitting logistic regression model to R using glm\n")
     if (sum(!is.na(bin_mat$R)) > 0) {
-      to_fit <- bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(R, where(~ sum(., na.rm = TRUE) >= maf))
+      to_fit <- bin_mat %>%
+        select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>%
+        select(R, where(~ sum(., na.rm = TRUE) >= maf))
       summarise_model_input(to_fit)
       modelR <- glm(R ~ ., data = to_fit, family = stats::binomial(link = "logit"))
       modelR <- glm_details(modelR) %>%
@@ -84,7 +85,9 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     }
     cat("...Fitting logistic regression model to NWT using glm\n")
     if (sum(!is.na(bin_mat$NWT)) > 0) {
-      to_fit <- bin_mat %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(NWT, where(~ sum(., na.rm = TRUE) >= maf))
+      to_fit <- bin_mat %>%
+        select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>%
+        select(NWT, where(~ sum(., na.rm = TRUE) >= maf))
       summarise_model_input(to_fit)
       modelNWT <- glm(NWT ~ ., data = to_fit, family = stats::binomial(link = "logit"))
       modelNWT <- glm_details(modelNWT) %>%
@@ -93,8 +96,11 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
     }
   } else {
     cat("...Fitting logistic regression model to R using logistf\n")
-    if (sum(!is.na(bin_mat$R))>0) {
-      to_fit <- bin_mat %>% filter(!is.na(R)) %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>% select(R, where(~ sum(., na.rm = TRUE) >= maf))
+    if (sum(!is.na(bin_mat$R)) > 0) {
+      to_fit <- bin_mat %>%
+        filter(!is.na(R)) %>%
+        select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "NWT"))) %>%
+        select(R, where(~ sum(., na.rm = TRUE) >= maf))
       summarise_model_input(to_fit)
       modelR <- logistf::logistf(R ~ ., data = to_fit, pl = FALSE)
       modelR <- logistf_details(modelR) %>%
@@ -102,8 +108,11 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
         mutate(marker = gsub("`", "", marker))
     }
     cat("...Fitting logistic regression model to NWT using logistf\n")
-    if (sum(!is.na(bin_mat$NWT))>0) {
-      to_fit <- bin_mat %>% filter(!is.na(NWT)) %>% select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>% select(NWT, where(~ sum(., na.rm = TRUE) >= maf))
+    if (sum(!is.na(bin_mat$NWT)) > 0) {
+      to_fit <- bin_mat %>%
+        filter(!is.na(NWT)) %>%
+        select(-any_of(c("id", "pheno", "ecoff", "mic", "disk", "R"))) %>%
+        select(NWT, where(~ sum(., na.rm = TRUE) >= maf))
       summarise_model_input(to_fit)
       modelNWT <- logistf::logistf(NWT ~ ., data = to_fit, pl = FALSE)
       modelNWT <- logistf_details(modelNWT) %>%
@@ -115,9 +124,9 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   cat("Generating plots\n")
   if (exists("modelR") & exists("modelNWT")) { # if we have 2 models, plot them together
     plot <- compare_estimates(modelR, modelNWT,
-                              single_plot = single_plot,
-                              title1 = "R", title2 = "NWT",
-                              colors = colors, axis_label_size = axis_label_size
+      single_plot = single_plot,
+      title1 = "R", title2 = "NWT",
+      colors = colors, axis_label_size = axis_label_size
     )
     if (single_plot) {
       ggtitle(
@@ -130,8 +139,12 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
   } else if (exists("modelNWT")) {
     plot <- plot_estimates(modelNWT)
   }
-  if (!exists("modelNWT")) {modelNWT <- NULL} # need an object to return, set to null
-  if (!exists("modelR")) {modelR <- NULL} # need an object to return, set to null
+  if (!exists("modelNWT")) {
+    modelNWT <- NULL
+  } # need an object to return, set to null
+  if (!exists("modelR")) {
+    modelR <- NULL
+  } # need an object to return, set to null
 
   print(plot)
 
@@ -145,10 +158,12 @@ amr_logistic <- function(geno_table, pheno_table, antibiotic, drug_class_list,
 
 
 summarise_model_input <- function(dat) {
-  cat(paste0("   Filtered data contains ", 
-             nrow(dat),
-             " samples (", 
-             sum(dat[,1]==1), " => 1, ", 
-             sum(dat[,1]==0), " => 0) and ",
-             ncol(dat)-1, " variables.\n"))
+  cat(paste0(
+    "   Filtered data contains ",
+    nrow(dat),
+    " samples (",
+    sum(dat[, 1] == 1), " => 1, ",
+    sum(dat[, 1] == 0), " => 0) and ",
+    ncol(dat) - 1, " variables.\n"
+  ))
 }

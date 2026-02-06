@@ -46,14 +46,15 @@
 #' geno
 #' }
 import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_drugs_table) {
-
   in_table <- process_input(input_table)
-  
+
   if ("Element symbol" %in% colnames(in_table)) {
     in_table <- in_table %>% mutate(marker = `Element symbol`)
   } else if ("Gene symbol" %in% colnames(in_table)) {
     in_table <- in_table %>% mutate(marker = `Gene symbol`)
-  } else {stop("Input file lacks the expected 'Element symbol' (v4.0+) or 'Gene symbol' (pre-v4) column\n")}
+  } else {
+    stop("Input file lacks the expected 'Element symbol' (v4.0+) or 'Gene symbol' (pre-v4) column\n")
+  }
 
   # filter to only include AMR elements
   if ("Element type" %in% colnames(in_table)) {
@@ -80,12 +81,14 @@ import_amrfp <- function(input_table, sample_col = "Name", amrfp_drugs = amrfp_d
     print("Need Method columns to assign to parse mutations and assign variation type")
     in_table_mutation <- in_table %>% mutate(`variation type` = NA, gene = NA, mutation = NA)
   }
-  
+
   # check for nucleotide variants with negative positions, which indicates promoter variants
-  in_table_mutation <- in_table_mutation %>% 
-    mutate(`variation type`=case_when(mutation=="-" ~ `variation type`,
-                                      startsWith(mutation, "-") ~ "Promoter variant detected",
-                                      TRUE ~ `variation type`))
+  in_table_mutation <- in_table_mutation %>%
+    mutate(`variation type` = case_when(
+      mutation == "-" ~ `variation type`,
+      startsWith(mutation, "-") ~ "Promoter variant detected",
+      TRUE ~ `variation type`
+    ))
 
   # create AMRrules style label with node:mutation
   if ("Hierarchy node" %in% colnames(in_table_mutation) & "Element subtype" %in% colnames(in_table_mutation)) {

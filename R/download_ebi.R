@@ -41,57 +41,55 @@
 #'
 #' # download phenotype data from Dec 2025 release, and filter to Salmonella
 #' pheno_salmonella <- download_ebi(
-#'     genus="Salmonella",
-#'     user_release="2025-12"
+#'   genus = "Salmonella",
+#'   user_release = "2025-12"
 #' )
-#' 
+#'
 #' # reformat downloaded phenotype data to simplify use with AMRgen functions
 #' pheno_salmonella <- import_ebi_ast_ftp(pheno_salmonella)
-#' 
-#' # download phenotype data for Staphylococcus aureus and reformat 
+#'
+#' # download phenotype data for Staphylococcus aureus and reformat
 #' # for use with AMRgen functions
 #' pheno_staph <- download_ebi(
-#'     species="Staphylococcus aureus",
-#'     reformat=T
+#'   species = "Staphylococcus aureus",
+#'   reformat = T
 #' )
-#' 
-#' # download phenotype data for Klebsiella quasipneumoniae, reformat 
+#'
+#' # download phenotype data for Klebsiella quasipneumoniae, reformat
 #' # for use with AMRgen functions, and re-interpret phenotypes
 #' pheno_kquasi_reinterpreted <- download_ebi(
-#'     species="Klebsiella quasipneumoniae",
-#'     reformat=T,
-#'     interpret_eucast = TRUE, 
-#'     interpret_clsi = TRUE, 
-#'     interpret_ecoff = TRUE
+#'   species = "Klebsiella quasipneumoniae",
+#'   reformat = T,
+#'   interpret_eucast = TRUE,
+#'   interpret_clsi = TRUE,
+#'   interpret_ecoff = TRUE
 #' )
-#' 
-#' ebi_geno <- download_ebi(data="genotype")
-#'     
+#'
+#' ebi_geno <- download_ebi(data = "genotype")
+#'
 #' geno_kpn_tmp <- download_ebi(
-#'     data="genotype",
-#'     species="Klebsiella pneumoniae",
-#'     geno_subclass="TRIMETHOPRIM"
+#'   data = "genotype",
+#'   species = "Klebsiella pneumoniae",
+#'   geno_subclass = "TRIMETHOPRIM"
 #' )
 #' }
-download_ebi <- function(data="phenotype", antibiotic=NULL, 
-                         genus=NULL, species=NULL,
-                         geno_subclass=NULL, geno_class=NULL, remove_dup=FALSE,
-                         release=NULL, reformat=FALSE,
-                         interpret_eucast = FALSE, 
-                         interpret_clsi = FALSE, 
+download_ebi <- function(data = "phenotype", antibiotic = NULL,
+                         genus = NULL, species = NULL,
+                         geno_subclass = NULL, geno_class = NULL, remove_dup = FALSE,
+                         release = NULL, reformat = FALSE,
+                         interpret_eucast = FALSE,
+                         interpret_clsi = FALSE,
                          interpret_ecoff = FALSE) {
-  
   # EBI source url
   ebi_url <- "ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/"
 
-  filename <- paste0(data,".parquet")
-  
+  filename <- paste0(data, ".parquet")
+
   cat(paste("Downloading", data, "data from EBI AMR portal (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/)\n"))
-  
-  if (!is.null(release)){
+
+  if (!is.null(release)) {
     user_release <- release
     cat(paste(" Requesting data from user-specified release", user_release, "\n"))
-    
   } else {
     # get list of releases
     folders <- str_split(RCurl::getURL(ebi_url, dirlistonly = TRUE), "\n")[[1]]
@@ -99,62 +97,65 @@ download_ebi <- function(data="phenotype", antibiotic=NULL,
     user_release <- folders[!folders %in% c("releases.yml", "")] %>% max()
     cat(paste("...Requesting data from latest release", user_release, "\n"))
   }
-  
-  ebi_dat <- RCurl::getBinaryURL(print(gsub("ftp\\:", "https\\:", paste0(ebi_url,user_release,"/",paste0(data,".parquet")))))
-  
+
+  ebi_dat <- RCurl::getBinaryURL(print(gsub("ftp\\:", "https\\:", paste0(ebi_url, user_release, "/", paste0(data, ".parquet")))))
+
   cat(paste("...Reading parquet file\n"))
   ebi_dat <- arrow::read_parquet(ebi_dat)
-  
+
   # filter by genus or species as required
-  if (!is.null(genus)){
+  if (!is.null(genus)) {
     user_genus <- genus
     cat(paste("...Filtering by genus", genus, "\n"))
-    ebi_dat <- ebi_dat %>% 
-      filter(genus==user_genus)
-  } else if (!is.null(species)){
+    ebi_dat <- ebi_dat %>%
+      filter(genus == user_genus)
+  } else if (!is.null(species)) {
     cat(paste("...Filtering by species", species, "\n"))
     user_species <- species
-    ebi_dat <- ebi_dat %>% 
-      filter(species==user_species)
+    ebi_dat <- ebi_dat %>%
+      filter(species == user_species)
   }
-  
+
   # filter by subclass/class/antibiotic as required
-  if (!is.null(geno_subclass) & data=="genotype"){
+  if (!is.null(geno_subclass) & data == "genotype") {
     cat(paste("...Filtering by subclass", geno_subclass, "\n"))
-    ebi_dat <- ebi_dat %>% 
+    ebi_dat <- ebi_dat %>%
       filter(grepl(geno_subclass, subclass))
-  } else if (!is.null(geno_class) & data=="genotype"){
+  } else if (!is.null(geno_class) & data == "genotype") {
     cat(paste("...Filtering by class", geno_class, "\n"))
-    ebi_dat <- ebi_dat %>% 
-    filter(grepl(geno_class, class))
-  } else if (!is.null(antibiotic)){
+    ebi_dat <- ebi_dat %>%
+      filter(grepl(geno_class, class))
+  } else if (!is.null(antibiotic)) {
     cat(paste("...Filtering by antibiotic", antibiotic, "\n"))
-    ebi_dat <- ebi_dat %>% 
-      filter(antibiotic_name==antibiotic)
+    ebi_dat <- ebi_dat %>%
+      filter(antibiotic_name == antibiotic)
   }
-  
+
   if (remove_dup) {
     cat("...Checking for duplicate rows ")
     before <- nrow(ebi_dat)
-    ebi_dat <- ebi_dat %>% select(BioSample_ID:subclass) %>% distinct()
+    ebi_dat <- ebi_dat %>%
+      select(BioSample_ID:subclass) %>%
+      distinct()
     after <- nrow(ebi_dat)
     if (after < before) {
-      n <- before-after
+      n <- before - after
       cat(paste("(removed", n, "rows)\n"))
     } else {
       cat(paste("(none detected)\n"))
     }
   }
-  
+
   # reformat as per AMRgen import functions
-  if (reformat & data=="phenotype") {
+  if (reformat & data == "phenotype") {
     cat(paste("Reformatting phenotype data for easy use with AMRgen functions\n"))
     ebi_dat <- import_ebi_ast_ftp(ebi_dat,
-                                  interpret_eucast = interpret_eucast, 
-                                  interpret_clsi = interpret_clsi, 
-                                  interpret_ecoff = interpret_ecoff)
+      interpret_eucast = interpret_eucast,
+      interpret_clsi = interpret_clsi,
+      interpret_ecoff = interpret_ecoff
+    )
   }
-  
+
   # return data frame
   return(ebi_dat)
 }

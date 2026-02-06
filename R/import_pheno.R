@@ -81,16 +81,19 @@ import_ncbi_ast <- function(input, sample_col = "BioSample", source = NULL, spec
     cat("Warning: Expected AST method column 'Laboratory typing method' not found in input\n")
     # in old format there was no method field, guess from MIC/disk column values
     if ("MIC (mg/L)" %in% colnames(ast) & "Disk diffusion (mm)" %in% colnames(ast)) {
-      ast <- ast %>% mutate(method=case_when(!is.na(`MIC (mg/L)`) ~ "MIC",
-                                             !is.na(`Disk diffusion (mm)`) ~ "disk diffusion",
-                                             TRUE ~ NA
-                                             ))
+      ast <- ast %>% mutate(method = case_when(
+        !is.na(`MIC (mg/L)`) ~ "MIC",
+        !is.na(`Disk diffusion (mm)`) ~ "disk diffusion",
+        TRUE ~ NA
+      ))
     }
     # in old format sometimes etest was indicated in lab typing platform
-    if ("Laboratory typing platform" %in% colnames(ast)) { 
-      ast <- ast %>% mutate(method=case_when(is.na(`Laboratory typing platform`) ~ method,
-                                             `Laboratory typing platform`=="Etest" ~ "Etest", 
-                                             TRUE ~ method))
+    if ("Laboratory typing platform" %in% colnames(ast)) {
+      ast <- ast %>% mutate(method = case_when(
+        is.na(`Laboratory typing platform`) ~ method,
+        `Laboratory typing platform` == "Etest" ~ "Etest",
+        TRUE ~ method
+      ))
     }
   }
 
@@ -164,11 +167,11 @@ import_ncbi_ast <- function(input, sample_col = "BioSample", source = NULL, spec
 }
 
 
-#' Import and Process AST Data from files downloaded from the EBI AMR portal website 
+#' Import and Process AST Data from files downloaded from the EBI AMR portal website
 #'
 #' This function imports an antibiotic susceptibility testing (AST) dataset that has been downloaded from the EBI AMR portal website (https://www.ebi.ac.uk/amr/data/?view=experiments)
 #' Data downloaded from the EBI AMR Portal FTP site (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/), either directly or via the function `download_ebi()`, is formatted differently and can instead be processed using the `import_ebi_ast_ftp()` function.
-#' 
+#'
 #' This function will process the data, and optionally interpret the results based on MIC or disk diffusion data. It assumes that the input file is a tab-delimited text file (e.g., TSV) or CSV (which may be compressed) and parses relevant columns (antibiotic names, species names, MIC or disk data) into suitable classes using the AMR package. It optionally can use the AMR package to interpret susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or ECOFF).
 #' @param input A string representing a dataframe, or a path to an input file, containing the AST data in EBI antibiogram format. These files can be downloaded from the EBI AMR browser, e.g. https://www.ebi.ac.uk/amr/data/?view=experiments
 #' @param sample_col A string indicating the name of the column with sample identifiers. If `NULL`, assume this is 'phenotype-BioSample_ID'.
@@ -207,7 +210,6 @@ import_ncbi_ast <- function(input, sample_col = "BioSample", source = NULL, spec
 #' }
 import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source = NULL, species = NULL, ab = NULL,
                            interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
-  
   ast <- process_input(input)
 
   # find id column
@@ -325,14 +327,14 @@ import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source 
 #'
 #' # interpret phenotypes
 #' pheno <- interpret_ast(pheno)
-#' 
+#'
 #' \dontrun{
-#' pheno <- read_csv("AST.csv") %>% 
-#'   mutate(drug_agent=as.ab(antibiotic)) %>% # convert antibiotic field to 'drug_agent' of class 'ab'
-#'   mutate(mic=paste0(sign,MIC)) %>% 
-#'   mutate(mic=as.mic(mic)) # create a single 'mic' column of class 'mic'
-#'   
-#' pheno <- interpret_ast(pheno, species="Escherichia coli")
+#' pheno <- read_csv("AST.csv") %>%
+#'   mutate(drug_agent = as.ab(antibiotic)) %>% # convert antibiotic field to 'drug_agent' of class 'ab'
+#'   mutate(mic = paste0(sign, MIC)) %>%
+#'   mutate(mic = as.mic(mic)) # create a single 'mic' column of class 'mic'
+#'
+#' pheno <- interpret_ast(pheno, species = "Escherichia coli")
 #' }
 interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, interpret_clsi = TRUE, species = NULL, ab = NULL) {
   if (interpret_ecoff | interpret_eucast | interpret_clsi) {
@@ -374,7 +376,7 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
     if (interpret_eucast) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic", capped_mic_handling="conservative"))
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic", capped_mic_handling = "conservative"))
       }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
@@ -384,15 +386,15 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
         ast <- ast %>%
           mutate(pheno_eucast = coalesce(pheno_eucast_mic, pheno_eucast_disk))
       } else if ("pheno_eucast_mic" %in% colnames(ast)) {
-        ast <- ast %>% rename(pheno_eucast=pheno_eucast_mic)
+        ast <- ast %>% rename(pheno_eucast = pheno_eucast_mic)
       } else if ("pheno_eucast_disk" %in% colnames(ast)) {
-        ast <- ast %>% rename(pheno_eucast=pheno_eucast_disk)
+        ast <- ast %>% rename(pheno_eucast = pheno_eucast_disk)
       }
     }
     if (interpret_clsi) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic", capped_mic_handling="conservative"))
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic", capped_mic_handling = "conservative"))
       }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
@@ -402,15 +404,15 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
         ast <- ast %>%
           mutate(pheno_clsi = coalesce(pheno_clsi_mic, pheno_clsi_disk))
       } else if ("pheno_clsi_mic" %in% colnames(ast)) {
-        ast <- ast %>% rename(pheno_clsi=pheno_clsi_mic)
+        ast <- ast %>% rename(pheno_clsi = pheno_clsi_mic)
       } else if ("pheno_eucast_disk" %in% colnames(ast)) {
-        ast <- ast %>% rename(pheno_clsi_disk=pheno_clsi_disk)
+        ast <- ast %>% rename(pheno_clsi_disk = pheno_clsi_disk)
       }
     }
     if (interpret_ecoff) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic", capped_mic_handling="conservative"))
+          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic", capped_mic_handling = "conservative"))
       }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
@@ -420,9 +422,9 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
         ast <- ast %>%
           mutate(ecoff = coalesce(ecoff_mic, ecoff_disk))
       } else if ("ecoff_mic" %in% colnames(ast)) {
-        ast <- ast %>% rename(ecoff=ecoff_mic)
+        ast <- ast %>% rename(ecoff = ecoff_mic)
       } else if ("ecoff_disk" %in% colnames(ast)) {
-        ast <- ast %>% rename(ecoff=ecoff_disk)
+        ast <- ast %>% rename(ecoff = ecoff_disk)
       }
     }
   }
@@ -462,25 +464,25 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
 #' ecoli_ast_raw
 #'
 #' # import without re-interpreting resistance
-#' pheno <- import_ast(ecoli_ast_raw, format="ncbi")
+#' pheno <- import_ast(ecoli_ast_raw, format = "ncbi")
 #' head(pheno)
 #'
 #' # import and re-interpret resistance (S/I/R) and WT/NWT (vs ECOFF) using AMR package
-#' pheno <- import_ast(ecoli_ast_raw, format="ncbi", interpret_eucast = TRUE, interpret_ecoff = TRUE)
+#' pheno <- import_ast(ecoli_ast_raw, format = "ncbi", interpret_eucast = TRUE, interpret_ecoff = TRUE)
 #' head(pheno)
 import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
                        interpret_clsi = FALSE, interpret_ecoff = FALSE,
-                       species = NULL, ab = NULL, source=NULL) {
+                       species = NULL, ab = NULL, source = NULL) {
   if (format %in% c("ebi_web", "ebi")) {
     cat("Reading in as EBI AST format downloaded from the web portal\n")
     ast <- import_ebi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
   }
-  
+
   if (format == "ebi_ftp") {
     cat("Reading in as EBI AST format downloaded from the FTP portal\n")
     ast <- import_ebi_ast_ftp(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff)
   }
-  
+
   if (format == "ncbi") {
     cat("Reading in as NCBI AST format\n")
     ast <- import_ncbi_ast(input, interpret_eucast = interpret_eucast, interpret_clsi = interpret_clsi, interpret_ecoff = interpret_ecoff, species = species, ab = ab)
@@ -489,22 +491,26 @@ import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
   if (format == "vitek") {
     cat("Reading in as VITEK AST format\n")
     ast <- import_vitek_ast(input,
-                            interpret_eucast = interpret_eucast,
-                            interpret_clsi = interpret_clsi,
-                            interpret_ecoff = interpret_ecoff,
-                            species = species, ab = ab, source = source)
+      interpret_eucast = interpret_eucast,
+      interpret_clsi = interpret_clsi,
+      interpret_ecoff = interpret_ecoff,
+      species = species, ab = ab, source = source
+    )
   }
 
   if (format == "whonet") {
     cat("Reading in as WHONET AST format\n")
     ast <- import_whonet_ast(input,
-                             interpret_eucast = interpret_eucast,
-                             interpret_clsi = interpret_clsi,
-                             interpret_ecoff = interpret_ecoff,
-                             species = species, ab = ab, source = source)
+      interpret_eucast = interpret_eucast,
+      interpret_clsi = interpret_clsi,
+      interpret_ecoff = interpret_ecoff,
+      species = species, ab = ab, source = source
+    )
   }
 
-  if (!is.null(source)) { ast <- ast %>% mutate(source=source)}
+  if (!is.null(source)) {
+    ast <- ast %>% mutate(source = source)
+  }
   ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", "pheno_eucast", "pheno_clsi", "ecoff", "guideline", "method", "platform", "source", "pheno_provided", "spp_pheno")))
 
   return(ast)
@@ -523,10 +529,10 @@ import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
 #' @param mic_col (optional, default 'mic') Name of the input data column that provides MIC measurements. If provided, this column will be converted to MIC class 'mic' via `as.mic()`. If the 'rename' parameter is set to TRUE, this column will also be renamed as 'mic'. If interpretation is switched on, the MIC values will be interpreted against clinical breakpoints.
 #' @param disk_col (optional, default 'disk') Name of the input data column that provides disk diffusion zone measurements. If provided, this column will be converted to disk diffusion class 'disk' via `as.disk()`. If the 'rename' parameter is set to TRUE, this column will also be renamed as 'disk'. If interpretation is switched on, the zone values will be interpreted against clinical breakpoints.
 #' @param pheno_cols (optional, default `c("ecoff", "pheno_eucast", "pheno_clsi", "pheno_provided")`) Name of the input data column/s that provides disk diffusion zone measurements (as a character vector, or single string for a single column). If provided, these columns will be converted to SIR class 'sir' via `as.sir()`.
-#' @param method_col (optional, default 'method') Name of the input data column that indicates the testing method used (e.g. MIC, disk diffusion). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'method'. 
-#' @param platform_col (optional, default 'platform') Name of the input data column that indicates the testing platform used (e.g. Vitek, Sensititre). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'platform'. 
-#' @param source_col (optional, default 'source') Name of the input data column that indicates the source of the dataset (e.g. BioProject, PMID). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'source'. 
-#' @param guideline_col (optional, default 'guideline') Name of the input data column that indicates the guideline used for testing (e.g. EUCAST, CLSI). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'guideline'. 
+#' @param method_col (optional, default 'method') Name of the input data column that indicates the testing method used (e.g. MIC, disk diffusion). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'method'.
+#' @param platform_col (optional, default 'platform') Name of the input data column that indicates the testing platform used (e.g. Vitek, Sensititre). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'platform'.
+#' @param source_col (optional, default 'source') Name of the input data column that indicates the source of the dataset (e.g. BioProject, PMID). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'source'.
+#' @param guideline_col (optional, default 'guideline') Name of the input data column that indicates the guideline used for testing (e.g. EUCAST, CLSI). If the 'rename' parameter is set to TRUE, this column will also be renamed as 'guideline'.
 #' @param interpret_eucast A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against EUCAST human breakpoints. These will be reported in a new column `pheno_eucast`, of class 'sir'.
 #' @param interpret_clsi A logical value (default is FALSE). If `TRUE`, the function will interpret the susceptibility phenotype (SIR) for each row based on the MIC or disk diffusion values, against CLSI human breakpoints. These will be reported in a new column `pheno_clsi`, of class 'sir'.
 #' @param interpret_ecoff A logical value (default is FALSE). If `TRUE`, the function will interpret the wildtype vs nonwildtype status for each row based on the MIC or disk diffusion values, against epidemiological cut-off (ECOFF) values. These will be reported in a new column `ecoff`, of class 'sir' and coded as 'R' (nonwildtype) or 'S' (wildtype).
@@ -540,19 +546,23 @@ import_ast <- function(input, format = "ebi", interpret_eucast = FALSE,
 #' \dontrun{
 #' # import and process AST data from EBI, write formatted data to file for later use
 #' pheno <- import_ebi_ast("EBI_AMR_data.csv.gz")
-#' write_tsv(pheno, file="EBI_AMR_data_processed.tsv.gz", 
-#'             interpret_eucast = TRUE, interpret_ecoff = TRUE)
+#' write_tsv(pheno,
+#'   file = "EBI_AMR_data_processed.tsv.gz",
+#'   interpret_eucast = TRUE, interpret_ecoff = TRUE
+#' )
 #'
 #' # read stored data and format the columns to the correct classes
 #' pheno <- format_ast("EBI_AMR_data_processed.tsv.gz")
 #'
 #' # read in unprocessed E. coli AST data from non-standard format and interpret
-#' pheno <- format_ast("AMR_data.tsv", sample_col="STRAIN", species="E. coli",
-#' 						ab_col="Antibiotic", mic_col="MIC (mg/L)", 
-#' 						interpret_eucast=TRUE, interpret_ecoff=TRUE)
+#' pheno <- format_ast("AMR_data.tsv",
+#'   sample_col = "STRAIN", species = "E. coli",
+#'   ab_col = "Antibiotic", mic_col = "MIC (mg/L)",
+#'   interpret_eucast = TRUE, interpret_ecoff = TRUE
+#' )
 #' }
-format_ast <- function(input, 
-                       sample_col = "id", 
+format_ast <- function(input,
+                       sample_col = "id",
                        species = NULL, # convert with as.mo
                        species_col = "spp_pheno", # convert with as.mo
                        ab = NULL, # convert with as.ab
@@ -564,148 +574,161 @@ format_ast <- function(input,
                        platform_col = "platform",
                        source_col = "source",
                        guideline_col = "guideline",
-                       interpret_eucast = FALSE, 
-                       interpret_clsi = FALSE, 
+                       interpret_eucast = FALSE,
+                       interpret_clsi = FALSE,
                        interpret_ecoff = FALSE,
                        rename_cols = TRUE) {
-  
   ast <- process_input(input)
-  
+
   if (!is.null(species)) {
-    cat(paste("Adding new micro-organism column 'spp_pheno' (class 'mo') with constant value",species,"\n"))
+    cat(paste("Adding new micro-organism column 'spp_pheno' (class 'mo') with constant value", species, "\n"))
     ast$spp_pheno <- as.mo(species)
   }
-  
+
   if (!is.null(species_col)) {
     if (species_col %in% colnames(ast)) {
-      ast <- ast %>% mutate(!!sym(species_col):=as.mo(!!sym(species_col)))
-      cat(paste("Parsing column", species_col,"as micro-organism (class 'mo')\n"))
-      if (rename_cols & species_col!="spp_pheno") {
-        ast <- ast %>% rename(spp_pheno=!!sym(species_col))
-        cat(paste("Renaming column", species_col,"to standard name 'spp_pheno'\n"))
-      } 
-      if ((interpret_ecoff | interpret_eucast | interpret_clsi) & !("spp_pheno" %in% colnames(ast))) {
-        ast <- ast %>% mutate(spp_pheno=!!sym(species_col)) # we need a column named spp_pheno for interpretation
+      ast <- ast %>% mutate(!!sym(species_col) := as.mo(!!sym(species_col)))
+      cat(paste("Parsing column", species_col, "as micro-organism (class 'mo')\n"))
+      if (rename_cols & species_col != "spp_pheno") {
+        ast <- ast %>% rename(spp_pheno = !!sym(species_col))
+        cat(paste("Renaming column", species_col, "to standard name 'spp_pheno'\n"))
       }
+      if ((interpret_ecoff | interpret_eucast | interpret_clsi) & !("spp_pheno" %in% colnames(ast))) {
+        ast <- ast %>% mutate(spp_pheno = !!sym(species_col)) # we need a column named spp_pheno for interpretation
+      }
+    } else {
+      cat(paste("Could not find species_col", species_col, "in input table"))
     }
-    else { cat(paste("Could not find species_col", species_col, "in input table")) }
   }
-  
+
   if (!is.null(ab)) {
-    cat(paste("Adding new antibiotic column 'drug_agent' (class 'ab') with constant value",ab,"\n"))
+    cat(paste("Adding new antibiotic column 'drug_agent' (class 'ab') with constant value", ab, "\n"))
     ast$drug_agent <- as.ab(ab)
   }
-  
+
   if (!is.null(ab_col)) {
     if (ab_col %in% colnames(ast)) {
-      ast <- ast %>% mutate(!!sym(ab_col):=as.ab(!!sym(ab_col)))
-      cat(paste("Parsing column", ab_col,"as antibiotic (class 'ab')\n"))
-      if (rename_cols & ab_col!="drug_agent") {
-        ast <- ast %>% rename(drug_agent=!!sym(ab_col))
-        cat(paste("Renaming column", ab_col,"to standard name 'drug_agent'\n"))
+      ast <- ast %>% mutate(!!sym(ab_col) := as.ab(!!sym(ab_col)))
+      cat(paste("Parsing column", ab_col, "as antibiotic (class 'ab')\n"))
+      if (rename_cols & ab_col != "drug_agent") {
+        ast <- ast %>% rename(drug_agent = !!sym(ab_col))
+        cat(paste("Renaming column", ab_col, "to standard name 'drug_agent'\n"))
       }
+    } else {
+      cat(paste("Could not find ab_col", ab_col, "in input table"))
     }
-    else { cat(paste("Could not find ab_col", ab_col, "in input table")) }
   }
-  
+
   if (!is.null(mic_col)) {
     if (mic_col %in% colnames(ast)) {
-      ast <- ast %>% mutate(!!sym(mic_col):=as.mic(!!sym(mic_col)))
-      cat(paste("Parsing column", mic_col,"as class 'mic'\n"))
-      if (rename_cols & mic_col!="mic") {
-        ast <- ast %>% rename(mic=!!sym(mic_col))
-        cat(paste("Renaming column", mic_col,"to standard name 'mic'\n"))
+      ast <- ast %>% mutate(!!sym(mic_col) := as.mic(!!sym(mic_col)))
+      cat(paste("Parsing column", mic_col, "as class 'mic'\n"))
+      if (rename_cols & mic_col != "mic") {
+        ast <- ast %>% rename(mic = !!sym(mic_col))
+        cat(paste("Renaming column", mic_col, "to standard name 'mic'\n"))
       }
+    } else {
+      cat(paste("Could not find mic_col", mic_col, "in input table"))
     }
-    else { cat(paste("Could not find mic_col", mic_col, "in input table")) }
   }
-  
+
   if (!is.null(disk_col)) {
     if (disk_col %in% colnames(ast)) {
-      ast <- ast %>% mutate(!!sym(disk_col):=as.disk(!!sym(disk_col)))
-      cat(paste("Parsing column", disk_col,"as class 'disk'\n"))
-      if (rename_cols & disk_col!="disk") {
-        ast <- ast %>% rename(disk=!!sym(disk_col))
-        cat(paste("Renaming column", disk_col,"to standard name 'disk'\n"))
+      ast <- ast %>% mutate(!!sym(disk_col) := as.disk(!!sym(disk_col)))
+      cat(paste("Parsing column", disk_col, "as class 'disk'\n"))
+      if (rename_cols & disk_col != "disk") {
+        ast <- ast %>% rename(disk = !!sym(disk_col))
+        cat(paste("Renaming column", disk_col, "to standard name 'disk'\n"))
       }
+    } else {
+      cat(paste("Could not find disk_col", disk_col, "in input table"))
     }
-    else { cat(paste("Could not find disk_col", disk_col, "in input table")) }
   }
-  
+
   if (!is.null(pheno_cols)) {
     if (is_string(pheno_cols)) { # single column
       if (pheno_cols %in% colnames(ast)) {
-        ast <- ast %>% mutate(!!sym(pheno_cols):=as.sir(!!sym(pheno_cols)))
-        cat(paste("Parsing column", pheno_cols,"as class 'sir'\n"))
+        ast <- ast %>% mutate(!!sym(pheno_cols) := as.sir(!!sym(pheno_cols)))
+        cat(paste("Parsing column", pheno_cols, "as class 'sir'\n"))
+      } else {
+        cat(paste("Could not find pheno_cols", pheno_cols, "in input table"))
       }
-      else { cat(paste("Could not find pheno_cols", pheno_cols, "in input table")) }
-    }
-    else {
+    } else {
       for (pheno_col in pheno_cols) {
         if (!is.null(pheno_col)) {
           if (pheno_col %in% colnames(ast)) {
-            ast <- ast %>% mutate(!!sym(pheno_col):=as.sir(!!sym(pheno_col)))
-            cat(paste("Parsing column", pheno_col,"as class 'sir'\n"))
+            ast <- ast %>% mutate(!!sym(pheno_col) := as.sir(!!sym(pheno_col)))
+            cat(paste("Parsing column", pheno_col, "as class 'sir'\n"))
+          } else {
+            cat(paste("Could not find pheno_col", pheno_col, "in input table"))
           }
-          else { cat(paste("Could not find pheno_col", pheno_col, "in input table")) }
         }
       }
     }
   }
-  
+
   if (!is.null(method_col)) {
     if (method_col %in% colnames(ast)) {
-      if (rename_cols & method_col!="method") {
-        ast <- ast %>% rename(method=!!sym(method_col))
-        cat(paste("Renaming column", method_col,"to standard name 'method'\n"))
+      if (rename_cols & method_col != "method") {
+        ast <- ast %>% rename(method = !!sym(method_col))
+        cat(paste("Renaming column", method_col, "to standard name 'method'\n"))
       }
+    } else {
+      cat(paste("Could not find method_col", method_col, "in input table"))
     }
-    else { cat(paste("Could not find method_col", method_col, "in input table")) }
   }
-  
+
   if (!is.null(platform_col)) {
     if (platform_col %in% colnames(ast)) {
-      if (rename_cols & platform_col!="platform") {
-        ast <- ast %>% rename(platform=!!sym(platform_col))
-        cat(paste("Renaming column", platform_col,"to standard name 'platform'\n"))
+      if (rename_cols & platform_col != "platform") {
+        ast <- ast %>% rename(platform = !!sym(platform_col))
+        cat(paste("Renaming column", platform_col, "to standard name 'platform'\n"))
       }
+    } else {
+      cat(paste("Could not find platform_col", platform_col, "in input table"))
     }
-    else { cat(paste("Could not find platform_col", platform_col, "in input table")) }
   }
-  
+
   if (!is.null(guideline_col)) {
     if (guideline_col %in% colnames(ast)) {
-      if (rename_cols & guideline_col!="guideline") {
-        ast <- ast %>% rename(guideline=!!sym(guideline_col))
-        cat(paste("Renaming column", guideline_col,"to standard name 'guideline'\n"))
+      if (rename_cols & guideline_col != "guideline") {
+        ast <- ast %>% rename(guideline = !!sym(guideline_col))
+        cat(paste("Renaming column", guideline_col, "to standard name 'guideline'\n"))
       }
+    } else {
+      cat(paste("Could not find guideline_col", guideline_col, "in input table"))
     }
-    else { cat(paste("Could not find guideline_col", guideline_col, "in input table")) }
   }
-  
+
   if (!is.null(source_col)) {
     if (source_col %in% colnames(ast)) {
-      if (rename_cols & source_col!="source") {
-        ast <- ast %>% rename(source=!!sym(source_col))
-        cat(paste("Renaming column", source_col,"to standard name 'source'\n"))
+      if (rename_cols & source_col != "source") {
+        ast <- ast %>% rename(source = !!sym(source_col))
+        cat(paste("Renaming column", source_col, "to standard name 'source'\n"))
       }
+    } else {
+      cat(paste("Could not find source_col", source_col, "in input table"))
     }
-    else { cat(paste("Could not find source_col", source_col, "in input table")) }
   }
-  
-  ast <- interpret_ast(ast, interpret_ecoff = interpret_ecoff, 
-                       interpret_eucast = interpret_eucast, 
-                       interpret_clsi = interpret_clsi, 
-                       species = species, # note column spp_pheno will be used otherwise
-                       ab = ab)
-  
-  if (rename_cols) {ast <- ast %>% rename(id=!!sym(sample_col))}
-  
-  ast <- ast %>% relocate(any_of(c("id", "drug_agent", "mic", "disk", ab_col, mic_col, disk_col, pheno_cols,
-                                   "pheno_eucast", "pheno_clsi", "ecoff", "guideline",
-                                   "method", "platform", "source", "pheno_provided", "spp_pheno", species_col
+
+  ast <- interpret_ast(ast,
+    interpret_ecoff = interpret_ecoff,
+    interpret_eucast = interpret_eucast,
+    interpret_clsi = interpret_clsi,
+    species = species, # note column spp_pheno will be used otherwise
+    ab = ab
+  )
+
+  if (rename_cols) {
+    ast <- ast %>% rename(id = !!sym(sample_col))
+  }
+
+  ast <- ast %>% relocate(any_of(c(
+    "id", "drug_agent", "mic", "disk", ab_col, mic_col, disk_col, pheno_cols,
+    "pheno_eucast", "pheno_clsi", "ecoff", "guideline",
+    "method", "platform", "source", "pheno_provided", "spp_pheno", species_col
   )))
-  
+
   return(ast)
 }
 
@@ -726,39 +749,43 @@ format_ast <- function(input,
 #' @examples
 #' \dontrun{
 #' # download Salmonella phenotype data from EBI
-#' pheno_salmonella <- download_ebi(genus="Salmonella")
-#' 
+#' pheno_salmonella <- download_ebi(genus = "Salmonella")
+#'
 #' # reformat to simplify use with AMRgen functions
 #' pheno_salmonella <- import_ebi_ast_ftp(pheno_salmonella)
 #' }
 import_ebi_ast_ftp <- function(input,
-                               interpret_eucast = FALSE, 
-                               interpret_clsi = FALSE, 
+                               interpret_eucast = FALSE,
+                               interpret_clsi = FALSE,
                                interpret_ecoff = FALSE) {
-  
   ast <- process_input(input)
-  
+
   ast <- ast %>%
-    mutate(mic=if_else(measurement_units=="mg/L",
-                       paste0(measurement_sign, measurement),
-                       NA)) %>%
-    mutate(disk=if_else(laboratory_typing_method=="disk diffusion",
-                        paste0(measurement_sign, measurement),
-                        NA)) %>%
-    mutate(pheno_provided=if_else(resistance_phenotype=="intermediate",
-                                  "I",
-                                  resistance_phenotype)) %>%
-    format_ast(sample_col="BioSample_ID", 
-               species_col="species", 
-               ab_col="antibiotic_name", 
-               pheno_cols="pheno_provided",
-               method_col="laboratory_typing_method",
-               platform_col="platform",
-               source_col="AMR_associated_publications",
-               guideline_col = "ast_standard",
-               interpret_eucast = interpret_eucast,
-               interpret_clsi = interpret_clsi,
-               interpret_ecoff = interpret_ecoff)
+    mutate(mic = if_else(measurement_units == "mg/L",
+      paste0(measurement_sign, measurement),
+      NA
+    )) %>%
+    mutate(disk = if_else(laboratory_typing_method == "disk diffusion",
+      paste0(measurement_sign, measurement),
+      NA
+    )) %>%
+    mutate(pheno_provided = if_else(resistance_phenotype == "intermediate",
+      "I",
+      resistance_phenotype
+    )) %>%
+    format_ast(
+      sample_col = "BioSample_ID",
+      species_col = "species",
+      ab_col = "antibiotic_name",
+      pheno_cols = "pheno_provided",
+      method_col = "laboratory_typing_method",
+      platform_col = "platform",
+      source_col = "AMR_associated_publications",
+      guideline_col = "ast_standard",
+      interpret_eucast = interpret_eucast,
+      interpret_clsi = interpret_clsi,
+      interpret_ecoff = interpret_ecoff
+    )
 
   return(ast)
 }
@@ -798,7 +825,6 @@ import_vitek_ast <- function(input,
                              interpret_clsi = FALSE,
                              interpret_ecoff = FALSE,
                              include_dates = TRUE) {
-
   ast <- process_input(input)
 
   # Validate sample column exists
@@ -809,22 +835,24 @@ import_vitek_ast <- function(input,
   # Identify antibiotic MIC columns (CODE-Name pattern, excluding -Other-*)
   all_cols <- colnames(ast)
   mic_cols <- all_cols[grepl("^[A-Z0-9]+-", all_cols) &
-                        !grepl("-Other-Instrument$|-Other-Expertized$", all_cols)]
+    !grepl("-Other-Instrument$|-Other-Expertized$", all_cols)]
 
   if (length(mic_cols) == 0) {
     stop("No antibiotic columns found in Vitek format")
   }
 
   # Extract antibiotic codes and names from column headers
-  ab_codes <- stringr::str_match(mic_cols, "^([A-Z0-9]+)-")[,2]
-  ab_names <- stringr::str_match(mic_cols, "^[A-Z0-9]+-(.*)$")[,2]
+  ab_codes <- stringr::str_match(mic_cols, "^([A-Z0-9]+)-")[, 2]
+  ab_names <- stringr::str_match(mic_cols, "^[A-Z0-9]+-(.*)$")[, 2]
 
   # Metadata columns to preserve
-  metadata_cols <- c("Lab ID", "Isolate Number", "Patient Name", "Patient ID",
-                     "Patient Location", "Specimen Type", "Specimen Source",
-                     "Collection Date", "Testing Date", "Organism Name",
-                     "Organism Code", "Bio Number", "Percent Probability",
-                     "ID Confidence", "Selected BP Infection Site")
+  metadata_cols <- c(
+    "Lab ID", "Isolate Number", "Patient Name", "Patient ID",
+    "Patient Location", "Specimen Type", "Specimen Source",
+    "Collection Date", "Testing Date", "Organism Name",
+    "Organism Code", "Bio Number", "Percent Probability",
+    "ID Confidence", "Selected BP Infection Site"
+  )
   metadata_cols <- metadata_cols[metadata_cols %in% all_cols]
 
   # Rename columns for pivoting: CODE-Name -> CODE_mic, CODE-Other-Instrument -> CODE_sir_inst
@@ -939,17 +967,20 @@ import_vitek_ast <- function(input,
 
   # Interpret phenotypes
   ast_long <- interpret_ast(ast_long,
-                            interpret_ecoff = interpret_ecoff,
-                            interpret_eucast = interpret_eucast,
-                            interpret_clsi = interpret_clsi,
-                            species = species, ab = ab)
+    interpret_ecoff = interpret_ecoff,
+    interpret_eucast = interpret_eucast,
+    interpret_clsi = interpret_clsi,
+    species = species, ab = ab
+  )
 
   # Reorder columns
   ast_long <- ast_long %>%
-    relocate(any_of(c("id", "drug_agent", "mic",
-                      "pheno_eucast", "pheno_clsi", "ecoff",
-                      "guideline", "method", "platform", "source",
-                      "pheno_provided", "spp_pheno")))
+    relocate(any_of(c(
+      "id", "drug_agent", "mic",
+      "pheno_eucast", "pheno_clsi", "ecoff",
+      "guideline", "method", "platform", "source",
+      "pheno_provided", "spp_pheno"
+    )))
 
   return(ast_long)
 }
@@ -985,7 +1016,6 @@ import_whonet_ast <- function(input,
                               interpret_clsi = FALSE,
                               interpret_ecoff = FALSE,
                               include_patient_info = FALSE) {
-
   ast <- process_input(input)
 
   # Validate sample column exists
@@ -1002,12 +1032,16 @@ import_whonet_ast <- function(input,
   }
 
   # Metadata columns to preserve
-  metadata_cols <- c("Identification number", "Specimen number", "Organism",
-                     "Country", "Laboratory", "Specimen date", "Specimen type",
-                     "Isolate number", "Organism type", "Date of data entry")
+  metadata_cols <- c(
+    "Identification number", "Specimen number", "Organism",
+    "Country", "Laboratory", "Specimen date", "Specimen type",
+    "Isolate number", "Organism type", "Date of data entry"
+  )
   if (include_patient_info) {
-    metadata_cols <- c(metadata_cols, "Last name", "First name", "Sex",
-                       "Age", "Age category", "Date of admission")
+    metadata_cols <- c(
+      metadata_cols, "Last name", "First name", "Sex",
+      "Age", "Age category", "Date of admission"
+    )
   }
   metadata_cols <- metadata_cols[metadata_cols %in% all_cols]
 
@@ -1045,19 +1079,19 @@ import_whonet_ast <- function(input,
   #
   # Reference: https://whonet.org/WebDocs/WHONET%202.Laboratory%20configuration.html
   ast_long <- ast_long %>%
-    mutate(method_code = stringr::str_match(ab_col, "^[A-Z]{2,4}_(.*)$")[,2]) %>%
+    mutate(method_code = stringr::str_match(ab_col, "^[A-Z]{2,4}_(.*)$")[, 2]) %>%
     # Parse guideline (for standard codes N/E/D)
     mutate(guideline = case_when(
       grepl("^N", method_code) ~ "CLSI",
       grepl("^E", method_code) ~ "EUCAST",
-      grepl("^D[DM]", method_code) ~ "DIN",  # DD or DM for DIN (not platform codes like VD)
+      grepl("^D[DM]", method_code) ~ "DIN", # DD or DM for DIN (not platform codes like VD)
       TRUE ~ NA_character_
     )) %>%
     # Parse platform (for platform codes V/P/M/S/K)
     mutate(platform = case_when(
       grepl("^V", method_code) ~ "Vitek",
       grepl("^P", method_code) ~ "Phoenix",
-      grepl("^M[MD]", method_code) ~ "Microscan",  # MM or MD
+      grepl("^M[MD]", method_code) ~ "Microscan", # MM or MD
       grepl("^S", method_code) ~ "Sensititre",
       grepl("^K", method_code) ~ "Trek",
       TRUE ~ NA_character_
@@ -1112,17 +1146,20 @@ import_whonet_ast <- function(input,
 
   # Interpret phenotypes
   ast_long <- interpret_ast(ast_long,
-                            interpret_ecoff = interpret_ecoff,
-                            interpret_eucast = interpret_eucast,
-                            interpret_clsi = interpret_clsi,
-                            species = species, ab = ab)
+    interpret_ecoff = interpret_ecoff,
+    interpret_eucast = interpret_eucast,
+    interpret_clsi = interpret_clsi,
+    species = species, ab = ab
+  )
 
   # Reorder columns
   ast_long <- ast_long %>%
-    relocate(any_of(c("id", "drug_agent",
-                      "pheno_eucast", "pheno_clsi", "ecoff",
-                      "guideline", "method", "platform", "disk_potency", "source",
-                      "pheno_provided", "spp_pheno")))
+    relocate(any_of(c(
+      "id", "drug_agent",
+      "pheno_eucast", "pheno_clsi", "ecoff",
+      "guideline", "method", "platform", "disk_potency", "source",
+      "pheno_provided", "spp_pheno"
+    )))
 
   return(ast_long)
 }
