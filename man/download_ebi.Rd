@@ -7,6 +7,7 @@
 download_ebi(
   data = "phenotype",
   antibiotic = NULL,
+  force_antibiotic = FALSE,
   genus = NULL,
   species = NULL,
   geno_subclass = NULL,
@@ -22,7 +23,9 @@ download_ebi(
 \arguments{
 \item{data}{String specifying the type of data to download, either "phenotype" or "genotype" (default "phenotype").}
 
-\item{antibiotic}{(Optional) String specifying an antibiotic to to filter on (default NULL). Not used if class or subclass is specified.}
+\item{antibiotic}{(Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if class or subclass is specified.}
+
+\item{force_antibiotic}{(Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default FALSE).}
 
 \item{genus}{(Optional) String specifying a bacterial genus to filter on (default NULL, will pull all taxa).}
 
@@ -58,36 +61,36 @@ pheno_ebi <- download_ebi()
 
 # download phenotype data from Dec 2025 release, and filter to Salmonella
 pheno_salmonella <- download_ebi(
-    genus="Salmonella",
-    user_release="2025-12"
+  genus = "Salmonella",
+  release = "2025-12"
 )
 
 # reformat downloaded phenotype data to simplify use with AMRgen functions
 pheno_salmonella <- import_ebi_ast_ftp(pheno_salmonella)
 
-# download phenotype data for Staphylococcus aureus and reformat 
+# download phenotype data for Staphylococcus aureus and reformat
 # for use with AMRgen functions
 pheno_staph <- download_ebi(
-    species="Staphylococcus aureus",
-    reformat=T
+  species = "Staphylococcus aureus",
+  reformat = T
 )
 
-# download phenotype data for Klebsiella quasipneumoniae, reformat 
+# download phenotype data for Klebsiella quasipneumoniae, reformat
 # for use with AMRgen functions, and re-interpret phenotypes
 pheno_kquasi_reinterpreted <- download_ebi(
-    species="Klebsiella quasipneumoniae",
-    reformat=T,
-    interpret_eucast = TRUE, 
-    interpret_clsi = TRUE, 
-    interpret_ecoff = TRUE
+  species = "Klebsiella quasipneumoniae",
+  reformat = T,
+  interpret_eucast = TRUE,
+  interpret_clsi = TRUE,
+  interpret_ecoff = TRUE
 )
 
-ebi_geno <- download_ebi(data="genotype")
-    
+ebi_geno <- download_ebi(data = "genotype")
+
 geno_kpn_tmp <- download_ebi(
-    data="genotype",
-    species="Klebsiella pneumoniae",
-    geno_subclass="TRIMETHOPRIM"
+  data = "genotype",
+  species = "Klebsiella pneumoniae",
+  geno_subclass = "TRIMETHOPRIM"
 )
 }
 }

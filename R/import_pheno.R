@@ -376,11 +376,27 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
     if (interpret_eucast) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_mic", capped_mic_handling = "conservative"))
+          mutate(
+            across(
+              where(is.mic),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                guideline = "EUCAST", capped_mic_handling = "conservative"
+              ),
+              .names = "pheno_eucast_mic"
+            )
+          )
       }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", .names = "pheno_eucast_disk"))
+          mutate(
+            across(
+              where(is.disk),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                guideline = "EUCAST"
+              ),
+              .names = "pheno_eucast_disk"
+            )
+          )      
       }
       if (("pheno_eucast_mic" %in% colnames(ast)) & ("pheno_eucast_disk" %in% colnames(ast))) {
         ast <- ast %>%
@@ -394,11 +410,27 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
     if (interpret_clsi) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_mic", capped_mic_handling = "conservative"))
-      }
+          mutate(
+            across(
+              where(is.mic),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                       guideline = "CLSI", capped_mic_handling = "conservative"
+              ),
+              .names = "pheno_clsi_mic"
+            )
+          )
+        }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "CLSI", .names = "pheno_clsi_disk"))
+          mutate(
+            across(
+              where(is.disk),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                       guideline = "CLSI"
+              ),
+              .names = "pheno_clsi_disk"
+            )
+          ) 
       }
       if (("pheno_clsi_mic" %in% colnames(ast)) & ("pheno_clsi_disk" %in% colnames(ast))) {
         ast <- ast %>%
@@ -412,11 +444,28 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
     if (interpret_ecoff) {
       if ("mic" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.mic), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_mic", capped_mic_handling = "conservative"))
+          mutate(
+            across(
+              where(is.mic),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                guideline = "EUCAST", breakpoint_type = "ECOFF",
+                capped_mic_handling = "conservative"
+              ),
+              .names = "ecoff_mic"
+            )
+          )
       }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
-          mutate(across(where(is.disk), as.sir, mo = "spp_pheno", ab = "drug_agent", guideline = "EUCAST", breakpoint_type = "ECOFF", .names = "ecoff_disk"))
+          mutate(
+            across(
+              where(is.disk),
+              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+                guideline = "EUCAST", breakpoint_type = "ECOFF"
+              ),
+              .names = "ecoff_disk"
+            )
+          )
       }
       if (("ecoff_mic" %in% colnames(ast)) & ("ecoff_disk" %in% colnames(ast))) {
         ast <- ast %>%
@@ -891,7 +940,7 @@ import_vitek_ast <- function(input,
   all_ab_cols <- all_ab_cols[all_ab_cols %in% colnames(ast)]
 
   ast <- ast %>%
-    mutate(across(any_of(all_ab_cols), as.character))
+    mutate(across(any_of(all_ab_cols), ~ as.character(.x)))
 
   # Pivot to long format
   ast_long <- ast %>%

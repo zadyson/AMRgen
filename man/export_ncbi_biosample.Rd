@@ -52,7 +52,7 @@ separators replaced by \code{"-"} (NCBI convention, e.g.
 export_ncbi_biosample(ecoli_ast, "Ec_NCBI.tsv")
 
 # Download data from EBI, then write it out to file in NCBI format
-ebi_kleb_quasipneumoniae <- download_ebi(species="Klebsiella quasipneumoniae", reformat=T)
+ebi_kleb_quasipneumoniae <- download_ebi(species = "Klebsiella quasipneumoniae", reformat = T)
 export_ncbi_biosample(ebi_kq, "Kq_NCBI.tsv")
 }
 }

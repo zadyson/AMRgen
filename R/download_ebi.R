@@ -20,7 +20,8 @@
 #' @param data String specifying the type of data to download, either "phenotype" or "genotype" (default "phenotype").
 #' @param genus (Optional) String specifying a bacterial genus to filter on (default NULL, will pull all taxa).
 #' @param species (Optional) String specifying a bacterial species to filter on (default NULL, will pull all taxa). Not used if genus is specified.
-#' @param antibiotic (Optional) String specifying an antibiotic to to filter on (default NULL). Not used if class or subclass is specified.
+#' @param antibiotic (Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if class or subclass is specified.
+#' @param force_antibiotic (Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default FALSE).
 #' @param geno_subclass (Optional) String specifying an antibiotic subclass to filter genotype data on (default NULL). Filter is based on string match, not identity, so e.g. subclass="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the subclass field. Only used if `data`="genotype". Check NCBI Subclass for valid terms.
 #' @param geno_class (Optional) String specifying an antibiotic subclass to filter on (default NULL). Filter is based on string match, not identity, so e.g. class="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the class field. Only used if `data`="genotype" and subclass is not specified. Check NCBI Class for valid terms.
 #' @param remove_dup (Optional) Logical specifying whether to clean up genotype data by removing duplicates for the same hit (default FALSE). Where a detected gene is associated with a subclass value that is actually a list of multiple drugs/classes, e.g. subclass="GENTAMICIN/TOBRAMYCIN", the EBI data table will have duplicate rows for the same gene hit, but with different values for the `antibiotic_name` and associated `antibiotic_ontology` and `antibiotic_ontology_link` annotation fields (e.g. one row each for gentamicin and tobramycin). To remove these duplicate rows (and the drug-specific annotation fields) and return only one row per hit (i.e. restoring AMRfinderplus output format), set this to TRUE.
@@ -42,7 +43,7 @@
 #' # download phenotype data from Dec 2025 release, and filter to Salmonella
 #' pheno_salmonella <- download_ebi(
 #'   genus = "Salmonella",
-#'   user_release = "2025-12"
+#'   release = "2025-12"
 #' )
 #'
 #' # reformat downloaded phenotype data to simplify use with AMRgen functions
@@ -73,9 +74,11 @@
 #'   geno_subclass = "TRIMETHOPRIM"
 #' )
 #' }
-download_ebi <- function(data = "phenotype", antibiotic = NULL,
+download_ebi <- function(data = "phenotype", 
+                         antibiotic = NULL, force_antibiotic=FALSE,
                          genus = NULL, species = NULL,
-                         geno_subclass = NULL, geno_class = NULL, remove_dup = FALSE,
+                         geno_subclass = NULL, geno_class = NULL, 
+                         remove_dup = FALSE,
                          release = NULL, reformat = FALSE,
                          interpret_eucast = FALSE,
                          interpret_clsi = FALSE,
@@ -126,9 +129,18 @@ download_ebi <- function(data = "phenotype", antibiotic = NULL,
     ebi_dat <- ebi_dat %>%
       filter(grepl(geno_class, class))
   } else if (!is.null(antibiotic)) {
-    cat(paste("...Filtering by antibiotic", antibiotic, "\n"))
-    ebi_dat <- ebi_dat %>%
-      filter(antibiotic_name == antibiotic)
+    if (!force_antibiotic) {
+      antibiotic <- tolower(AMR::ab_name(AMR::as.ab(antibiotic)))
+    }
+    check_antibiotic <- antibiotic %in% unique(ebi_dat$antibiotic_name)
+    if (sum(check_antibiotic)>0) {
+      cat(paste("...Filtering by antibiotic:", paste(antibiotic[check_antibiotic], collapse=","), "\n"))
+      ebi_dat <- ebi_dat %>%
+        filter(antibiotic_name %in% antibiotic)
+    }
+    if (sum(!check_antibiotic)>0) {
+      cat(paste("...Warning, antibiotic not found:", paste(antibiotic[!check_antibiotic], collapse=","), "\n"))
+    }
   }
 
   if (remove_dup) {
@@ -158,4 +170,9 @@ download_ebi <- function(data = "phenotype", antibiotic = NULL,
 
   # return data frame
   return(ebi_dat)
+}
+
+# round trip string -> ab object -> name -> lower case for EBI
+parse_antibiotic_name_for_ebi <- function(antibiotic_string) {
+  antibiotic_name <- tolower(ab_name(as.ab(antibiotic_string)))
 }
