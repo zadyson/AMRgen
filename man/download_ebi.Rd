@@ -23,7 +23,7 @@ download_ebi(
 \arguments{
 \item{data}{String specifying the type of data to download, either "phenotype" or "genotype" (default "phenotype").}
 
-\item{antibiotic}{(Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if class or subclass is specified.}
+\item{antibiotic}{(Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if \code{data}="genotype" and \code{class} or `subclass`` is specified.}
 
 \item{force_antibiotic}{(Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default FALSE).}
 
@@ -31,9 +31,9 @@ download_ebi(
 
 \item{species}{(Optional) String specifying a bacterial species to filter on (default NULL, will pull all taxa). Not used if genus is specified.}
 
-\item{geno_subclass}{(Optional) String specifying an antibiotic subclass to filter genotype data on (default NULL). Filter is based on string match, not identity, so e.g. subclass="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the subclass field. Only used if \code{data}="genotype". Check NCBI Subclass for valid terms.}
+\item{geno_subclass}{(Optional) String specifying an antibiotic subclass to filter genotype data on (default NULL). Filter is based on string match, not identity, so e.g. subclass="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the subclass field. Only used if \code{data}="genotype". Check NCBI Subclass list for valid terms (https://github.com/ncbi/amr/wiki/class-subclass).}
 
-\item{geno_class}{(Optional) String specifying an antibiotic subclass to filter on (default NULL). Filter is based on string match, not identity, so e.g. class="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the class field. Only used if \code{data}="genotype" and subclass is not specified. Check NCBI Class for valid terms.}
+\item{geno_class}{(Optional) String specifying an antibiotic subclass to filter genotype data on (default NULL). Filter is based on string match, not identity, so e.g. class="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the class field. Only used if \code{data}="genotype" and subclass is not specified. Check NCBI Class list for valid terms (https://github.com/ncbi/amr/wiki/class-subclass).}
 
 \item{remove_dup}{(Optional) Logical specifying whether to clean up genotype data by removing duplicates for the same hit (default FALSE). Where a detected gene is associated with a subclass value that is actually a list of multiple drugs/classes, e.g. subclass="GENTAMICIN/TOBRAMYCIN", the EBI data table will have duplicate rows for the same gene hit, but with different values for the \code{antibiotic_name} and associated \code{antibiotic_ontology} and \code{antibiotic_ontology_link} annotation fields (e.g. one row each for gentamicin and tobramycin). To remove these duplicate rows (and the drug-specific annotation fields) and return only one row per hit (i.e. restoring AMRfinderplus output format), set this to TRUE.}
 
@@ -51,8 +51,13 @@ download_ebi(
 A data frame containing EBI genotype data
 }
 \description{
-This function will retrieve genotype or phenotype data from the EBI AMR Portal, via FTP. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. See https://www.ebi.ac.uk/amr/about/#AMR-Genotypes for more information, and https://github.com/ncbi/amr/wiki/class-subclass for valid class and subclass terms.
+This function will retrieve genotype or phenotype data from the EBI AMR Portal, via FTP. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included.
 Optionally, the function can also reformat the phenotype data for easy use with AMRgen functions (using \code{import_ebi_ast_ftp()}) and re-interpret assay measures using the latest breakpoints/ECOFF.
+}
+\details{
+See https://www.ebi.ac.uk/amr/about/ for more information on what is available in the portal, and https://github.com/ncbi/amr/wiki/class-subclass for valid class and subclass terms.
+
+Note the function downloads the full genotype or phenotype data table before filtering on the provided parameters, so if you are having trouble with drug/class names not matching then just run without specifying any genus/species/antibiotic/class filters, to get the full unfiltered table and explore the field values to filter manually to get what you want.
 }
 \examples{
 \dontrun{
@@ -67,6 +72,13 @@ pheno_salmonella <- download_ebi(
 
 # reformat downloaded phenotype data to simplify use with AMRgen functions
 pheno_salmonella <- import_ebi_ast_ftp(pheno_salmonella)
+
+
+download phenotype data for Salmonella, filter to ampicillin and ciprofloxacin
+pheno_salmonella <- download_ebi(
+  genus = "Salmonella",
+  antibiotic = c("ampicillin", "Cipro")
+)
 
 # download phenotype data for Staphylococcus aureus and reformat
 # for use with AMRgen functions
@@ -85,12 +97,31 @@ pheno_kquasi_reinterpreted <- download_ebi(
   interpret_ecoff = TRUE
 )
 
+# download all available genotype data
 ebi_geno <- download_ebi(data = "genotype")
 
+# download genotype data for Klebsiella pneumoniae, and filter to 
+# markers assigned to NCBI class 'TRIMETHOPRIM'
 geno_kpn_tmp <- download_ebi(
   data = "genotype",
   species = "Klebsiella pneumoniae",
   geno_subclass = "TRIMETHOPRIM"
+)
+
+# download genotype data for Klebsiella pneumoniae, and filter to 
+# markers assigned to NCBI class 'TRIMETHOPRIM' or 'QUINOLONE'
+geno_kpn_tmp <- download_ebi(
+  data = "genotype",
+  species = "Klebsiella pneumoniae",
+  geno_subclass = c("TRIMETHOPRIM", "QUINOLONE")
+)
+
+# download genotype data for Klebsiella pneumoniae, and filter to 
+# markers associated with CARD drug term 'trimethoprim'
+geno_kpn_tmp <- download_ebi(
+  data = "genotype",
+  species = "Klebsiella pneumoniae",
+  antibiotic = "trimethoprim"
 )
 }
 }
