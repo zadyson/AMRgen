@@ -330,7 +330,8 @@ import_ebi_ast <- function(input, sample_col = "phenotype-BioSample_ID", source 
 #'
 #' \dontrun{
 #' pheno <- read_csv("AST.csv") %>%
-#'   mutate(drug_agent = as.ab(antibiotic)) %>% # convert antibiotic field to 'drug_agent' of class 'ab'
+#'   # convert antibiotic field to 'drug_agent' of class 'ab'
+#'   mutate(drug_agent = as.ab(antibiotic)) %>%
 #'   mutate(mic = paste0(sign, MIC)) %>%
 #'   mutate(mic = as.mic(mic)) # create a single 'mic' column of class 'mic'
 #'

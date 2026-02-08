@@ -236,3 +236,33 @@ safe_execute <- function(expr) {
     }
   )
 }
+
+# TODO REMOVE THIS CODE FOR CRAN SUBMISSION
+send_to_github <- function() {
+  cli::cli_alert_info("Styling code using {.fn styler::style_pkg}...")
+  st <- utils::capture.output(styler::style_pkg(style = styler::tidyverse_style))
+
+  cli::cli_alert_info("Documenting code using {.fn devtools::document}...")
+  doc <- devtools::document(quiet = TRUE)
+
+  cli::cli_alert_info("Checking code using {.fn devtools::check}...")
+  ch <- devtools::check(quiet = TRUE)
+
+  if (length(ch$errors) > 0 || length(ch$warnings) > 0) {
+    print(ch)
+    cli::cli_alert_danger("Errors, warnings, and notes must be fixed before pushing to GitHub. You're almost there!")
+    return(invisible())
+  }
+
+  cli::cli_alert_success("All tests passed!")
+  commit_msg <- readline("Your commit message: ")
+  q <- utils::askYesNo("Ready to push to GitHub?", prompts = c("Yes", "No", "Cancel"))
+  if (isTRUE(q)) {
+    system2("git", args = "add .")
+    system2("git", args = paste("commit -m '", commit_msg, "'"))
+    system2("git", args = "push")
+    cli::cli_alert_success("Pushed to GitHub.")
+  } else {
+    cli::cli_alert_danger("Cancelled.")
+  }
+}

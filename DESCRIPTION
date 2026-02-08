@@ -35,9 +35,12 @@ Imports:
     tibble (>= 3.1.0),
     tidyr (>= 1.1.0)
 Suggests:
+    devtools,
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    styler,
+    testthat (>= 3.0.0),
+    viridisLite
 Remotes:
     msberends/AMR
 License: GPL-3 | file LICENSE
