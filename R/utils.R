@@ -78,6 +78,7 @@ utils::globalVariables(c(
   "guideline",
   "Hierarchy node",
   "id",
+  "import_amrfp_ebi",
   "Lab ID",
   "laboratory_typing_method",
   "laboratory_typing_platform",
@@ -169,7 +170,14 @@ utils::globalVariables(c(
   "value",
   "variation type",
   "x",
-  "site"
+  "site",
+  "element_symbol_col",
+  "element_type_col",
+  "element_subtype_col",
+  "gene_symbol_col",
+  "subclass_col",
+  "class_col",
+  "amrfp_drugs"
 ))
 
 

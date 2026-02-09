@@ -24,8 +24,8 @@ import_ebi_ast_ftp(
 A data frame with the processed AST data, including additional columns:
 }
 \description{
-This function will import antibiotic susceptibility testing (AST) data suitable for downstream use with AMRgen analysis functions. The expected input is phenotype data retrieved from the EBI AMR Portal FTP site (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/) either directly or via the function \code{download_ebi()}.
-Note that files downloaded from the EBI AMR Portal web browser (https://www.ebi.ac.uk/amr/data/?view=experiments) are formatted differently and can be imported with the function \code{import_ebi_ast()}
+This function will import antibiotic susceptibility testing (AST) data suitable for downstream use with AMRgen analysis functions. The expected input is phenotype data retrieved from the \href{ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/}{EBI AMR Portal FTP site} either directly or via the function \code{download_ebi()}.
+Note that files downloaded from the \href{https://www.ebi.ac.uk/amr/data/?view=experiments}{EBI AMR Portal web browser} are formatted differently and can be imported with the function \code{\link[=import_ebi_ast]{import_ebi_ast()}}.
 }
 \examples{
 \dontrun{
