@@ -177,7 +177,21 @@ utils::globalVariables(c(
   "gene_symbol_col",
   "subclass_col",
   "class_col",
-  "amrfp_drugs"
+  "amrfp_drugs",
+  "I.n",
+  "I.ppv",
+  "I.se",
+  "NWT.n",
+  "NWT.ppv",
+  "NWT.se",
+  "R.n",
+  "R.ppv",
+  "R.se",
+  "ci_lower",
+  "ci_upper",
+  "colours_ppv",
+  "count_label",
+  "pd"
 ))
 
 
