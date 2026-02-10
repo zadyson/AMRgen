@@ -191,7 +191,8 @@ utils::globalVariables(c(
   "ci_upper",
   "colours_ppv",
   "count_label",
-  "pd"
+  "pd",
+  "Type"
 ))
 
 

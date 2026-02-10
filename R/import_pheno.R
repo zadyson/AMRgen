@@ -55,7 +55,8 @@
 #' head(pheno)
 import_ncbi_ast <- function(input, sample_col = "BioSample", source = NULL, species = NULL, ab = NULL,
                             interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
-  ast <- process_input(input)
+
+    ast <- process_input(input)
 
   # find id column
   if (!is.null(sample_col)) {
