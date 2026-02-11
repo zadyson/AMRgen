@@ -116,9 +116,9 @@ download_ncbi_ast <- function(species,
   if (is.null(species)) {
     stop("`species` must be provided.")
   }
-
+  
   # Build query term for entrez
-  enterz_term <- paste0(stringr::str_trim(tolower(user_organism)), "[orgn] AND antibiogram[filter]")
+  entrez_term <- paste0(stringr::str_trim(tolower(species)), "[orgn] AND antibiogram[filter]")
 
   # Search for AST entries by pathogen
   search <- rentrez::entrez_search(
@@ -126,23 +126,23 @@ download_ncbi_ast <- function(species,
     term = entrez_term,
     retmax = max_records
   )
-
+  
   # list samples by internal id
   ids <- search$ids
-
+  
   if (length(ids) == 0) {
     warning("No AST records found for: ", species)
     return(tibble())
   }
-
+  
   cat(paste(
     "Identified", length(ids), " ", tolower(species),
     " records from NCBI (https://www.ncbi.nlm.nih.gov/pathogens/ast/) \n"
   ))
-
+  
   # create empty data structures to store records
   all_ast_data <- NULL
-
+  
   # iterate though samples and pull records
   for (sample in seq(1, length(ids), by = batch_size)) {
     # account for remainder when batching
@@ -153,7 +153,7 @@ download_ncbi_ast <- function(species,
         rettype = "xml",
         parsed = TRUE
       )
-
+      
       cat(paste(
         "Downloading and processing records ", sample, " to ",
         length(ids), "... \n"
@@ -165,28 +165,28 @@ download_ncbi_ast <- function(species,
         rettype = "xml",
         parsed = TRUE
       )
-
+      
       cat(paste(
         "Downloading and processing records ", sample, " to ",
         (sample - 1 + batch_size), "... \n"
       ))
     }
-
+    
     # Flatten XML
     data_list <- XML::xmlToList(data_xml)
-
+    
     # extract records
     for (record in 1:length(data_list)) {
       data_names <- as.character(unlist(
         data_list[record]$BioSample$Description$Comment$Table$Header
       ))
-
+      
       data_entries <- data_list[record]$BioSample$Description$Comment$Table$Body
-
+      
       # retrieve AST data and reformat
       for (entry in 1:length(data_entries)) {
         temp_entry <- data_list[record]$BioSample$Description$Comment$Table$Body[entry]
-
+        
         # Preserve null data points by converting to NA (for headers)
         temp_entry <- temp_entry %>%
           purrr::modify_tree(
@@ -194,20 +194,20 @@ download_ncbi_ast <- function(species,
             post = unlist) %>%
           t() %>%
           as.data.frame()
-
+        
         # add col names here to prevent data mismatches when binding rows
         names(temp_entry) <- c(as.character(data_names))
-
+        
         # Extract BioProject accession while accounting for two varying flattened
         # xml node structures with duplicated identifiers
         bioproj <- purrr::pluck(data_list[record], "BioSample", "Links", 2, "Link", ".attrs", 3, .default = NA)
-
+        
         if (is.na(bioproj)) {
           bioproj <- purrr::pluck(data_list[record], "BioSample", "Links", "Link", ".attrs", 3, .default = NA)
         } else {
           bioproj <- NA # when no data listed - very rare
         }
-
+        
         # Extract organism name while accounting for two varied flattened
         # xml node structures
         organism_name <- purrr::pluck(data_list[record], "BioSample", "Description", "Organism", "OrganismName", .default = NA)
@@ -221,48 +221,48 @@ download_ncbi_ast <- function(species,
           mutate(id = data_list[record]$BioSample$Ids$Id$text) %>%
           mutate(BioProject = bioproj) %>%
           mutate(organism = organism_name)
-
+        
         # combine records
         all_ast_data <- bind_rows(all_ast_data, temp_entry)
       }
     }
-
+    
     # pause between record pulls
     Sys.sleep(sleep_time)
     cat(paste("Pausing download for ", sleep_time, "seconds to avoid overburdening the NCBI server... \n"))
   }
-
+  
   # name and rearrange cols
   cat(paste("Ordering data... \n"))
-
+  
   all_ast_data <- all_ast_data %>%
     select(id, BioProject, organism, everything()) %>%
     as_tibble()
-
+  
   # filter data by drug where specified by user
   if (!is.null(antibiotic)) {
     if (!force_antibiotic) {
       antibiotic <- na.omit(tolower(AMR::ab_name(AMR::as.ab(antibiotic))))
     }
-
+    
     cat(paste("...Filtering by antibiotic:", paste(antibiotic, collapse = ", "), "\n"))
-
+    
     all_ast_data <- all_ast_data %>%
       filter(Antibiotic %in% antibiotic)
   }
-
+  
   # reformat as per AMRgen import functions
   if (reformat) {
     cat(paste("Reformatting phenotype data for easy use with AMRgen functions \n"))
-
+    
     all_ast_data <- AMRgen::import_ncbi_ast(all_ast_data,
-      sample_col = "id",
-      interpret_eucast = interpret_eucast,
-      interpret_clsi = interpret_clsi,
-      interpret_ecoff = interpret_ecoff
+                                            sample_col = "id",
+                                            interpret_eucast = interpret_eucast,
+                                            interpret_clsi = interpret_clsi,
+                                            interpret_ecoff = interpret_ecoff
     )
   }
-
+  
   # return data
   return(all_ast_data)
 }
