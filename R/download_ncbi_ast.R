@@ -118,7 +118,7 @@ download_ncbi_ast <- function(species,
   }
 
   # Build query term for entrez
-  entrez_term <- paste0(tolower(species), " AND antibiogram[filter]")
+  enterz_term <- paste0(stringr::str_trim(tolower(user_organism)), "[orgn] AND antibiogram[filter]")
 
   # Search for AST entries by pathogen
   search <- rentrez::entrez_search(
@@ -191,8 +191,7 @@ download_ncbi_ast <- function(species,
         temp_entry <- temp_entry %>%
           purrr::modify_tree(
             leaf = \(x) if (is.null(x)) NA else x,
-            post = unlist
-          ) %>%
+            post = unlist) %>%
           t() %>%
           as.data.frame()
 
@@ -209,11 +208,19 @@ download_ncbi_ast <- function(species,
           bioproj <- NA # when no data listed - very rare
         }
 
+        # Extract organism name while accounting for two varied flattened
+        # xml node structures
+        organism_name <- purrr::pluck(data_list[record], "BioSample", "Description", "Organism", "OrganismName", .default = NA)
+        
+        if (is.na(organism_name)){
+          organism_name <- purrr::pluck(data_list[record], "BioSample", "Description", "Organism", "taxonomy_name", .default = NA)
+        }
+        
         # Add accessions and organism cols to AST data
         temp_entry <- temp_entry %>%
           mutate(id = data_list[record]$BioSample$Ids$Id$text) %>%
           mutate(BioProject = bioproj) %>%
-          mutate(organism = data_list[record]$BioSample$Description$Organism$OrganismName)
+          mutate(organism = organism_name)
 
         # combine records
         all_ast_data <- bind_rows(all_ast_data, temp_entry)
