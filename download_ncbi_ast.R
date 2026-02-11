@@ -25,7 +25,7 @@
 #' @param user_antibiotic Character. Optional antibiotic name to filter the
 #'   returned data. Matching is case-insensitive.
 #' @param user_max_records Integer. Maximum number of BioSample records to
-#'   retrieve. Default is `10000`.
+#'   retrieve. Default is `15000`.
 #' @param user_batch_size Integer. Number of records fetched per API request.
 #'   Default is `200` which is recommended by NCBI.
 #' @param user_sleep_time Numeric. Seconds to pause between batch requests to
@@ -92,7 +92,7 @@
 #' 
 download_ncbi_ast <- function(user_organism = NULL, 
                               user_antibiotic = NULL,
-                              user_max_records = 10000,
+                              user_max_records = 15000,
                               user_batch_size = 200,
                               user_sleep_time = 0.34,
                               user_force_antibiotic = FALSE,
