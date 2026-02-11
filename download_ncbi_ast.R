@@ -183,10 +183,10 @@ download_ncbi_ast <- function(user_organism = NULL,
         
         # Extract BioProject accession while accounting for two varying flattened 
         # xml node structures with duplicated identifiers
-        bioproj <- pluck(data_list[record], "BioSample", "Links", 2, "Link", ".attrs", 3, .default = NA)
+        bioproj <- purrr::pluck(data_list[record], "BioSample", "Links", 2, "Link", ".attrs", 3, .default = NA)
         
         if (is.na(bioproj)){
-          bioproj <- pluck(data_list[record], "BioSample", "Links", "Link", ".attrs", 3, .default = NA)
+          bioproj <- purrr::pluck(data_list[record], "BioSample", "Links", "Link", ".attrs", 3, .default = NA)
         }else{
           bioproj <- NA # when no data listed - very rare
         }
