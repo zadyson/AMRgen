@@ -192,7 +192,8 @@ utils::globalVariables(c(
   "colours_ppv",
   "count_label",
   "pd",
-  "Type"
+  "Type",
+  "organism"
 ))
 
 

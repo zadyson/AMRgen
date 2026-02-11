@@ -55,8 +55,8 @@
 #' geno <- import_amrfp(ecoli_geno_raw %>% head(n = 10), "Name")
 #' geno
 #' }
-import_amrfp <- function(input_table, 
-                         sample_col = "Name", 
+import_amrfp <- function(input_table,
+                         sample_col = "Name",
                          element_symbol_col = NULL,
                          element_type_col = NULL,
                          element_subtype_col = "Element subtype",
@@ -65,7 +65,6 @@ import_amrfp <- function(input_table,
                          subclass_col = "Subclass",
                          class_col = "Class",
                          amrfp_drugs = amrfp_drugs_table) {
-  
   in_table <- process_input(input_table)
 
   if ("Element symbol" %in% colnames(in_table)) {
@@ -75,11 +74,11 @@ import_amrfp <- function(input_table,
     in_table <- in_table %>% mutate(marker = `Gene symbol`)
     element_symbol_col <- "Gene symbol"
   } else if (!is.null(element_symbol_col)) {
-      if (element_symbol_col %in% colnames(in_table)) {
-        in_table <- in_table %>% mutate(marker = get(element_symbol_col))
-      } else {
-        stop(paste("Input file lacks the expected column:",element_symbol_col,"\n"))
-      }
+    if (element_symbol_col %in% colnames(in_table)) {
+      in_table <- in_table %>% mutate(marker = get(element_symbol_col))
+    } else {
+      stop(paste("Input file lacks the expected column:", element_symbol_col, "\n"))
+    }
   } else {
     stop("Input file lacks the expected column: 'Element symbol' (v4.0+) or 'Gene symbol' (pre-v4)\n")
   }
@@ -93,12 +92,12 @@ import_amrfp <- function(input_table,
     if (element_type_col %in% colnames(in_table)) {
       in_table <- in_table %>% filter(get(element_type_col) == "AMR")
     } else {
-      cat(paste0("Input file lacks the expected column: ",element_type_col,", assuming all rows report AMR markers.\n"))
+      cat(paste0("Input file lacks the expected column: ", element_type_col, ", assuming all rows report AMR markers.\n"))
     }
   } else {
     cat(paste0("Input file lacks the expected column: 'Type' (v4.0+) or 'Element type' (pre-v4), assuming all rows report AMR markers.\n"))
   }
-  
+
   # detect variation type and process mutation
   if (method_col %in% colnames(in_table)) {
     in_table_mutation <- in_table %>%
@@ -114,13 +113,13 @@ import_amrfp <- function(input_table,
       mutate(gene = if_else(startsWith(!!sym(method_col), "POINT"), gene, marker)) %>%
       mutate(mutation = if_else(startsWith(!!sym(method_col), "POINT"), convert_mutation(marker, !!sym(method_col)), mutation))
   } else if (element_subtype_col %in% colnames(in_table)) {
-    cat("Need method column:",method_col,"to assign variation type.\n")
+    cat("Need method column:", method_col, "to assign variation type.\n")
     in_table_mutation <- in_table %>%
       separate(!!sym(element_symbol_col), into = c("gene", "mutation"), sep = "_", remove = FALSE, fill = "right") %>%
       mutate(gene = if_else(startsWith(!!sym(element_subtype_col), "POINT"), gene, marker)) %>%
       mutate(mutation = if_else(startsWith(!!sym(element_subtype_col), "POINT"), purrr::map_chr(marker, convert_mutation, NULL), "-"))
   } else {
-    cat("Need method column:",method_col,"or element subtype column:",element_subtype_col," columns to parse mutations.\n")
+    cat("Need method column:", method_col, "or element subtype column:", element_subtype_col, " columns to parse mutations.\n")
     in_table_mutation <- in_table %>% mutate(gene = NA, mutation = NA)
   }
 
@@ -142,29 +141,29 @@ import_amrfp <- function(input_table,
     mutate(node = if_else(is.na(!!sym(node_col)), gene, !!sym(node_col)))
 
   if (element_subtype_col %in% colnames(in_table_mutation)) {
-      in_table_label <- in_table_label %>%
-        mutate(marker.label = if_else(!!sym(element_subtype_col) == "POINT",
-                                      if_else(!is.na(mutation), paste0(node, ":", mutation), gsub("_", ":", marker)),
-                                      node
-        )) 
+    in_table_label <- in_table_label %>%
+      mutate(marker.label = if_else(!!sym(element_subtype_col) == "POINT",
+        if_else(!is.na(mutation), paste0(node, ":", mutation), gsub("_", ":", marker)),
+        node
+      ))
   } else if (method_col %in% colnames(in_table_mutation)) {
     in_table_label <- in_table_label %>%
       mutate(marker.label = if_else(startsWith(!!sym(method_col), "POINT"),
-                                    if_else(!is.na(mutation), paste0(node, ":", mutation), gsub("_", ":", marker)),
-                                    node
-      )) 
+        if_else(!is.na(mutation), paste0(node, ":", mutation), gsub("_", ":", marker)),
+        node
+      ))
   } else {
-      cat(paste("WARNING:",element_subtype_col,"field not present in input file, guessing mutation markers.\n"))
-      in_table_label <- in_table_label %>%
-        mutate(marker.label = if_else(mutation != "-", paste0(node, ":", mutation), node))
+    cat(paste("WARNING:", element_subtype_col, "field not present in input file, guessing mutation markers.\n"))
+    in_table_label <- in_table_label %>%
+      mutate(marker.label = if_else(mutation != "-", paste0(node, ":", mutation), node))
   }
-  
+
   if ("variation type" %in% colnames(in_table_label)) {
-      in_table_label <- in_table_label %>%
-        mutate(marker.label = if_else(`variation type` == "Inactivating mutation detected",
-                                      paste0(node, ":-"),
-                                      marker.label
-        ))
+    in_table_label <- in_table_label %>%
+      mutate(marker.label = if_else(`variation type` == "Inactivating mutation detected",
+        paste0(node, ":-"),
+        marker.label
+      ))
   }
 
   # now split the Subclass column on the "/" to make them one per row, to make adding the ab names easier
@@ -177,7 +176,7 @@ import_amrfp <- function(input_table,
   in_table_ab <- in_table_label %>%
     left_join(amrfp_drugs[, c("AFP_Subclass", "drug_agent", "drug_class")], by = setNames("AFP_Subclass", subclass_col)) %>%
     dplyr::relocate(any_of(c(sample_col, "gene", "mutation", "node", "marker", "marker.label", "drug_agent", "drug_class")), .before = dplyr::everything())
-  
+
   # convert drug_agent into the "ab" class (will leave NAs as is)
   in_table_ab <- in_table_ab %>% mutate(drug_agent = as.ab(drug_agent))
 
@@ -190,14 +189,14 @@ import_amrfp <- function(input_table,
 #' This function imports processed EBI-processed AMRFinderPlus genotyping results. The expected input is genotype data retrieved from the [EBI AMR Portal FTP site](https://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/) either directly or via the function [download_ebi()].
 #' Note that files downloaded from the [EBI AMR Portal web browser](https://www.ebi.ac.uk/amr/data/?view=predictions) are formatted differently and can be imported using [import_amrfp_ebi_web].
 #'
-#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained). 
+#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained).
 #' Note several AMRfinderplus fields are excluded from EBI files, including hierarchy node, method, percent identity and coverage; therefore unlike the [import_amrfp()] function, this function cannot assign `variation type` or `node`.
 #' @param input_table R object or file path for the input EBI genotype table (R object, or file path to a TSV or CSV file).
 #' @return A tibble containing the processed AMR elements, with harmonised gene names, drug agents, and drug classes. The output retains the original columns from the AMRFinderPlus table along with the newly mapped variables.
 #' @details
 #' The function performs the following steps:
 #' - Reads the EBI-processed genotype table.
-#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class 
+#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class
 #'    names using `amrfp_drugs` (EBI-mappings are retained in `antibiotic*` fields.)
 #' - Converts drug agent names to the `ab` class from the AMR package.
 #' This processing ensures compatibility with downstream AMR analysis workflows.
@@ -205,24 +204,27 @@ import_amrfp <- function(input_table,
 #' @examples
 #' \dontrun{
 #' # Download quinolone-related genotype data for E. coli, from EBI
-#' ebi_geno_raw <- download_ebi(data="genotype", species = "Escherichia coli", 
-#'                         geno_subclass="QUINOLONE")
-#' 
+#' ebi_geno_raw <- download_ebi(
+#'   data = "genotype", species = "Escherichia coli",
+#'   geno_subclass = "QUINOLONE"
+#' )
+#'
 #' # Format the file for import
 #' ebi_geno <- import_amrfp_ebi_ftp(ebi_geno_raw)
 #' }
 import_amrfp_ebi_ftp <- function(input_table) {
-  
   input_table <- process_input(input_table)
-  
-  input_table <- import_amrfp(input_table, sample_col = "BioSample_ID", 
-                element_symbol_col = "amr_element_symbol",
-                element_type_col = "element_type",
-                element_subtype_col = "element_subtype",
-                subclass_col = "subclass",
-                class_col = "class", 
-                amrfp_drugs = amrfp_drugs_table)
-  
+
+  input_table <- import_amrfp(input_table,
+    sample_col = "BioSample_ID",
+    element_symbol_col = "amr_element_symbol",
+    element_type_col = "element_type",
+    element_subtype_col = "element_subtype",
+    subclass_col = "subclass",
+    class_col = "class",
+    amrfp_drugs = amrfp_drugs_table
+  )
+
   return(input_table)
 }
 
@@ -232,14 +234,14 @@ import_amrfp_ebi_ftp <- function(input_table) {
 #' This function imports EBI-processed AMRFinderPlus genotyping results. The expected input is genotype data downloaded from the [EBI AMR Portal web browser](https://www.ebi.ac.uk/amr/data/?view=predictions).
 #' Note that files downloaded from the [EBI AMR Portal FTP site](https://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/), either directly or via the function [download_ebi()], are formatted differently and can be imported using [import_amrfp_ebi_ftp].
 #'
-#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained). 
+#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained).
 #' Note several AMRfinderplus fields are excluded from EBI files, including hierarchy node, method, percent identity and coverage; therefore unlike the [import_amrfp()] function, this function cannot assign `variation type` or `node`.
 #' @param input_table R object or file path for the input EBI genotype table (R object, or file path to a TSV or CSV file).
 #' @return A tibble containing the processed AMR elements, with harmonised gene names, drug agents, and drug classes. The output retains the original columns from the AMRFinderPlus table along with the newly mapped variables.
 #' @details
 #' The function performs the following steps:
 #' - Reads the EBI-processed genotype table.
-#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class 
+#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class
 #'    names using `amrfp_drugs` (EBI-mappings are retained in `antibiotic*` fields.)
 #' - Converts drug agent names to the `ab` class from the AMR package.
 #' This processing ensures compatibility with downstream AMR analysis workflows.
@@ -250,20 +252,21 @@ import_amrfp_ebi_ftp <- function(input_table) {
 #' ebi_geno <- import_amrfp_ebi_web("amr_records.csv")
 #' }
 import_amrfp_ebi_web <- function(input_table) {
-  
   input_table <- process_input(input_table)
-  
+
   colnames(input_table) <- sub("genotype-", "", colnames(input_table))
-  
-  input_table <- import_amrfp(input_table, sample_col = "BioSample_ID", 
-                              element_symbol_col = "amr_element_symbol",
-                              element_type_col = "element_type",
-                              element_subtype_col = "element_subtype",
-                              subclass_col = "subclass",
-                              class_col = "class", 
-                              amrfp_drugs = amrfp_drugs_table)
-  
-  
+
+  input_table <- import_amrfp(input_table,
+    sample_col = "BioSample_ID",
+    element_symbol_col = "amr_element_symbol",
+    element_type_col = "element_type",
+    element_subtype_col = "element_subtype",
+    subclass_col = "subclass",
+    class_col = "class",
+    amrfp_drugs = amrfp_drugs_table
+  )
+
+
   return(input_table)
 }
 
@@ -272,7 +275,7 @@ import_amrfp_ebi_web <- function(input_table) {
 #'
 #' This function imports EBI-processed AMRFinderPlus genotyping results. The expected input is genotype data downloaded from the [EBI AMR Portal web browser](https://www.ebi.ac.uk/amr/data/?view=predictions), or the [EBI AMR Portal FTP site](https://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/) either directly or via the function [download_ebi()].
 #'
-#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained). 
+#' These data are pre-processed by EBI to match NCBI class/subclass to CARD's antibiotic resistance ontology (ARO), however for consistency this function will re-process the data to generate `drug_agent` and `drug_class` fields consistent with the [import_amrfp()] function (the EBI fields `antibiotic*` are also retained).
 #' Note several AMRfinderplus fields are excluded from EBI files, including hierarchy node, method, percent identity and coverage; therefore unlike the [import_amrfp()] function, this function cannot assign `variation type` or `node`.
 #' @param input_table R object or file path for the input EBI genotype table (R object, or file path to a TSV or CSV file).
 #' @param web Logical indicating whether the data is from the web portal (default `FALSE`). If `FALSE` input is assumed to be from FTP or [download_ebi].
@@ -280,7 +283,7 @@ import_amrfp_ebi_web <- function(input_table) {
 #' @details
 #' The function performs the following steps:
 #' - Reads the EBI-processed genotype table.
-#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class 
+#' - Maps AMRFinderPlus subclasses to standardised drug agent and drug class
 #'    names using `amrfp_drugs` (EBI-mappings are retained in `antibiotic*` fields.)
 #' - Converts drug agent names to the `ab` class from the AMR package.
 #' This processing ensures compatibility with downstream AMR analysis workflows.
@@ -288,25 +291,25 @@ import_amrfp_ebi_web <- function(input_table) {
 #' @examples
 #' \dontrun{
 #' # Download quinolone-related genotype data for E. coli, from EBI
-#' ebi_geno_raw <- download_ebi(data="genotype", species = "Escherichia coli", 
-#'                         geno_subclass="QUINOLONE")
-#' 
+#' ebi_geno_raw <- download_ebi(
+#'   data = "genotype", species = "Escherichia coli",
+#'   geno_subclass = "QUINOLONE"
+#' )
+#'
 #' # Format the file for import
 #' ebi_geno <- import_amrfp_ebi(ebi_geno_raw)
-#' 
+#'
 #' # Download data from EBI web portal and import the file
-#' ebi_geno_from_web <- import_amrfp_ebi("amr_records.csv", web=TRUE)
+#' ebi_geno_from_web <- import_amrfp_ebi("amr_records.csv", web = TRUE)
 #' }
-import_amrfp_ebi <- function(input_table, web=FALSE) {
-  
+import_amrfp_ebi <- function(input_table, web = FALSE) {
   input_table <- process_input(input_table)
-  
+
   if (web) {
     import_amrfp_ebi_web(input_table)
   } else {
     import_amrfp_ebi_ftp(input_table)
   }
-
 }
 
 
@@ -344,8 +347,8 @@ convert_mutation <- function(symbol_col, method_col) {
     new_ref <- ifelse(method_col %in% c("POINTX", "POINTP"), convert_aa_code(extracted_data$ref), extracted_data$ref)
     new_alt <- ifelse(method_col %in% c("POINTX", "POINTP"), convert_aa_code(extracted_data$alt), extracted_data$alt)
   } else {
-    new_ref <- ifelse(extracted_data$minus!="-", convert_aa_code(extracted_data$ref), extracted_data$ref)
-    new_alt <- ifelse(extracted_data$minus!="-", convert_aa_code(extracted_data$alt), extracted_data$alt)
+    new_ref <- ifelse(extracted_data$minus != "-", convert_aa_code(extracted_data$ref), extracted_data$ref)
+    new_alt <- ifelse(extracted_data$minus != "-", convert_aa_code(extracted_data$alt), extracted_data$alt)
   }
 
   # Construct the final mutation string
@@ -354,17 +357,17 @@ convert_mutation <- function(symbol_col, method_col) {
     new_mutation_string <- ifelse(
       method_col %in% c("POINTX", "POINTP"),
       ifelse(!is.na(new_ref) & !is.na(new_alt) & !is.na(extracted_data$position),
-             paste0(new_ref, extracted_data$minus, extracted_data$position, new_alt),
-             NA_character_ # Return NA if any of the components are NA
+        paste0(new_ref, extracted_data$minus, extracted_data$position, new_alt),
+        NA_character_ # Return NA if any of the components are NA
       ),
       paste0(extracted_data$minus, extracted_data$position, new_ref, ">", new_alt)
     )
   } else {
     new_mutation_string <- ifelse(
-      extracted_data$minus!="-", 
+      extracted_data$minus != "-",
       ifelse(!is.na(new_ref) & !is.na(new_alt) & !is.na(extracted_data$position),
-             paste0(new_ref, extracted_data$minus, extracted_data$position, new_alt),
-             NA_character_ # Return NA if any of the components are NA
+        paste0(new_ref, extracted_data$minus, extracted_data$position, new_alt),
+        NA_character_ # Return NA if any of the components are NA
       ),
       paste0(extracted_data$minus, extracted_data$position, new_ref, ">", new_alt)
     )

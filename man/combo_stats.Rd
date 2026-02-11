@@ -25,40 +25,41 @@ combo_stats(
 )
 }
 \arguments{
-\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function. Expected columns are an identifier (column 1, any name), \code{pheno} (class sir, with S/I/R categories to colour points), \code{mic} (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).}
+\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{\link[=get_binary_matrix]{get_binary_matrix()}} function. Expected columns are an identifier (column 1, any name), \code{pheno} (class sir, with S/I/R categories to colour points), \code{mic} (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).}
 
-\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.}
+\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only marker combinations with at least this number of occurrences are included in the plots.}
 
 \item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
 \itemize{
-\item "" (default): decreasing frequency of combinations
-\item "genes": order by the number of genes in each combination
-\item "value": order by the median assay value (MIC or disk zone) for each combination.
+\item \code{""} (default): decreasing frequency of combinations
+\item \code{"genes"}: order by the number of genes in each combination
+\item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination.
 }}
 
 \item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
 \itemize{
-\item "mic": plot MIC data stored in column \code{mic}
-\item "disk": plot disk diffusion data stored in column \code{disk}
+\item \code{"mic"} (default): plot MIC data stored in column \code{mic}
+\item \code{"disk"}: plot disk diffusion data stored in column \code{disk}
+\item \code{NULL}: don't plot or summarise assay data
 }}
 
-\item{print_set_size}{Logical indicating whether, if \code{plot_set_size} is TRUE, to print the number of strains with each marker combination on the plot. Default is FALSE.}
+\item{print_set_size}{Logical indicating whether, if \code{plot_set_size=TRUE}, to print the number of strains with each marker combination on the plot. Default is \code{FALSE}.}
 
-\item{print_category_counts}{Logical indicating whether, if \code{plot_category} is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is FALSE.}
+\item{print_category_counts}{Logical indicating whether, if \code{plot_category=TRUE}, to print the number of strains in each resistance category for each marker combination in the plot. Default is \code{FALSE}.}
 
-\item{SIR_col}{A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., "R", "I", "S"), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package \code{scale_colour_sir()}.}
+\item{SIR_col}{A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., \code{"R"}, \code{"I"}, \code{"S"}), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package \code{\link[AMR:plot]{AMR::scale_colour_sir()}}.}
 
-\item{boxplot_col}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey".}
+\item{boxplot_col}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is \code{"grey"}.}
 
-\item{colours_ppv}{A named vector of colours for the plot of PPV estimates. The names should be "R", "I" and "NWT", and the values should be valid color names or hexadecimal color codes.}
+\item{colours_ppv}{A named vector of colours for the plot of PPV estimates. The names should be \code{"R"}, \code{"I"} and \code{"NWT"}, and the values should be valid color names or hexadecimal color codes.}
 
-\item{antibiotic}{(optional) Name of antibiotic, so we can retrieve breakpoints to the assay value distribution plot.}
+\item{antibiotic}{Optional. Antibiotic name used to retrieve clinical breakpoints for annotation of the assay distribution plot.}
 
-\item{species}{(optional) Name of species, so we can retrieve breakpoints to add to the assay value distribution plot.}
+\item{species}{Optional. Species name used for breakpoint lookup.}
 
-\item{bp_site}{(optional) Breakpoint site to retrieve (only relevant if also supplying \code{species} and \code{antibiotic} to retrieve breakpoints to plot, and not supplying breakpoints via \code{bp_S}, \code{bp_R}, \code{ecoff_bp}).}
+\item{bp_site}{Optional. Breakpoint site (e.g. "Non-meningitis") used when retrieving clinical breakpoints.}
 
-\item{guideline}{(optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')}
+\item{guideline}{Guideline used for breakpoint lookup. Default is \code{"EUCAST 2025"}.}
 
 \item{bp_S}{(optional) S breakpoint to add to plot (numerical).}
 
@@ -66,19 +67,32 @@ combo_stats(
 
 \item{ecoff_bp}{(optional) ECOFF breakpoint to add to plot (numerical).}
 
-\item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.}
+\item{pd}{A \code{ggplot2::position_dodge()} object controlling horizontal spacing of points and confidence intervals in the PPV plot. Default is \code{position_dodge(width = 0.8)}.}
 }
 \value{
 A list containing the following elements:
 \itemize{
-\item \code{plot}: A grid of plots displaying: (i) grid showing the marker combinations observed, MIC distribution per marker combination, frequency per marker and (optionally) phenotype classification and/or number of samples for each marker combination.
 \item \code{summary}: A data frame summarizing each marker combination observed, including median MIC (and interquartile range), number of resistant isolates, and positive predictive value for resistance.
+\item \code{assay_plot}: MIC or disk diffusion distribution per combination.
+\item \code{setsize_plot}: Bar plot showing number of isolates per combination.
+\item \code{marker_grid_plot}: Dot plot showing gene combinations.
+\item \code{marker_count_plot}: Gene prevalence plot.
+\item \code{category_plot}: Stacked phenotype proportion plot.
+\item \code{ppv_plot}: Positive predictive value plot with confidence intervals.
 }
 }
 \description{
-This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from an input geno-pheno binary matrix. It creates several plots, including assay distributions, phenotype breakdown and positive predictive values for each marker combination. The \link{amr_upset} and \link{ppv} functions can be used to generate standard data visualisations using the component plots.
+This function generates a set of visualizations to analyze AMR gene combinations, MIC values, and gene prevalence from an input genotype-phenotype binary matrix. It creates several plots, including assay distributions, phenotype breakdown, and positive predictive values for each marker combination. The \code{\link[=amr_upset]{amr_upset()}} and \code{\link[=ppv]{ppv()}} functions can be used to generate standard data visualisations using the component plots.
+}
+\details{
+Marker combinations are defined as unique patterns of gene presence/absence
+across isolates. Only combinations observed in at least \code{min_set_size}
+isolates are included in the analysis. Median and interquartile range
+are calculated per combination. For MIC data, medians may optionally
+exclude values expressed as ranges (e.g. "<=0.25").
 }
 \examples{
+\dontrun{
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 binary_matrix <- get_binary_matrix(
@@ -92,4 +106,5 @@ binary_matrix <- get_binary_matrix(
 )
 
 combo_stats(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
+}
 }

@@ -250,7 +250,7 @@ get_binary_matrix <- function(geno_table, pheno_table, antibiotic, drug_class_li
 #' Add marker combinations to a binary geno-pheno matrix
 #'
 #' Given a geno-pheno binary marker matrix, output by `get_binary_matrix`,
-#' this function identifies marker combination, and adds combination ids, 
+#' this function identifies marker combination, and adds combination ids,
 #' and the count of markers detected per sample, as new columns.
 #'
 #' @param binary_matrix A geno-pheno binary matrix, output by `get_binary_matrix`
@@ -291,8 +291,7 @@ get_combo_matrix <- function(binary_matrix, assay = NULL) {
   binary_matrix_combo <- binary_matrix %>%
     mutate(marker_count = rowSums(across(where(is.numeric) & !any_of(c("R", "NWT", "mic", "disk"))), na.rm = T)) %>%
     unite("combination_id", markers[1]:markers[length(markers)], remove = FALSE) %>% # add in combinations
-    relocate(marker_count, .after="combination_id")
+    relocate(marker_count, .after = "combination_id")
 
   return(binary_matrix_combo)
 }
-

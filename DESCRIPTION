@@ -30,11 +30,13 @@ Imports:
     purrr,
     RCurl,
     readr (>= 2.1.0),
+    rentrez,
     rlang (>= 1.0.0),
     rvest (>= 1.0.0),
     stringr (>= 1.5.1),
     tibble (>= 3.1.0),
-    tidyr (>= 1.1.0)
+    tidyr (>= 1.1.0),
+    XML
 Suggests:
     devtools,
     knitr,

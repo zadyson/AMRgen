@@ -55,8 +55,7 @@
 #' head(pheno)
 import_ncbi_ast <- function(input, sample_col = "BioSample", source = NULL, species = NULL, ab = NULL,
                             interpret_eucast = FALSE, interpret_clsi = FALSE, interpret_ecoff = FALSE) {
-
-    ast <- process_input(input)
+  ast <- process_input(input)
 
   # find id column
   if (!is.null(sample_col)) {
@@ -381,7 +380,8 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
           mutate(
             across(
               where(is.mic),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
                 guideline = "EUCAST", capped_mic_handling = "conservative"
               ),
               .names = "pheno_eucast_mic"
@@ -393,12 +393,13 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
           mutate(
             across(
               where(is.disk),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
                 guideline = "EUCAST"
               ),
               .names = "pheno_eucast_disk"
             )
-          )      
+          )
       }
       if (("pheno_eucast_mic" %in% colnames(ast)) & ("pheno_eucast_disk" %in% colnames(ast))) {
         ast <- ast %>%
@@ -415,24 +416,26 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
           mutate(
             across(
               where(is.mic),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
-                       guideline = "CLSI", capped_mic_handling = "conservative"
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
+                guideline = "CLSI", capped_mic_handling = "conservative"
               ),
               .names = "pheno_clsi_mic"
             )
           )
-        }
+      }
       if ("disk" %in% colnames(ast)) {
         ast <- ast %>%
           mutate(
             across(
               where(is.disk),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
-                       guideline = "CLSI"
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
+                guideline = "CLSI"
               ),
               .names = "pheno_clsi_disk"
             )
-          ) 
+          )
       }
       if (("pheno_clsi_mic" %in% colnames(ast)) & ("pheno_clsi_disk" %in% colnames(ast))) {
         ast <- ast %>%
@@ -449,7 +452,8 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
           mutate(
             across(
               where(is.mic),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
                 guideline = "EUCAST", breakpoint_type = "ECOFF",
                 capped_mic_handling = "conservative"
               ),
@@ -462,7 +466,8 @@ interpret_ast <- function(ast, interpret_ecoff = TRUE, interpret_eucast = TRUE, 
           mutate(
             across(
               where(is.disk),
-              ~ as.sir(.x, mo = "spp_pheno", ab = "drug_agent",
+              ~ as.sir(.x,
+                mo = "spp_pheno", ab = "drug_agent",
                 guideline = "EUCAST", breakpoint_type = "ECOFF"
               ),
               .names = "ecoff_disk"

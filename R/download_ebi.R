@@ -15,16 +15,16 @@
 # ===================================================================== #
 #' Download antimicrobial genotype or phenotype data from the EBI AMR Portal
 #'
-#' This function will retrieve genotype or phenotype data from the EBI AMR Portal FTP site. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included. 
+#' This function will retrieve genotype or phenotype data from the EBI AMR Portal FTP site. The portal uses AMRfinderplus to identify AMR-associated genotypes, but the results are processed and not all fields returned by AMRfinderplus are included.
 #' Optionally, the function can also reformat the phenotype data for easy use with AMRgen functions (using [import_ebi_ast_ftp]) and re-interpret assay measures using the latest breakpoints/ECOFF.
-#' 
+#'
 #' See <https://www.ebi.ac.uk/amr/about/> for more information on what is available in the portal, and <https://github.com/ncbi/amr/wiki/class-subclass> for valid class and subclass terms.
-#' 
+#'
 #' Note the function downloads the full genotype or phenotype data table before filtering on the provided parameters, so if you are having trouble with drug/class names not matching then just run without specifying any genus/species/antibiotic/class filters, to get the full unfiltered table and explore the field values to filter manually to get what you want.
 #'
 #' @param data String specifying the type of data to download, either "phenotype" or "genotype" (default "phenotype").
 #' @param antibiotic (Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if `data`="genotype" and `class` or `subclass` is specified.
-#' @param force_antibiotic (Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default FALSE).
+#' @param force_antibiotic (Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default `FALSE`).
 #' @param genus (Optional) String specifying a bacterial genus to filter on (default NULL, will pull all taxa).
 #' @param species (Optional) String specifying a bacterial species to filter on (default NULL, will pull all taxa). Not used if genus is specified.
 #' @param geno_subclass (Optional) String specifying an antibiotic subclass to filter genotype data on (default NULL). Filter is based on string match, not identity, so e.g. subclass="TRIMETHOPRIM" will return all rows where the string "TRIMETHOPRIM" is included in the subclass field. Only used if `data`="genotype". Check [NCBI AMR Class-Subclass Reference](https://github.com/ncbi/amr/wiki/class-subclass) for valid terms.
@@ -80,7 +80,7 @@
 #' # download all available genotype data
 #' ebi_geno <- download_ebi(data = "genotype")
 #'
-#' # download genotype data for Klebsiella pneumoniae, and filter to 
+#' # download genotype data for Klebsiella pneumoniae, and filter to
 #' # markers assigned to NCBI class 'TRIMETHOPRIM'
 #' geno_kpn_tmp <- download_ebi(
 #'   data = "genotype",
@@ -88,27 +88,26 @@
 #'   geno_subclass = "TRIMETHOPRIM"
 #' )
 #'
-#' # download genotype data for Klebsiella pneumoniae, and filter to 
+#' # download genotype data for Klebsiella pneumoniae, and filter to
 #' # markers assigned to NCBI class 'TRIMETHOPRIM' or 'QUINOLONE'
 #' geno_kpn_tmp <- download_ebi(
 #'   data = "genotype",
 #'   species = "Klebsiella pneumoniae",
 #'   geno_subclass = c("TRIMETHOPRIM", "QUINOLONE")
 #' )
-#' 
-#' # download genotype data for Klebsiella pneumoniae, and filter to 
+#'
+#' # download genotype data for Klebsiella pneumoniae, and filter to
 #' # markers associated with CARD drug term 'trimethoprim'
 #' geno_kpn_tmp <- download_ebi(
 #'   data = "genotype",
 #'   species = "Klebsiella pneumoniae",
 #'   antibiotic = "trimethoprim"
 #' )
-#' 
 #' }
-download_ebi <- function(data = "phenotype", 
-                         antibiotic = NULL, force_antibiotic=FALSE,
+download_ebi <- function(data = "phenotype",
+                         antibiotic = NULL, force_antibiotic = FALSE,
                          genus = NULL, species = NULL,
-                         geno_subclass = NULL, geno_class = NULL, 
+                         geno_subclass = NULL, geno_class = NULL,
                          remove_dup = FALSE,
                          release = NULL, reformat = FALSE,
                          interpret_eucast = FALSE,
@@ -153,34 +152,44 @@ download_ebi <- function(data = "phenotype",
   # filter by subclass/class/antibiotic as required
   if (!is.null(geno_subclass)) {
     if (data == "genotype") {
-      cat(paste("...Filtering by subclass", paste(geno_subclass, collapse=","), "\n"))
+      cat(paste("...Filtering by subclass", paste(geno_subclass, collapse = ","), "\n"))
       ebi_dat <- ebi_dat %>%
-        filter(grepl(paste(geno_subclass, collapse="|"), subclass))
+        filter(grepl(paste(geno_subclass, collapse = "|"), subclass))
       for (sc in geno_subclass) {
-        if (sum(grepl(sc, ebi_dat$subclass))==0) {
+        if (sum(grepl(sc, ebi_dat$subclass)) == 0) {
           cat(paste("......subclass not found:", sc, "\n"))
         }
       }
-      if (!is.null(geno_class)) {cat(paste("...Warning, not using classes provided, filtering on subclass instead\n"))}
-      if (!is.null(antibiotic)) {cat(paste("...Warning, not using antibiotic names provided, filtering on subclass instead\n"))}
-    } else {cat(paste("...Warning, not using subclasses provided as these are only relevant to genotype data\n"))}
+      if (!is.null(geno_class)) {
+        cat(paste("...Warning, not using classes provided, filtering on subclass instead\n"))
+      }
+      if (!is.null(antibiotic)) {
+        cat(paste("...Warning, not using antibiotic names provided, filtering on subclass instead\n"))
+      }
+    } else {
+      cat(paste("...Warning, not using subclasses provided as these are only relevant to genotype data\n"))
+    }
   } else if (!is.null(geno_class)) {
     if (data == "genotype") {
-      cat(paste("...Filtering by class", paste(geno_class, collapse=","), "\n"))
+      cat(paste("...Filtering by class", paste(geno_class, collapse = ","), "\n"))
       ebi_dat <- ebi_dat %>%
-        filter(grepl(paste(geno_class, collapse="|"), class))
+        filter(grepl(paste(geno_class, collapse = "|"), class))
       for (cl in geno_subclass) {
-        if (sum(grepl(cl, ebi_dat$class))==0) {
+        if (sum(grepl(cl, ebi_dat$class)) == 0) {
           cat(paste("......class not found:", cl, "\n"))
         }
       }
-      if (!is.null(antibiotic)) {cat(paste("...Warning, not using antibiotic names provided, filtering on class instead\n"))}
-    } else {cat(paste("...Warning, not using classes provided as these are only relevant to genotype data\n"))}
+      if (!is.null(antibiotic)) {
+        cat(paste("...Warning, not using antibiotic names provided, filtering on class instead\n"))
+      }
+    } else {
+      cat(paste("...Warning, not using classes provided as these are only relevant to genotype data\n"))
+    }
   } else if (!is.null(antibiotic)) {
     if (!force_antibiotic) {
       antibiotic <- na.omit(tolower(AMR::ab_name(AMR::as.ab(antibiotic))))
     }
-    cat(paste("...Filtering by antibiotic:", paste(antibiotic, collapse=","), "\n"))
+    cat(paste("...Filtering by antibiotic:", paste(antibiotic, collapse = ", "), "\n"))
     ebi_dat <- ebi_dat %>%
       filter(antibiotic_name %in% antibiotic)
     for (ab in antibiotic) {
@@ -210,9 +219,9 @@ download_ebi <- function(data = "phenotype",
     if (data == "phenotype") {
       cat(paste("Reformatting phenotype data for easy use with AMRgen functions\n"))
       ebi_dat <- import_ebi_ast_ftp(ebi_dat,
-                                    interpret_eucast = interpret_eucast,
-                                    interpret_clsi = interpret_clsi,
-                                    interpret_ecoff = interpret_ecoff
+        interpret_eucast = interpret_eucast,
+        interpret_clsi = interpret_clsi,
+        interpret_ecoff = interpret_ecoff
       )
     } else if (data == "genotype") {
       cat(paste("Reformatting genotype data for easy use with AMRgen functions\n"))

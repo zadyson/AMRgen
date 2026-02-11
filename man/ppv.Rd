@@ -2,7 +2,7 @@
 % Please edit documentation in R/amr_upset.R
 \name{ppv}
 \alias{ppv}
-\title{Generate Upset Plot}
+\title{Generate PPV Plot}
 \usage{
 ppv(
   binary_matrix,
@@ -29,28 +29,28 @@ ppv(
 )
 }
 \arguments{
-\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{get_binary_matrix} function. Expected columns are an identifier (column 1, any name), \code{pheno} (class sir, with S/I/R categories to colour points), \code{mic} (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).}
+\item{binary_matrix}{A data frame containing the original binary matrix output from the \code{\link[=get_binary_matrix]{get_binary_matrix()}} function. Expected columns are an identifier (column 1, any name), \code{pheno} (class sir, with S/I/R categories to colour points), \code{mic} (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).}
 
-\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only genes with at least this number of occurrences are included in the plots.}
+\item{min_set_size}{An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only marker combinations with at least this number of occurrences are included in the plots.}
 
 \item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
 \itemize{
-\item "" (default): decreasing frequency of combinations
-\item "genes": order by the number of genes in each combination
-\item "value": order by the median assay value (MIC or disk zone) for each combination.
+\item \code{""} (default): decreasing frequency of combinations
+\item \code{"genes"}: order by the number of genes in each combination
+\item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination.
 }}
 
-\item{colours_ppv}{A named vector of colours for the plot of PPV estimates. The names should be "R", "I" and "NWT", and the values should be valid color names or hexadecimal color codes.}
+\item{colours_ppv}{A named vector of colours for the plot of PPV estimates. The names should be \code{"R"}, \code{"I"} and \code{"NWT"}, and the values should be valid color names or hexadecimal color codes.}
 
-\item{SIR_col}{A named vector of colours for the percentage bar plot and/or assay plot. The names should be the phenotype categories (e.g., "R", "I", "S"), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package \code{scale_colour_sir()}.}
+\item{SIR_col}{A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., \code{"R"}, \code{"I"}, \code{"S"}), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package \code{\link[AMR:plot]{AMR::scale_colour_sir()}}.}
 
 \item{upset_grid}{Logical indicating whether to show marker combinations as an upset plot-style grid (default \code{FALSE}, so that each row is instead labelled with a printed list of markers).}
 
 \item{marker_label_space}{Relative width of plotting area to provide to the marker list/grid. (Default \code{NULL}, which results in a default value of 3 when \code{upset_grid=FALSE} and 1 otherwise).}
 
-\item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification. Default is \code{TRUE}.}
+\item{plot_category}{Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the \code{pheno} column in the input file). Default is \code{TRUE}.}
 
-\item{print_category_counts}{Logical indicating whether, if \code{plot_category} is TRUE, to print the number of strains in each resistance category for each marker combination in the plot. Default is \code{FALSE}.}
+\item{print_category_counts}{Logical indicating whether, if \code{plot_category=TRUE}, to print the number of strains in each resistance category for each marker combination in the plot. Default is \code{FALSE}.}
 
 \item{plot_ppv}{Logical indicating whether to plot the estimates for positive predictive value, for each marker combination (default \code{TRUE}).}
 
@@ -58,20 +58,20 @@ ppv(
 
 \item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
 \itemize{
-\item NULL: (default) if no assay data is to be plotted
-\item "mic": plot MIC data stored in column \code{mic}
-\item "disk": plot disk diffusion data stored in column \code{disk}
+\item \code{NULL}: (default) if no assay data is to be plotted
+\item \code{"mic"}: plot MIC data stored in column \code{mic}
+\item \code{"disk"}: plot disk diffusion data stored in column \code{disk}
 }}
 
-\item{boxplot_col}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is "grey". Only used if \code{plot_assay=TRUE}.}
+\item{boxplot_col}{Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is \code{"grey"}.}
 
-\item{antibiotic}{(optional) Name of antibiotic, so we can retrieve breakpoints to the assay value distribution plot.}
+\item{antibiotic}{Optional. Antibiotic name used to retrieve clinical breakpoints for annotation of the assay distribution plot.}
 
-\item{species}{(optional) Name of species, so we can retrieve breakpoints to add to the assay value distribution plot.}
+\item{species}{Optional. Species name used for breakpoint lookup.}
 
-\item{bp_site}{(optional) Breakpoint site to retrieve (only relevant if plot_assay set to \code{TRUE} and also supplying \code{species} and \code{antibiotic} to retrieve breakpoints to plot, and not supplying breakpoints via \code{bp_S}, \code{bp_R}, \code{ecoff_bp}).}
+\item{bp_site}{Optional. Breakpoint site (e.g. "Non-meningitis") used when retrieving clinical breakpoints.}
 
-\item{guideline}{(optional) Guideline to use when looking up breakpoints (default 'EUCAST 2025')}
+\item{guideline}{Guideline used for breakpoint lookup. Default is \code{"EUCAST 2025"}.}
 
 \item{bp_S}{(optional) S breakpoint to add to assay distribution plot (numerical).}
 
@@ -79,7 +79,7 @@ ppv(
 
 \item{ecoff_bp}{(optional) ECOFF breakpoint to add to assay distribution plot (numerical).}
 
-\item{pd}{Position dodge, i.e. spacing for the R/NWT values to be positioned above/below the line in the PPV plot. Default 'position_dodge(width = 0.8)'.}
+\item{pd}{A \code{ggplot2::position_dodge()} object controlling horizontal spacing of points and confidence intervals in the PPV plot. Default is \code{position_dodge(width = 0.8)}.}
 }
 \value{
 A list containing the following elements:
@@ -89,9 +89,10 @@ A list containing the following elements:
 }
 }
 \description{
-This function generates an upset plot showing summaries of phenotype results (assay distributions, phenotype category percentages, and/or predictive value for phenotype) for each combination of markers observed in the data.
+This function generates a plot showing summaries of phenotype results (assay distributions, phenotype category percentages, and/or predictive value for phenotype) for each combination of markers observed in the data.
 }
 \examples{
+\dontrun{
 ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
 
 binary_matrix <- get_binary_matrix(
@@ -105,4 +106,5 @@ binary_matrix <- get_binary_matrix(
 )
 
 ppv(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
+}
 }

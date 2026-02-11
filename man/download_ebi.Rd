@@ -25,7 +25,7 @@ download_ebi(
 
 \item{antibiotic}{(Optional) String (or vector of strings) specifying the antibiotic name/s to filter on (default NULL). Uses the AMR package to try to fix typos, and format to lower-case for EBI files. Not used if \code{data}="genotype" and \code{class} or \code{subclass} is specified.}
 
-\item{force_antibiotic}{(Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default FALSE).}
+\item{force_antibiotic}{(Optional) Logical indicating whether to turn off parsing of antibiotic names and match exactly on the input strings (default \code{FALSE}).}
 
 \item{genus}{(Optional) String specifying a bacterial genus to filter on (default NULL, will pull all taxa).}
 
@@ -100,7 +100,7 @@ pheno_kquasi_reinterpreted <- download_ebi(
 # download all available genotype data
 ebi_geno <- download_ebi(data = "genotype")
 
-# download genotype data for Klebsiella pneumoniae, and filter to 
+# download genotype data for Klebsiella pneumoniae, and filter to
 # markers assigned to NCBI class 'TRIMETHOPRIM'
 geno_kpn_tmp <- download_ebi(
   data = "genotype",
@@ -108,7 +108,7 @@ geno_kpn_tmp <- download_ebi(
   geno_subclass = "TRIMETHOPRIM"
 )
 
-# download genotype data for Klebsiella pneumoniae, and filter to 
+# download genotype data for Klebsiella pneumoniae, and filter to
 # markers assigned to NCBI class 'TRIMETHOPRIM' or 'QUINOLONE'
 geno_kpn_tmp <- download_ebi(
   data = "genotype",
@@ -116,13 +116,12 @@ geno_kpn_tmp <- download_ebi(
   geno_subclass = c("TRIMETHOPRIM", "QUINOLONE")
 )
 
-# download genotype data for Klebsiella pneumoniae, and filter to 
+# download genotype data for Klebsiella pneumoniae, and filter to
 # markers associated with CARD drug term 'trimethoprim'
 geno_kpn_tmp <- download_ebi(
   data = "genotype",
   species = "Klebsiella pneumoniae",
   antibiotic = "trimethoprim"
 )
-
 }
 }
