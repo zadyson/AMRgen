@@ -33,7 +33,8 @@ combo_stats(
 \itemize{
 \item \code{""} (default): decreasing frequency of combinations
 \item \code{"genes"}: order by the number of genes in each combination
-\item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination.
+\item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination
+\item \code{"ppv"}: order by the PPV estimated for each combination
 }}
 
 \item{assay}{A character string indicating whether to plot MIC or disk diffusion data. Must be one of:

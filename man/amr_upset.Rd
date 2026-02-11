@@ -8,7 +8,7 @@ amr_upset(
   binary_matrix,
   assay = "mic",
   min_set_size = 2,
-  order = "",
+  order = "value",
   plot_set_size = FALSE,
   plot_category = TRUE,
   print_category_counts = FALSE,
@@ -37,9 +37,10 @@ amr_upset(
 
 \item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
 \itemize{
-\item \code{""} (default): decreasing frequency of combinations
+\item \code{""}: decreasing frequency of combinations
 \item \code{"genes"}: order by the number of genes in each combination
-\item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination.
+\item \code{"value" (default)}: order by the median assay value (MIC or disk zone) for each combination
+\item \code{"ppv"}: order by the PPV estimated for each combination
 }}
 
 \item{plot_set_size}{Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is \code{FALSE}.}

@@ -22,7 +22,8 @@
 #' @param order A character string indicating the order of the combinations on the x-axis. Options are:
 #' - `""` (default): decreasing frequency of combinations
 #' - `"genes"`: order by the number of genes in each combination
-#' - `"value"`: order by the median assay value (MIC or disk zone) for each combination.
+#' - `"value"`: order by the median assay value (MIC or disk zone) for each combination
+#' - `"ppv"`: order by the PPV estimated for each combination
 #' @param boxplot_col Colour for lines of the box plots summarising the MIC distribution for each marker combination. Default is `"grey"`.
 #' @param SIR_col A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., `"R"`, `"I"`, `"S"`), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package [scale_colour_sir()].
 #' @param assay A character string indicating whether to plot MIC or disk diffusion data. Must be one of:
@@ -116,10 +117,9 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
   # check we have the expected assay column, with data
   if (!is.null(assay)) {
     if (!(assay %in% c("mic", "disk"))) {
-      cat(paste("In valid `assay` value:",assay,"\n"))
+      cat(paste("In valid `assay` value:", assay, "\n"))
       assay <- NULL
-    }
-    else if (!(assay %in% colnames(binary_matrix))) {
+    } else if (!(assay %in% colnames(binary_matrix))) {
       stop(paste("input", deparse(substitute(binary_matrix)), "must have a column labelled ", assay))
     }
   }
@@ -127,15 +127,14 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
     data_rows <- binary_matrix %>%
       filter(!is.na(get(assay))) %>%
       nrow()
-    
+
     if (data_rows == 0) {
       stop(paste("input", deparse(substitute(binary_matrix)), "has no non-NA values in column ", assay))
     }
-    
+
     # Add in a combination column and filter to samples with the required assay data (MIC or disk) only
     binary_matrix_wide <- get_combo_matrix(binary_matrix, assay = assay)
-  }
-  else {
+  } else {
     # Add in a combination column
     binary_matrix_wide <- get_combo_matrix(binary_matrix, assay = NULL)
   }
@@ -168,7 +167,9 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
       distinct() %>%
       group_by(combination_id, get(assay), pheno) %>%
       summarise(n = n()) # count how many at each assay value, keep pheno for colour
-  } else {assay_plot=NULL}
+  } else {
+    assay_plot <- NULL
+  }
 
   ### Gene prevalence plot (amongst strains with marker combinations exceeding the minimum set size)
   gene.prev <- binary_matrix %>%
@@ -217,167 +218,12 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
     ) %>%
     ungroup()
 
-  ### Set order of combination_id <- x axis
-  # Default = decreasing frequency
-  if (order == "" | is.null(assay)) {
-    ordered_comb_order <- combination_freq %>%
-      arrange(desc(perc)) %>%
-      pull(combination_id)
-    combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
-    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
-    if (!is.null(assay)) {
-      assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
-    }
-  }
-
-  # Do by # genes in combination (only want each id once)
-  if (order == "genes") {
-    ordered_comb_order <- multi_genes_combination_id_all %>%
-      arrange(u) %>%
-      filter(row_number() == 1) %>%
-      pull(combination_id)
-    
-    combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
-    binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
-    if (!is.null(assay)) {
-      assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
-    }
-  }
-  # Do by # median assay value in combination (only want each id once)
-  else if (order == "value") {
-    if (is.null(assay)) {
-      cat ("Order set to value, but `assay` not provided. Ordering by genes (set size) instead.\n")
-    }
-    else {
-      if (assay == "mic") {
-        # use mic class median (ie ignoring range indicators <>=) for the purpose of ordering columns
-        mic_medians <- binary_matrix_wide %>%
-          group_by(combination_id) %>%
-          summarise(median = median(mic))
-        ordered_comb_order <- mic_medians %>%
-          arrange(median) %>%
-          pull(combination_id)
-      } else if (assay == "disk") {
-        disk_medians <- binary_matrix_wide %>%
-          group_by(combination_id) %>%
-          summarise(median = median(as.double(disk)))
-        ordered_comb_order <- disk_medians %>%
-          arrange(-median) %>%
-          pull(combination_id)
-      }
-      assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
-      combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
-      binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
-    }
-  }
-
-  ##### Plots ###
-  
-  ### assay data plot (MIC/disk distribution)
-  if (!is.null(assay)) {
-
-    g1 <- ggplot(data = assay_plot, aes(x = combination_id, y = `get(assay)`)) +
-      geom_boxplot(colour = boxplot_col) +
-      geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
-      theme_bw() +
-      scale_size_continuous("Number of\nisolates") +
-      scale_color_sir(
-        colours_SIR = SIR_col,
-        name = colour_label
-      )
-    
-    if (assay == "mic") {
-      g1 <- g1 +
-        scale_y_mic() +
-        ylab("MIC (mg/L)")
-    } else {
-      g1 <- g1 +
-        ylab("Disk zone (mm)")
-    }
-    
-    # if species and antibiotic are provided, but breakpoints aren't, check breakpoints to annotate plot
-    if (!is.null(species) & !is.null(antibiotic) & (is.null(bp_S) | is.null(bp_R) | is.null(ecoff_bp))) {
-      if (is.null(ecoff_bp)) {
-        ecoff_bp <- safe_execute(getBreakpoints(species = as.mo(species), guide = "EUCAST 2025", antibiotic = as.ab(antibiotic), "ECOFF") %>% filter(method == toupper(assay)) %>% pull(breakpoint_S))
-      }
-      if (is.null(bp_S)) {
-        bp_S <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[1]))
-      }
-      if (is.null(bp_R)) {
-        bp_R <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[2]))
-      }
-    }
-    
-    if (!is.null(bp_S)) {
-      g1 <- g1 + geom_hline(yintercept = bp_S)
-    }
-    if (!is.null(bp_R)) {
-      g1 <- g1 + geom_hline(yintercept = bp_R)
-    }
-    if (!is.null(ecoff_bp)) {
-      g1 <- g1 + geom_hline(yintercept = ecoff_bp, linetype = 2)
-    }
-  } else{
-    g1 <- NULL
-  }
-  
-  ### Bar plot - set size
-  g2 <- ggplot(combination_freq, aes(x = combination_id, y = n)) +
-    geom_bar(stat = "identity") +
-    theme_bw() +
-    scale_x_discrete("group")
-  if (print_set_size) {
-    g2 <- g2 + geom_text(aes(label = n), nudge_y = -.5, size = 3)
-  }
-
-  # pheno category stacked barplot
-  category_plot <- binary_matrix %>%
-    select(id, pheno, combination_id) %>%
-    distinct() %>%
-    ggplot(aes(x = combination_id, fill = pheno)) +
-    geom_bar(stat = "count", position = "fill") +
-    scale_fill_sir(colours_SIR = SIR_col) +
-    theme_light() +
-    labs(x = "", y = "Category", fill = "Resistance\ncategory")
-
-  if (print_category_counts) {
-    category_plot <- category_plot +
-      geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3)
-  }
-
-  ### Dot plot of combinations
-
-  g3 <- binary_matrix <- binary_matrix %>%
-    mutate(binary_comb = if_else(value > 0, 1, 0)) %>%
-    ggplot(aes(x = combination_id, y = fct_rev(genes))) +
-    geom_point(aes(size = binary_comb), show.legend = FALSE) +
-    theme_bw() +
-    scale_size_continuous(range = c(-1, 2)) +
-    scale_y_discrete(name = "Marker") +
-    geom_segment(
-      data = multi_genes_combination_ids,
-      aes(
-        x = combination_id, xend = combination_id,
-        y = min, yend = max, group = combination_id
-      ),
-      color = "black"
-    )
-
-  ### Plot gene prev / set size
-  g4 <- gene.prev %>%
-    ggplot(aes(x = fct_rev(genes), y = gene.prev)) +
-    geom_col() +
-    theme_bw() +
-    coord_flip() +
-    scale_y_reverse("")
-
   # summary table (ignore MIC values expressed as ranges, when calculating median/IQR)
   if (is.null(assay)) {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
       summarise(n = n())
-  }
-  else if (assay == "mic") {
+  } else if (assay == "mic") {
     summary <- binary_matrix_wide %>%
       group_by(combination_id) %>%
       summarise( # note these medians are not meaningful if all expressed as ranges
@@ -441,25 +287,6 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
       select(-R.se)
   }
 
-  ppv_plot <- summary %>%
-    rename(total = n) %>%
-    filter(combination_id %in% comb_enough_strains) %>%
-    pivot_longer(cols = starts_with(c("R", "I", "NWT")), names_to = c("category", "stat"), values_to = "value", names_pattern = "(.*)\\.(.*)") %>%
-    pivot_wider(names_from = "stat", values_from = "value", id_cols = combination_id:category) %>%
-    mutate(category = forcats::fct_relevel(category, "NWT", after = Inf)) %>%
-    ggplot(aes(x = combination_id, group = category, col = category)) +
-    geom_hline(yintercept = 0.5, linetype = 2) +
-    geom_linerange(aes(ymin = ci_lower, ymax = ci_upper), position = pd) +
-    geom_point(aes(y = ppv), position = pd) +
-    theme_bw() +
-    labs(x = "", y = "PPV", col = "Positive predictive\nvalue (PPV) for:") +
-    scale_colour_manual(values = colours_ppv) +
-    theme(
-      axis.text.x = element_text(size = 9),
-      axis.text.y = element_text(size = 9)
-    ) +
-    ylim(0, 1)
-
   # get names for summary
   combination_names <- binary_matrix_wide %>%
     select(combination_id, any_of(genes)) %>%
@@ -479,6 +306,185 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
     relocate(marker_list, marker_count, n) %>%
     mutate(marker_list = gsub("\\.\\.", ":", marker_list)) %>%
     mutate(marker_list = gsub("`", "", marker_list))
+
+  ### Set order of combination_id <- x axis
+  # Default = decreasing frequency
+  ordered_comb_order <- combination_freq %>%
+    arrange(desc(perc)) %>%
+    pull(combination_id)
+
+  if (order == "ppv") {
+    cat("ordering by PPV")
+    if ("R.ppv" %in% colnames(summary)) {
+      cat("ordering by R.PPV")
+      ordered_comb_order <- summary %>%
+        arrange(R.ppv) %>%
+        pull(combination_id)
+    } else if ("NWT.ppv" %in% colnames(summary)) {
+      ordered_comb_order <- summary %>%
+        arrange(R.ppv) %>%
+        pull(combination_id)
+    }
+  }
+
+  # Do by # genes in combination (only want each id once)
+  else if (order == "genes") {
+    ordered_comb_order <- multi_genes_combination_id_all %>%
+      arrange(u) %>%
+      filter(row_number() == 1) %>%
+      pull(combination_id)
+  }
+  # Do by # median assay value in combination (only want each id once)
+  else if (order == "value") {
+    if (is.null(assay)) {
+      cat("Order set to value, but `assay` not provided. Ordering by genes (set size) instead.\n")
+    } else {
+      if (assay == "mic") {
+        # use mic class median (ie ignoring range indicators <>=) for the purpose of ordering columns
+        mic_medians <- binary_matrix_wide %>%
+          group_by(combination_id) %>%
+          summarise(median = median(mic))
+        ordered_comb_order <- mic_medians %>%
+          arrange(median) %>%
+          pull(combination_id)
+      } else if (assay == "disk") {
+        disk_medians <- binary_matrix_wide %>%
+          group_by(combination_id) %>%
+          summarise(median = median(as.double(disk)))
+        ordered_comb_order <- disk_medians %>%
+          arrange(-median) %>%
+          pull(combination_id)
+      }
+    }
+  }
+
+  # apply the ordering
+  combination_freq$combination_id <- factor(combination_freq$combination_id, levels = ordered_comb_order)
+  binary_matrix$combination_id <- factor(binary_matrix$combination_id, levels = ordered_comb_order)
+  summary$combination_id <- factor(summary$combination_id, levels = ordered_comb_order)
+  if (!is.null(assay)) {
+    assay_plot$combination_id <- factor(assay_plot$combination_id, levels = ordered_comb_order)
+  }
+
+  ##### Plots ###
+
+  ### assay data plot (MIC/disk distribution)
+  if (!is.null(assay)) {
+    g1 <- ggplot(data = assay_plot, aes(x = combination_id, y = `get(assay)`)) +
+      geom_boxplot(colour = boxplot_col) +
+      geom_point(aes(size = n, colour = pheno), show.legend = TRUE) +
+      theme_bw() +
+      scale_size_continuous("Number of\nisolates") +
+      scale_color_sir(
+        colours_SIR = SIR_col,
+        name = colour_label
+      )
+
+    if (assay == "mic") {
+      g1 <- g1 +
+        scale_y_mic() +
+        ylab("MIC (mg/L)")
+    } else {
+      g1 <- g1 +
+        ylab("Disk zone (mm)")
+    }
+
+    # if species and antibiotic are provided, but breakpoints aren't, check breakpoints to annotate plot
+    if (!is.null(species) & !is.null(antibiotic) & (is.null(bp_S) | is.null(bp_R) | is.null(ecoff_bp))) {
+      if (is.null(ecoff_bp)) {
+        ecoff_bp <- safe_execute(getBreakpoints(species = as.mo(species), guide = "EUCAST 2025", antibiotic = as.ab(antibiotic), "ECOFF") %>% filter(method == toupper(assay)) %>% pull(breakpoint_S))
+      }
+      if (is.null(bp_S)) {
+        bp_S <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[1]))
+      }
+      if (is.null(bp_R)) {
+        bp_R <- safe_execute(unlist(checkBreakpoints(species = as.mo(species), guide = guideline, antibiotic = as.ab(antibiotic), bp_site = bp_site, assay = toupper(assay))[2]))
+      }
+    }
+
+    if (!is.null(bp_S)) {
+      g1 <- g1 + geom_hline(yintercept = bp_S)
+    }
+    if (!is.null(bp_R)) {
+      g1 <- g1 + geom_hline(yintercept = bp_R)
+    }
+    if (!is.null(ecoff_bp)) {
+      g1 <- g1 + geom_hline(yintercept = ecoff_bp, linetype = 2)
+    }
+  } else {
+    g1 <- NULL
+  }
+
+  ### Bar plot - set size
+  g2 <- ggplot(combination_freq, aes(x = combination_id, y = n)) +
+    geom_bar(stat = "identity") +
+    theme_bw() +
+    scale_x_discrete("group")
+  if (print_set_size) {
+    g2 <- g2 + geom_text(aes(label = n), nudge_y = -.5, size = 3)
+  }
+
+  # pheno category stacked barplot
+  category_plot <- binary_matrix %>%
+    select(id, pheno, combination_id) %>%
+    distinct() %>%
+    ggplot(aes(x = combination_id, fill = pheno)) +
+    geom_bar(stat = "count", position = "fill") +
+    scale_fill_sir(colours_SIR = SIR_col) +
+    theme_light() +
+    labs(x = "", y = "Category", fill = "Resistance\ncategory")
+
+  if (print_category_counts) {
+    category_plot <- category_plot +
+      geom_text(aes(label = after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 3)
+  }
+
+  ### Dot plot of combinations
+
+  g3 <- binary_matrix <- binary_matrix %>%
+    mutate(binary_comb = if_else(value > 0, 1, 0)) %>%
+    ggplot(aes(x = combination_id, y = fct_rev(genes))) +
+    geom_point(aes(size = binary_comb), show.legend = FALSE) +
+    theme_bw() +
+    scale_size_continuous(range = c(-1, 2)) +
+    scale_y_discrete(name = "Marker") +
+    geom_segment(
+      data = multi_genes_combination_ids,
+      aes(
+        x = combination_id, xend = combination_id,
+        y = min, yend = max, group = combination_id
+      ),
+      color = "black"
+    )
+
+  ### Plot gene prev / set size
+  g4 <- gene.prev %>%
+    ggplot(aes(x = fct_rev(genes), y = gene.prev)) +
+    geom_col() +
+    theme_bw() +
+    coord_flip() +
+    scale_y_reverse("")
+
+
+  ppv_plot <- summary %>%
+    rename(total = n) %>%
+    filter(combination_id %in% comb_enough_strains) %>%
+    pivot_longer(cols = starts_with(c("R", "I", "NWT")), names_to = c("category", "stat"), values_to = "value", names_pattern = "(.*)\\.(.*)") %>%
+    pivot_wider(names_from = "stat", values_from = "value", id_cols = combination_id:category) %>%
+    mutate(category = forcats::fct_relevel(category, "NWT", after = Inf)) %>%
+    ggplot(aes(x = combination_id, group = category, col = category)) +
+    geom_hline(yintercept = 0.5, linetype = 2) +
+    geom_linerange(aes(ymin = ci_lower, ymax = ci_upper), position = pd) +
+    geom_point(aes(y = ppv), position = pd) +
+    theme_bw() +
+    labs(x = "", y = "PPV", col = "Positive predictive\nvalue (PPV) for:") +
+    scale_colour_manual(values = colours_ppv) +
+    theme(
+      axis.text.x = element_text(size = 9),
+      axis.text.y = element_text(size = 9)
+    ) +
+    ylim(0, 1)
+
 
   return(list(
     summary = summary,
@@ -501,9 +507,10 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
 #' - `"disk"`: plot disk diffusion data stored in column `disk`
 #' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only marker combinations with at least this number of occurrences are included in the plots.
 #' @param order A character string indicating the order of the combinations on the x-axis. Options are:
-#' - `""` (default): decreasing frequency of combinations
+#' - `""`: decreasing frequency of combinations
 #' - `"genes"`: order by the number of genes in each combination
-#' - `"value"`: order by the median assay value (MIC or disk zone) for each combination.
+#' - `"value" (default)`: order by the median assay value (MIC or disk zone) for each combination
+#' - `"ppv"`: order by the PPV estimated for each combination
 #' @param plot_set_size Logical indicating whether to include a bar plot showing the set size (i.e., number of times each combination of markers is observed). Default is `FALSE`.
 #' @param print_set_size Logical indicating whether, if `plot_set_size=TRUE`, to print the number of strains with each marker combination on the plot. Default is `FALSE`.
 #' @param plot_category Logical indicating whether to include a stacked bar plot showing, for each marker combination, the proportion of samples with each phenotype classification (specified by the `pheno` column in the input file). Default is `TRUE`.
@@ -539,28 +546,26 @@ combo_stats <- function(binary_matrix, min_set_size = 2, order = "",
 #'
 #' amr_upset(binary_matrix, min_set_size = 3, order = "value", assay = "mic")
 #' }
-amr_upset <- function(binary_matrix, assay = "mic", 
-                      min_set_size = 2, order = "",
+amr_upset <- function(binary_matrix, assay = "mic",
+                      min_set_size = 2, order = "value",
                       plot_set_size = FALSE, plot_category = TRUE,
                       print_category_counts = FALSE, print_set_size = FALSE,
-                      boxplot_col = "grey", 
+                      boxplot_col = "grey",
                       SIR_col = c(S = "#3CAEA3", I = "#F6D55C", R = "#ED553B"),
                       antibiotic = NULL, species = NULL, bp_site = NULL,
                       guideline = "EUCAST 2025",
                       bp_S = NULL, bp_R = NULL, ecoff_bp = NULL) {
-  
   if (is.null(assay)) {
     stop("`assay` must be 'mic' or 'disk'.\nIf you don't want to plot assay data, function `ppv()` is more appropriate.")
-  }
-  else if (!(assay %in% c("mic", "disk"))) {
+  } else if (!(assay %in% c("mic", "disk"))) {
     stop("`assay` must be 'mic' or 'disk'.\nIf you don't want to plot assay data, function `ppv()` is more appropriate.")
   }
-  
+
   combo_data <- combo_stats(
     binary_matrix = binary_matrix,
     min_set_size = min_set_size,
     order = order,
-    assay=assay,
+    assay = assay,
     boxplot_col = boxplot_col,
     print_set_size = print_set_size,
     print_category_counts = print_category_counts,
@@ -618,9 +623,10 @@ amr_upset <- function(binary_matrix, assay = "mic",
 #' @param binary_matrix A data frame containing the original binary matrix output from the [get_binary_matrix()] function. Expected columns are an identifier (column 1, any name), `pheno` (class sir, with S/I/R categories to colour points), `mic` (class mic, with MIC values to plot), and other columns representing gene presence/absence (binary coded, i.e., 1 = present, 0 = absent).
 #' @param min_set_size An integer specifying the minimum size for a gene set to be included in the analysis and plots. Default is 2. Only marker combinations with at least this number of occurrences are included in the plots.
 #' @param order A character string indicating the order of the combinations on the x-axis. Options are:
-#' - `""` (default): decreasing frequency of combinations
+#' - `""`: decreasing frequency of combinations
 #' - `"genes"`: order by the number of genes in each combination
 #' - `"value"`: order by the median assay value (MIC or disk zone) for each combination.
+#' - `"ppv"` (default): order by the PPV estimated for each combination
 #' @param colours_ppv A named vector of colours for the plot of PPV estimates. The names should be `"R"`, `"I"` and `"NWT"`, and the values should be valid color names or hexadecimal color codes.
 #' @param SIR_col A named vector of colours for the percentage bar plot. The names should be the phenotype categories (e.g., `"R"`, `"I"`, `"S"`), and the values should be valid color names or hexadecimal color codes. Default values are those used in the AMR package [scale_colour_sir()].
 #' @param upset_grid Logical indicating whether to show marker combinations as an upset plot-style grid (default `FALSE`, so that each row is instead labelled with a printed list of markers).
@@ -669,7 +675,7 @@ amr_upset <- function(binary_matrix, assay = "mic",
 #' }
 ppv <- function(binary_matrix,
                 min_set_size = 2,
-                order = "",
+                order = "ppv",
                 colours_ppv = c("R" = "maroon", "NWT" = "navy"),
                 SIR_col = c(S = "#3CAEA3", I = "#F6D55C", R = "#ED553B"),
                 upset_grid = FALSE,
@@ -684,7 +690,6 @@ ppv <- function(binary_matrix,
                 guideline = "EUCAST 2025",
                 bp_S = NULL, bp_R = NULL, ecoff_bp = NULL,
                 pd = position_dodge(width = 0.8)) {
-  
   combo_data <- combo_stats(
     binary_matrix = binary_matrix,
     min_set_size = min_set_size,

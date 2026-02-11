@@ -7,7 +7,7 @@
 ppv(
   binary_matrix,
   min_set_size = 2,
-  order = "",
+  order = "ppv",
   colours_ppv = c(R = "maroon", NWT = "navy"),
   SIR_col = c(S = "#3CAEA3", I = "#F6D55C", R = "#ED553B"),
   upset_grid = FALSE,
@@ -35,9 +35,10 @@ ppv(
 
 \item{order}{A character string indicating the order of the combinations on the x-axis. Options are:
 \itemize{
-\item \code{""} (default): decreasing frequency of combinations
+\item \code{""}: decreasing frequency of combinations
 \item \code{"genes"}: order by the number of genes in each combination
 \item \code{"value"}: order by the median assay value (MIC or disk zone) for each combination.
+\item \code{"ppv"} (default): order by the PPV estimated for each combination
 }}
 
 \item{colours_ppv}{A named vector of colours for the plot of PPV estimates. The names should be \code{"R"}, \code{"I"} and \code{"NWT"}, and the values should be valid color names or hexadecimal color codes.}
