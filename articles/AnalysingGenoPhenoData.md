@@ -69,37 +69,53 @@ ecoli_geno_raw
 #> #   `Accession of closest sequence` <chr>, `Name of closest sequence` <chr>, …
 
 # Load AMRFinderPlus output
-#    (replace 'ecoli_geno_raw' with the filepath for any AMRFinderPlus output)
-ecoli_geno <- import_amrfp(ecoli_geno_raw, "Name")
+ecoli_geno <- import_amrfp(
+  input_table = ecoli_geno_raw, # (replace 'ecoli_geno_raw' with the filepath for any AMRFinderPlus output)
+  sample_col = "Name",
+  # you can optionally specify the below key column names if they differ in your dataframe to standard AMRFinderPlus outputs
+  element_symbol_col = "Gene symbol", # or "Element symbol"
+  element_type_col = "Element type", # or "Type"
+  element_subtype_col = "Element subtype",
+  method_col = "Method",
+  node_col = "Hierarchy node",
+  subclass_col = "Subclass",
+  class_col = "Class"
+)
 
 # Check the format of the processed genotype table
 head(ecoli_geno)
-#> # A tibble: 6 × 36
-#>   Name         gene  mutation  node  marker   marker.label drug_agent drug_class
-#>   <chr>        <chr> <chr>     <chr> <chr>    <chr>        <ab>       <chr>     
-#> 1 SAMN03177615 blaEC NA        blaEC blaEC    blaEC        NA         Beta-lact…
-#> 2 SAMN03177615 acrF  NA        acrF  acrF     acrF         NA         Efflux    
-#> 3 SAMN03177615 glpT  Glu448Lys glpT  glpT_E4… glpT:Glu448… FOS        Other ant…
-#> 4 SAMN03177615 floR  NA        floR  floR     floR         CHL        Amphenico…
-#> 5 SAMN03177615 floR  NA        floR  floR     floR         FLR        Other ant…
-#> 6 SAMN03177615 mdtM  NA        mdtM  mdtM     mdtM         NA         Efflux    
-#> # ℹ 28 more variables: `Protein identifier` <lgl>, `Contig id` <chr>,
-#> #   Start <dbl>, Stop <dbl>, Strand <chr>, `Gene symbol` <chr>,
-#> #   `Sequence name` <chr>, Scope <chr>, `Element type` <chr>,
-#> #   `Element subtype` <chr>, Class <chr>, Subclass <chr>, Method <chr>,
-#> #   `Target length` <dbl>, `Reference sequence length` <dbl>,
+#> # A tibble: 6 × 37
+#>   Name        gene  mutation drug_agent drug_class `variation type` node  marker
+#>   <chr>       <chr> <chr>    <ab>       <chr>      <chr>            <chr> <chr> 
+#> 1 SAMN031776… blaEC NA       NA         Beta-lact… Gene presence d… blaEC blaEC 
+#> 2 SAMN031776… acrF  NA       NA         Efflux     Gene presence d… acrF  acrF  
+#> 3 SAMN031776… glpT  Glu448L… FOS        Phosphoni… Protein variant… glpT  glpT_…
+#> 4 SAMN031776… floR  NA       CHL        Phenicols  Gene presence d… floR  floR  
+#> 5 SAMN031776… floR  NA       FLR        Phenicols  Gene presence d… floR  floR  
+#> 6 SAMN031776… mdtM  NA       NA         Efflux     Gene presence d… mdtM  mdtM  
+#> # ℹ 29 more variables: marker.label <chr>, `Protein identifier` <lgl>,
+#> #   `Contig id` <chr>, Start <dbl>, Stop <dbl>, Strand <chr>,
+#> #   `Gene symbol` <chr>, `Sequence name` <chr>, Scope <chr>,
+#> #   `Element type` <chr>, `Element subtype` <chr>, Class <chr>, Subclass <chr>,
+#> #   Method <chr>, `Target length` <dbl>, `Reference sequence length` <dbl>,
 #> #   `% Coverage of reference sequence` <dbl>,
 #> #   `% Identity to reference sequence` <dbl>, `Alignment length` <dbl>, …
 ```
 
 The genotype table has one row for each genetic marker detected in an
-input genome, i.e. one per strain/marker combination.
+input genome, i.e. one per strain/marker combination. This means your
+output table may end up with more columns than your input table, as
+markers conferring resistance to multiple drug classes will be expanded
+into several rows.
 
 If your genotype data is not in AMRFinderPlus format, you can wrangle
-other input data files into the necessary format.
+other input data files into the necessary format. If only your column
+names differ to standard AMRFinderPlus inputs, you can specify these
+using `element_symbol_col`, `element_type_col`, `element_subtype_col`,
+`method_col`, `node_col`, `subclass_col` and `class_col`.
 
-The essential columns for a genotype table to work with `AMRgen`
-functions are:
+The essential columns for a genotype table to work with downstream
+`AMRgen` functions are:
 
 - `Name`: character string giving the sample name, used to link to
   sample names in the phenotype file (this column can have a different
@@ -127,47 +143,237 @@ sure that all genome names in your input dataset are represented in the
 genotype table, and if any are missing add empty rows for these using
 e.g. `tibble(Name=missing_samples) %>% bind_rows(genotype_table)`.
 
+You can summarise the content of a genotype table using the inbuilt
+[`summarise_geno()`](https://AMRverse.github.io/AMRgen/reference/summarise_geno.md)
+function.
+
+``` r
+ecoli_geno_summary <- summarise_geno(ecoli_geno)
+
+# Number of unique samples, markers, genes, drugs, classes, and variation types
+ecoli_geno_summary$uniques
+#> # A tibble: 6 × 2
+#>   column         n_unique
+#>   <chr>             <int>
+#> 1 Name               5258
+#> 2 marker              244
+#> 3 drug_agent           35
+#> 4 drug_class           26
+#> 5 gene                196
+#> 6 variation type        5
+
+# Unique counts of samples, markers, genes, drugs, and classes - per variation type
+ecoli_geno_summary$pertype
+#> # A tibble: 5 × 6
+#>   `variation type`                Name marker drug_agent drug_class  gene
+#>   <chr>                          <int>  <int>      <int>      <int> <int>
+#> 1 Gene presence detected          5258    164         22         17   164
+#> 2 Inactivating mutation detected   615     42         15         14    42
+#> 3 Nucleotide variant detected       57      2          3          3     1
+#> 4 Promoter variant detected         93      4          1          1     1
+#> 5 Protein variant detected        4920     65         18         16    21
+```
+
+The
+[`summarise_geno()`](https://AMRverse.github.io/AMRgen/reference/summarise_geno.md)
+function also returns a list of drugs and classes represented in the
+table, and the associated number of unique markers, unique samples, and
+total hits for each drug/class. Ordering by sample count, we see the
+most common class is efflux… there are only 3 efflux-associated markers
+but there are 11,828 hits to these across 5,258 samples (i.e. all
+samples have at least one). Next most common are markers associated with
+beta-lactams… there are 22 different markers with 6,379 hits across
+4,989 of our 5,258 samples.
+
+``` r
+ecoli_geno_summary$drugs
+#> # A tibble: 44 × 6
+#>    drug_agent antibiotic                  drug_class       markers samples  hits
+#>    <ab>       <chr>                       <chr>              <int>   <int> <int>
+#>  1 AMC        Amoxicillin/clavulanic acid Aminopenicillins       2      57    57
+#>  2 AMK        Amikacin                    Aminoglycosides        6     176   180
+#>  3 AMP        Ampicillin                  Aminopenicillins       6     749   749
+#>  4 APR        Apramycin                   Aminoglycosides        1      98    98
+#>  5 ATM        Aztreonam                   Monobactams            2      39    39
+#>  6 AZM        Azithromycin                Macrolides             4     472   478
+#>  7 BLM        Bleomycin                   Glycopeptides          2      40    40
+#>  8 CHL        Chloramphenicol             Phenicols             15    1121  1181
+#>  9 CLI        Clindamycin                 Lincosamides           1      26    26
+#> 10 CLR        Clarithromycin              Macrolides             1       1     1
+#> # ℹ 34 more rows
+
+# Order by sample count per drug/class
+ecoli_geno_summary$drugs %>% arrange(-samples)
+#> # A tibble: 44 × 6
+#>    drug_agent antibiotic      drug_class                markers samples  hits
+#>    <ab>       <chr>           <chr>                       <int>   <int> <int>
+#>  1 NA         NA              Efflux                          3    5258 11828
+#>  2 NA         NA              Beta-lactams                   22    4989  6379
+#>  3 FOS        Fosfomycin      Phosphonics                     9    4861  6411
+#>  4 COL        Colistin        Polymyxins                     11    3415  3436
+#>  5 NA         NA              Tetracyclines                  13    2634  2929
+#>  6 NA         NA              Quinolones                     45    1822  4497
+#>  7 STR1       Streptomycin    Aminoglycosides                13    1669  3291
+#>  8 SSS        Sulfonamide     Sulfonamides                    5    1500  1876
+#>  9 CHL        Chloramphenicol Phenicols                      15    1121  1181
+#> 10 NA         NA              Cephalosporins (3rd gen.)      32    1065  1285
+#> # ℹ 34 more rows
+```
+
+Ordering by marker count, we see the classes with the most different
+markers associated are quinolones (45 unique markers detected across
+1,822 unique samples), third generation cephalosporins (32 unique
+markers detected across 1,065 unique samples) and beta-lactams (22
+unique markers detected across 4,989 unique samples).
+
+``` r
+ecoli_geno_summary$drugs %>% arrange(-markers)
+#> # A tibble: 44 × 6
+#>    drug_agent antibiotic      drug_class                markers samples  hits
+#>    <ab>       <chr>           <chr>                       <int>   <int> <int>
+#>  1 NA         NA              Quinolones                     45    1822  4497
+#>  2 NA         NA              Cephalosporins (3rd gen.)      32    1065  1285
+#>  3 NA         NA              Beta-lactams                   22    4989  6379
+#>  4 NA         NA              Trimethoprims                  16     824   877
+#>  5 CHL        Chloramphenicol Phenicols                      15    1121  1181
+#>  6 GEN        Gentamicin      Aminoglycosides                14     687   704
+#>  7 STR1       Streptomycin    Aminoglycosides                13    1669  3291
+#>  8 NA         NA              Carbapenems                    13      62    64
+#>  9 NA         NA              Tetracyclines                  13    2634  2929
+#> 10 COL        Colistin        Polymyxins                     11    3415  3436
+#> # ℹ 34 more rows
+```
+
+The
+[`summarise_geno()`](https://AMRverse.github.io/AMRgen/reference/summarise_geno.md)
+function also returns a list of markers represented in the table,
+annotated with the associated drugs/classes and variation types. The
+column ‘n’ indicates the count of hits detected per marker. Ordering by
+this column, we see the most common markers are acrF, blaEC and
+glpT_E448K.
+
+``` r
+ecoli_geno_summary$markers %>% arrange(-n)
+#> # A tibble: 349 × 6
+#>    marker     drug_agent antibiotic drug_class    `variation type`             n
+#>    <chr>      <ab>       <chr>      <chr>         <chr>                    <int>
+#>  1 acrF       NA         NA         Efflux        Gene presence detected    5002
+#>  2 blaEC      NA         NA         Beta-lactams  Gene presence detected    4749
+#>  3 glpT_E448K FOS        Fosfomycin Phosphonics   Protein variant detected  4731
+#>  4 mdtM       NA         NA         Efflux        Gene presence detected    3675
+#>  5 emrD       NA         NA         Efflux        Gene presence detected    2914
+#>  6 pmrB_E123D COL        Colistin   Polymyxins    Protein variant detected  1873
+#>  7 pmrB_Y358N COL        Colistin   Polymyxins    Protein variant detected  1531
+#>  8 blaTEM-1   NA         NA         Beta-lactams  Gene presence detected    1279
+#>  9 uhpT_E350Q FOS        Fosfomycin Phosphonics   Protein variant detected  1145
+#> 10 tet(A)     NA         NA         Tetracyclines Gene presence detected    1087
+#> # ℹ 339 more rows
+```
+
+Filtering specifically for markers associated with quinolones, we can
+find out more about the 45 markers for this class that were found in the
+dataset. Summarising by variation type, we see there are 12 markers
+indicating detection of an acquired gene, 2 indicating inactivating
+mutaions, and 31 indicating protein mutations. Sorting by marker
+frequency, we can see the full list of 45 unique markers and that the
+most common is a protein variant in gyrA, gyrA_S83L. Filtering to “Gene
+presence detected” we can that the most common acquired gene was
+aac(6’)-Ib-cr5.
+
+``` r
+# Count the different types of variants found
+ecoli_geno_summary$markers %>%
+  filter(drug_class == "Quinolones") %>%
+  count(`variation type`)
+#> # A tibble: 3 × 2
+#>   `variation type`                   n
+#>   <chr>                          <int>
+#> 1 Gene presence detected            12
+#> 2 Inactivating mutation detected     2
+#> 3 Protein variant detected          31
+
+# Sort by marker frequency to see the most common markers
+ecoli_geno_summary$markers %>%
+  filter(drug_class == "Quinolones") %>%
+  arrange(-n)
+#> # A tibble: 45 × 6
+#>    marker         drug_agent antibiotic drug_class `variation type`            n
+#>    <chr>          <ab>       <chr>      <chr>      <chr>                   <int>
+#>  1 gyrA_S83L      NA         NA         Quinolones Protein variant detect…   855
+#>  2 marR_S3N       NA         NA         Quinolones Protein variant detect…   726
+#>  3 parC_S80I      NA         NA         Quinolones Protein variant detect…   639
+#>  4 gyrA_D87N      NA         NA         Quinolones Protein variant detect…   622
+#>  5 parE_I529L     NA         NA         Quinolones Protein variant detect…   442
+#>  6 parC_E84V      NA         NA         Quinolones Protein variant detect…   294
+#>  7 aac(6')-Ib-cr5 NA         NA         Quinolones Gene presence detected    153
+#>  8 parE_D475E     NA         NA         Quinolones Protein variant detect…   147
+#>  9 parE_L416F     NA         NA         Quinolones Protein variant detect…   134
+#> 10 parE_S458A     NA         NA         Quinolones Protein variant detect…   111
+#> # ℹ 35 more rows
+
+# Filter to acquired genes and sort by frequency, to see the most common acquired genes
+ecoli_geno_summary$markers %>%
+  filter(drug_class == "Quinolones" & `variation type` == "Gene presence detected") %>%
+  arrange(-n)
+#> # A tibble: 12 × 6
+#>    marker         drug_agent antibiotic drug_class `variation type`           n
+#>    <chr>          <ab>       <chr>      <chr>      <chr>                  <int>
+#>  1 aac(6')-Ib-cr5 NA         NA         Quinolones Gene presence detected   153
+#>  2 qnrS1          NA         NA         Quinolones Gene presence detected    61
+#>  3 qnrB19         NA         NA         Quinolones Gene presence detected    36
+#>  4 qnrB4          NA         NA         Quinolones Gene presence detected    11
+#>  5 qnrB1          NA         NA         Quinolones Gene presence detected     3
+#>  6 qnrB2          NA         NA         Quinolones Gene presence detected     3
+#>  7 qepA1          NA         NA         Quinolones Gene presence detected     2
+#>  8 qnrA1          NA         NA         Quinolones Gene presence detected     2
+#>  9 qnrB6          NA         NA         Quinolones Gene presence detected     2
+#> 10 qnrS2          NA         NA         Quinolones Gene presence detected     2
+#> 11 qnrB           NA         NA         Quinolones Gene presence detected     1
+#> 12 qnrB7          NA         NA         Quinolones Gene presence detected     1
+```
+
 ### 2. Phenotype table
 
 The
-[`import_ncbi_ast()`](https://AMRverse.github.io/AMRgen/reference/import_ncbi_ast.md)
-function imports AST data from NCBI format files.
+[`import_ast()`](https://AMRverse.github.io/AMRgen/reference/import_ast.md)
+function imports AST data from NCBI or other standard formats
 
 ``` r
 # Example E. coli AST data from NCBI
 # This one has already been imported and phenotypes interpreted from assay data
-# You can make your own from different file formats, and interpret against breakpoints, using:
-#    import_ast("filepath/NCBI_AST.tsv", format="ncbi", interpret_clsi=T)
-#    import_ast("filepath/Vitek_AST.tsv", format="vitek", interpret_eucast=T)
-
 ecoli_ast
-#> # A tibble: 4,170 × 10
-#>    id           drug_agent     mic  disk pheno_clsi ecoff guideline method
-#>    <chr>        <ab>         <mic> <dsk> <sir>      <sir> <chr>     <chr> 
-#>  1 SAMN36015110 CIP        <128.00    NA   R          R   CLSI      NA    
-#>  2 SAMN11638310 CIP         256.00    NA   R          R   CLSI      NA    
-#>  3 SAMN05729964 CIP          64.00    NA   R          R   CLSI      Etest 
-#>  4 SAMN10620111 CIP         >=4.00    NA   R          R   CLSI      NA    
-#>  5 SAMN10620168 CIP         >=4.00    NA   R          R   CLSI      NA    
-#>  6 SAMN10620104 CIP         <=0.25    NA   S          R   CLSI      NA    
-#>  7 SAMN10620102 CIP         >=4.00    NA   R          R   CLSI      NA    
-#>  8 SAMN10620129 CIP         >=4.00    NA   R          R   CLSI      NA    
-#>  9 SAMN10620121 CIP         >=4.00    NA   R          R   CLSI      NA    
-#> 10 SAMN10620086 CIP         >=4.00    NA   R          R   CLSI      NA    
-#> # ℹ 4,160 more rows
+#> # A tibble: 4,168 × 11
+#>    id         drug_agent    mic  disk pheno_clsi ecoff guideline method platform
+#>    <chr>      <ab>        <mic> <dsk> <sir>      <sir> <chr>     <chr>  <chr>   
+#>  1 SAMN11638… CIP        256.00    NA   R         NWT  CLSI      broth… NA      
+#>  2 SAMN05729… CIP         64.00    NA   R         NWT  CLSI      Etest  Etest   
+#>  3 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#>  4 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#>  5 SAMN10620… CIP        <=0.25    NA   S          NI  CLSI      broth… NA      
+#>  6 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#>  7 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#>  8 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#>  9 SAMN10620… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#> 10 SAMN04122… CIP          1.00    NA   R         NWT  CLSI      broth… Vitek   
+#> # ℹ 4,158 more rows
 #> # ℹ 2 more variables: pheno_provided <sir>, spp_pheno <mo>
 
 head(ecoli_ast)
-#> # A tibble: 6 × 10
-#>   id           drug_agent     mic  disk pheno_clsi ecoff guideline method
-#>   <chr>        <ab>         <mic> <dsk> <sir>      <sir> <chr>     <chr> 
-#> 1 SAMN36015110 CIP        <128.00    NA   R          R   CLSI      NA    
-#> 2 SAMN11638310 CIP         256.00    NA   R          R   CLSI      NA    
-#> 3 SAMN05729964 CIP          64.00    NA   R          R   CLSI      Etest 
-#> 4 SAMN10620111 CIP         >=4.00    NA   R          R   CLSI      NA    
-#> 5 SAMN10620168 CIP         >=4.00    NA   R          R   CLSI      NA    
-#> 6 SAMN10620104 CIP         <=0.25    NA   S          R   CLSI      NA    
+#> # A tibble: 6 × 11
+#>   id          drug_agent    mic  disk pheno_clsi ecoff guideline method platform
+#>   <chr>       <ab>        <mic> <dsk> <sir>      <sir> <chr>     <chr>  <chr>   
+#> 1 SAMN116383… CIP        256.00    NA   R         NWT  CLSI      broth… NA      
+#> 2 SAMN057299… CIP         64.00    NA   R         NWT  CLSI      Etest  Etest   
+#> 3 SAMN106201… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#> 4 SAMN106201… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
+#> 5 SAMN106201… CIP        <=0.25    NA   S          NI  CLSI      broth… NA      
+#> 6 SAMN106201… CIP        >=4.00    NA   R         NWT  CLSI      broth… NA      
 #> # ℹ 2 more variables: pheno_provided <sir>, spp_pheno <mo>
+
+
+# You can make your own from different file formats, and interpret against breakpoints, using:
+#    import_ast("filepath/NCBI_AST.tsv", format="ncbi", interpret_clsi=T)
+#    import_ast("filepath/Vitek_AST.tsv", format="vitek", interpret_eucast=T)
 ```
 
 Data can be imported from various standard formats using the
@@ -303,9 +509,10 @@ Sensititer) in the platform
 mic_by_platform <- assay_by_var(pheno_table = ecoli_ast, antibiotic = "Ciprofloxacin", measure = "mic", colour_by = "pheno_clsi", species = "E. coli", guideline = "CLSI 2025", facet_var = "method")
 #>   MIC breakpoints determined using AMR package: S <= 0.25 and R > 1
 
-mic_by_platform$plot
-#> NULL
+mic_by_platform
 ```
+
+![](AnalysingGenoPhenoData_files/figure-html/plot_mic_breakpoints_method-1.png)
 
 ### 4. Download reference assay distributions and compare to your data
 
@@ -318,75 +525,52 @@ or with your data overlaid.
 
 ``` r
 # get MIC distribution for ciprofloxacin, for all organisms
-get_eucast_mic_distribution("cipro")
-#> # A tibble: 2,033 × 4
-#>    microorganism              microorganism_code   mic count
-#>    <chr>                      <mo>               <mic> <int>
-#>  1 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.002     0
-#>  2 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.004     0
-#>  3 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.008     0
-#>  4 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.016     0
-#>  5 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.030     0
-#>  6 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.060     0
-#>  7 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.125     0
-#>  8 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.250     1
-#>  9 Achromobacter xylosoxidans B_ACHRMB_XYLS      0.500     0
-#> 10 Achromobacter xylosoxidans B_ACHRMB_XYLS      1.000     6
-#> # ℹ 2,023 more rows
+cip_mic_data <- get_eucast_mic_distribution("cipro")
 
 # specify microorganism to only get results for that pathogen
 ecoli_cip_mic_data <- get_eucast_mic_distribution("cipro", "E. coli")
 
 # get disk diffusion data instead
 ecoli_cip_disk_data <- get_eucast_disk_distribution("cipro", "E. coli")
-
-# plot the MIC data
-mics <- rep(ecoli_cip_mic_data$mic, ecoli_cip_mic_data$count)
-ggplot2::autoplot(
-  mics,
-  ab = "cipro",
-  mo = "E. coli",
-  title = "E. coli cipro reference distribution"
-)
 ```
 
-![](AnalysingGenoPhenoData_files/figure-html/get_eucast_distribution-1.png)
-
 ``` r
-# Compare reference distribution to random test data
-my_mic_values <- AMR::random_mic(500)
-comparison <- compare_mic_with_eucast(my_mic_values, ab = "cipro", mo = "E. coli")
-#> Joining with `by = join_by(value)`
-comparison
-#> # A tibble: 25 × 3
-#>    value     user eucast
-#>  * <fct>    <int>  <int>
-#>  1 <=0.0005    47      0
-#>  2 0.001       29      0
-#>  3 0.002       44     14
-#>  4 0.004       33    189
-#>  5 0.008       28   3952
-#>  6 0.016       34   7238
-#>  7 0.03         0   1355
-#>  8 0.032       24      0
-#>  9 0.06         0    356
-#> 10 0.064       32      0
-#> # ℹ 15 more rows
-#> Use ggplot2::autoplot() on this output to visualise.
-ggplot2::autoplot(comparison)
+# Ciprofloxacin MIC reference distribution for E. coli
+ecoli_cip_mic_data
+#> # A tibble: 19 × 2
+#>        mic count
+#>      <mic> <int>
+#>  1   0.002    14
+#>  2   0.004   189
+#>  3   0.008  3952
+#>  4   0.016  7238
+#>  5   0.030  1355
+#>  6   0.060   356
+#>  7   0.125   401
+#>  8   0.250   521
+#>  9   0.500   171
+#> 10   1.000    94
+#> 11   2.000    47
+#> 12   4.000   119
+#> 13   8.000   246
+#> 14  16.000   229
+#> 15  32.000   564
+#> 16  64.000   166
+#> 17 128.000    85
+#> 18 256.000    59
+#> 19 512.000     7
 ```
 
-![](AnalysingGenoPhenoData_files/figure-html/compare_mic_with_eucast-1.png)
-
 ``` r
-
-
 # Compare reference distribution to example E. coli data
 ecoli_cip <- ecoli_ast$mic[ecoli_ast$drug_agent == "CIP"]
-comparison <- compare_mic_with_eucast(ecoli_cip, ab = "cipro", mo = "E. coli")
-#> Joining with `by = join_by(value)`
-comparison
-#> # A tibble: 34 × 3
+
+ecoli_cip_vs_ref <- compare_mic_with_eucast(ecoli_cip, ab = "cipro", mo = "E. coli")
+```
+
+``` r
+ecoli_cip_vs_ref
+#> # A tibble: 32 × 3
 #>    value    user eucast
 #>  * <fct>   <int>  <int>
 #>  1 0.002       0     14
@@ -399,12 +583,13 @@ comparison
 #>  8 <=0.06     11      0
 #>  9 0.06        5    356
 #> 10 0.12       34      0
-#> # ℹ 24 more rows
+#> # ℹ 22 more rows
 #> Use ggplot2::autoplot() on this output to visualise.
-ggplot2::autoplot(comparison)
+
+ggplot2::autoplot(ecoli_cip_vs_ref)
 ```
 
-![](AnalysingGenoPhenoData_files/figure-html/compare_mic_with_eucast-2.png)
+![](AnalysingGenoPhenoData_files/figure-html/compare_mic_with_eucast_dummy-1.png)
 
 ### 5. Combine genotype and phenotype data for a given drug
 
@@ -441,12 +626,12 @@ head(cip_bin)
 #> # A tibble: 6 × 50
 #>   id     pheno ecoff     mic     R   NWT gyrA_S83L gyrA_D87Y gyrA_D87N parC_S80I
 #>   <chr>  <sir> <sir>   <mic> <dbl> <dbl>     <dbl>     <dbl>     <dbl>     <dbl>
-#> 1 SAMN0…   S     S   <=0.015     0     0         0         0         0         0
-#> 2 SAMN0…   S     S   <=0.015     0     0         0         0         0         0
-#> 3 SAMN0…   S     S   <=0.015     0     0         0         0         0         0
-#> 4 SAMN0…   S     R     0.250     0     1         1         0         0         0
-#> 5 SAMN0…   S     R     0.120     0     1         0         1         0         0
-#> 6 SAMN0…   S     S   <=0.015     0     0         0         0         0         0
+#> 1 SAMN0…   S     WT  <=0.015     0     0         0         0         0         0
+#> 2 SAMN0…   S     WT  <=0.015     0     0         0         0         0         0
+#> 3 SAMN0…   S     WT  <=0.015     0     0         0         0         0         0
+#> 4 SAMN0…   S    NWT    0.250     0     1         1         0         0         0
+#> 5 SAMN0…   S    NWT    0.120     0     1         0         1         0         0
+#> 6 SAMN0…   S     WT  <=0.015     0     0         0         0         0         0
 #> # ℹ 40 more variables: parE_S458A <dbl>, parC_S80R <dbl>, parE_L416F <dbl>,
 #> #   qnrB6 <dbl>, gyrA_D87G <dbl>, parC_S57T <dbl>, parC_E84A <dbl>,
 #> #   soxS_A12S <dbl>, qnrB2 <dbl>, qnrS2 <dbl>, parC_E84K <dbl>,
@@ -480,6 +665,8 @@ distribution coloured by presence of a particular genetic marker
 
 ``` r
 assay_by_var(cip_bin, measure = "mic", colour_by = "parC_S80I", antibiotic = "Ciprofloxacin")
+#> WARNING: Column 'drug_agent' not found in phenotype table, so can't input matrix to specified antibiotic.
+#> Ensure your input table is already filtered to the antibiotic.
 ```
 
 ![](AnalysingGenoPhenoData_files/figure-html/assay_by_genotype-1.png)
@@ -493,6 +680,8 @@ gyrA_mut <- cip_bin %>%
 
 # plot the MIC distribution, coloured by count of gyrA mutations
 mic_by_gyrA_count <- assay_by_var(gyrA_mut, measure = "mic", colour_by = "gyrA_mut", colour_legend_label = "No. gyrA mutations", antibiotic = "Ciprofloxacin")
+#> WARNING: Column 'drug_agent' not found in phenotype table, so can't input matrix to specified antibiotic.
+#> Ensure your input table is already filtered to the antibiotic.
 
 mic_by_gyrA_count
 ```
@@ -508,6 +697,8 @@ marker_count <- cip_bin %>%
 
 # plot the MIC distribution, coloured by count of associated genetic markers
 mic_by_marker_count <- assay_by_var(marker_count, measure = "mic", colour_by = "marker_count", colour_legend_label = "No. markers detected", antibiotic = "Ciprofloxacin", bar_cols = viridisLite::viridis(max(marker_count$marker_count) + 1))
+#> WARNING: Column 'drug_agent' not found in phenotype table, so can't input matrix to specified antibiotic.
+#> Ensure your input table is already filtered to the antibiotic.
 
 mic_by_marker_count
 ```
@@ -540,9 +731,9 @@ approach implemented in the [`glm()`](https://rdrr.io/r/stats/glm.html)
 function, or Firth’s bias-reduced penalized-likelihood logistic
 regression implemented in the `logistf` package. The default is to use
 Firth’s regression, as standard logistic regression can fail if there
-are too observations in some subgroups, which happens quite often with
-this kind of data. To use [`glm()`](https://rdrr.io/r/stats/glm.html)
-instead, set `glm=TRUE`.
+are too few observations in some subgroups, which happens quite often
+with this kind of data. To use
+[`glm()`](https://rdrr.io/r/stats/glm.html) instead, set `glm=TRUE`.
 
 The function also filters out markers with too few observations in the
 combined genotype/phenotype dataset. The default minimum is 10 but this
@@ -593,60 +784,60 @@ summary(modelR)
 #> Model fitted by Penalized ML
 #> Coefficients:
 #>                        coef  se(coef) lower 0.95 upper 0.95       Chisq
-#> (Intercept)      -5.3126336 0.2631271 -5.8283532 -4.7969141         Inf
-#> gyrA_S83L         5.0964769 0.3396242  4.4308257  5.7621280         Inf
-#> gyrA_D87Y         0.6106668 1.9594688 -3.2298214  4.4511550  0.09712520
-#> gyrA_D87N         1.0360455 1.2910108 -1.4942892  3.5663801  0.64401779
-#> parC_S80I         3.5373730 1.2607416  1.0663649  6.0083812  7.87244336
-#> parE_S458A       -0.6704877 1.4211494 -3.4558894  2.1149139  0.22258823
-#> parC_S80R         0.9483222 0.9365007 -0.8871855  2.7838299  1.02540544
-#> parE_L416F        1.0898410 1.4770169 -1.8050589  3.9847409  0.54444672
-#> parC_S57T         1.4138484 1.4556144 -1.4391034  4.2668003  0.94343723
-#> soxS_A12S         1.5835771 1.4858311 -1.3285984  4.4957527  1.13589853
-#> parC_A56T         2.6649799 1.5169240 -0.3081365  5.6380963  3.08645711
-#> qnrB19            5.2724510 0.4539251  4.3827740  6.1621279         Inf
-#> `aac(6')-Ib-cr5`  4.2781111 1.3428296  1.6462134  6.9100089 10.14991218
-#> parC_E84V        -0.5431447 1.7851855 -4.0420441  2.9557547  0.09256874
-#> parE_I529L        2.0650647 0.4422569  1.1982571  2.9318724 21.80309146
-#> parE_S458T       -2.7638947 1.9476308 -6.5811808  1.0533915  2.01386205
-#> parE_E460D       -1.5247536 1.8858945 -5.2210388  2.1715317  0.65367903
-#> parC_E84G         1.2138825 1.5879100 -1.8983640  4.3261290  0.58438832
-#> qnrS1             5.5078662 0.4382199  4.6489710  6.3667613         Inf
-#> marR_S3N          3.1497735 0.5128996  2.1445088  4.1550382 37.71325169
-#> parE_I355T        1.9452320 0.8701522  0.2397651  3.6506990  4.99749513
-#> soxR_G121D       -2.5711031 1.6085609 -5.7238245  0.5816183  2.55484162
-#> qnrB4             6.9220299 1.5713224  3.8422946 10.0017653 19.40601369
-#> parE_D475E       -0.7090156 1.4119171 -3.4763223  2.0582910  0.25216990
+#> (Intercept)      -5.3175097 0.2633180 -5.8336034 -4.8014159         Inf
+#> gyrA_S83L         5.1068379 0.3391112  4.4421922  5.7714836         Inf
+#> gyrA_D87Y         0.6085750 1.9592283 -3.2314420  4.4485920  0.09648461
+#> gyrA_D87N         1.0349517 1.2899342 -1.4932729  3.5631763  0.64373192
+#> parC_S80I         3.5331411 1.2607159  1.0621833  6.0040989  7.85393846
+#> parE_S458A       -0.6705019 1.4210624 -3.4557329  2.1147292  0.22262490
+#> parC_S80R         0.9079621 0.9428897 -0.9400679  2.7559920  0.92728574
+#> parE_L416F        1.0858606 1.4754461 -1.8059607  3.9776818  0.54162839
+#> parC_S57T         1.4187529 1.4556325 -1.4342344  4.2717401  0.94997028
+#> soxS_A12S         1.5838463 1.4862202 -1.3290918  4.4967844  1.13568986
+#> parC_A56T         2.6703270 1.5168050 -0.3025562  5.6432103  3.09934110
+#> qnrB19            5.2773513 0.4540398  4.3874495  6.1672530         Inf
+#> `aac(6')-Ib-cr5`  4.2828221 1.3434569  1.6496951  6.9159492 10.16278221
+#> parC_E84V        -0.6804449 1.7890326 -4.1868843  2.8259946  0.14466032
+#> parE_I529L        2.2022178 0.4576747  1.3051918  3.0992437 23.15297055
+#> parE_S458T       -2.7640228 1.9475381 -6.5811274  1.0530817  2.01424047
+#> parE_E460D       -1.5249129 1.8857582 -5.2209311  2.1711053  0.65391016
+#> parC_E84G         1.2081572 1.5876105 -1.9035023  4.3198167  0.57910718
+#> qnrS1             5.5126904 0.4383455  4.6535490  6.3718319         Inf
+#> marR_S3N          3.1530001 0.5135941  2.1463742  4.1596261 37.68841990
+#> parE_I355T        1.9462857 0.8716735  0.2378370  3.6547344  4.98546287
+#> soxR_G121D       -2.5712233 1.6085720 -5.7239664  0.5815198  2.55504535
+#> qnrB4             6.9269063 1.5713547  3.8471075 10.0067050 19.43256528
+#> parE_D475E       -0.7063419 1.4133734 -3.4765029  2.0638192  0.24975608
 #>                             p method
 #> (Intercept)      0.000000e+00      1
 #> gyrA_S83L        0.000000e+00      1
-#> gyrA_D87Y        7.553072e-01      1
-#> gyrA_D87N        4.222596e-01      1
-#> parC_S80I        5.019379e-03      1
-#> parE_S458A       6.370749e-01      1
-#> parC_S80R        3.112402e-01      1
-#> parE_L416F       4.605957e-01      1
-#> parC_S57T        3.313954e-01      1
-#> soxS_A12S        2.865207e-01      1
-#> parC_A56T        7.894653e-02      1
+#> gyrA_D87Y        7.560897e-01      1
+#> gyrA_D87N        4.223626e-01      1
+#> parC_S80I        5.071012e-03      1
+#> parE_S458A       6.370471e-01      1
+#> parC_S80R        3.355692e-01      1
+#> parE_L416F       4.617586e-01      1
+#> parC_S57T        3.297269e-01      1
+#> soxS_A12S        2.865649e-01      1
+#> parC_A56T        7.832399e-02      1
 #> qnrB19           0.000000e+00      1
-#> `aac(6')-Ib-cr5` 1.443081e-03      1
-#> parC_E84V        7.609366e-01      1
-#> parE_I529L       3.021130e-06      1
-#> parE_S458T       1.558681e-01      1
-#> parE_E460D       4.188004e-01      1
-#> parC_E84G        4.445974e-01      1
+#> `aac(6')-Ib-cr5` 1.433042e-03      1
+#> parC_E84V        7.036913e-01      1
+#> parE_I529L       1.496119e-06      1
+#> parE_S458T       1.558292e-01      1
+#> parE_E460D       4.187182e-01      1
+#> parC_E84G        4.466625e-01      1
 #> qnrS1            0.000000e+00      1
-#> marR_S3N         8.194598e-10      1
-#> parE_I355T       2.538403e-02      1
-#> soxR_G121D       1.099568e-01      1
-#> qnrB4            1.056738e-05      1
-#> parE_D475E       6.155513e-01      1
+#> marR_S3N         8.299580e-10      1
+#> parE_I355T       2.556115e-02      1
+#> soxR_G121D       1.099427e-01      1
+#> qnrB4            1.042148e-05      1
+#> parE_D475E       6.172469e-01      1
 #> 
 #> Method: 1-Wald, 2-Profile penalized log-likelihood, 3-None
 #> 
-#> Likelihood ratio test=3335.169 on 23 df, p=0, n=3630
-#> Wald test = 515.415 on 23 df, p = 0
+#> Likelihood ratio test=3338.78 on 23 df, p=0, n=3629
+#> Wald test = 514.8685 on 23 df, p = 0
 
 # Extract model summary details using `logistf_details()`
 modelR_summary <- logistf_details(modelR)
@@ -655,15 +846,15 @@ modelR_summary
 #> # A tibble: 24 × 5
 #>    marker         est ci.lower ci.upper    pval
 #>  * <chr>        <dbl>    <dbl>    <dbl>   <dbl>
-#>  1 (Intercept) -5.31    -5.83     -4.80 0      
-#>  2 gyrA_S83L    5.10     4.43      5.76 0      
-#>  3 gyrA_D87Y    0.611   -3.23      4.45 0.755  
-#>  4 gyrA_D87N    1.04    -1.49      3.57 0.422  
-#>  5 parC_S80I    3.54     1.07      6.01 0.00502
-#>  6 parE_S458A  -0.670   -3.46      2.11 0.637  
-#>  7 parC_S80R    0.948   -0.887     2.78 0.311  
-#>  8 parE_L416F   1.09    -1.81      3.98 0.461  
-#>  9 parC_S57T    1.41    -1.44      4.27 0.331  
+#>  1 (Intercept) -5.32    -5.83     -4.80 0      
+#>  2 gyrA_S83L    5.11     4.44      5.77 0      
+#>  3 gyrA_D87Y    0.609   -3.23      4.45 0.756  
+#>  4 gyrA_D87N    1.03    -1.49      3.56 0.422  
+#>  5 parC_S80I    3.53     1.06      6.00 0.00507
+#>  6 parE_S458A  -0.671   -3.46      2.11 0.637  
+#>  7 parC_S80R    0.908   -0.940     2.76 0.336  
+#>  8 parE_L416F   1.09    -1.81      3.98 0.462  
+#>  9 parC_S57T    1.42    -1.43      4.27 0.330  
 #> 10 soxS_A12S    1.58    -1.33      4.50 0.287  
 #> # ℹ 14 more rows
 #> Use ggplot2::autoplot() on this output to visualise
@@ -684,20 +875,22 @@ models <- amr_logistic(
   drug_class_list = c("Quinolones"),
   maf = 10
 )
+#> Generating geno-pheno binary matrix
 #>  Defining NWT in binary matrix using ecoff column provided: ecoff 
 #> ...Fitting logistic regression model to R using logistf
-#>    Filtered data contains 3630 samples (793 => 1, 2837 => 0) and 19 variables.
+#>    Filtered data contains 3629 samples (793 => 1, 2836 => 0) and 19 variables.
 #> Warning in logistf::logistf(R ~ ., data = to_fit, pl = FALSE): logistf.fit:
 #> Maximum number of iterations for full model exceeded. Try to increase the
 #> number of iterations or alter step size by passing 'logistf.control(maxit=...,
 #> maxstep=...)' to parameter control
 #> ...Fitting logistic regression model to NWT using logistf
-#>    Filtered data contains 3630 samples (929 => 1, 2701 => 0) and 19 variables.
+#>    Filtered data contains 3576 samples (875 => 1, 2701 => 0) and 19 variables.
 #> Warning in logistf::logistf(NWT ~ ., data = to_fit, pl = FALSE): logistf.fit:
 #> Maximum number of iterations for full model exceeded. Try to increase the
 #> number of iterations or alter step size by passing 'logistf.control(maxit=...,
 #> maxstep=...)' to parameter control
 #> Generating plots
+#> Plotting 2 models
 ```
 
 ![](AnalysingGenoPhenoData_files/figure-html/amr_logistic-1.png)
@@ -709,77 +902,76 @@ models$modelR
 #> # A tibble: 20 × 5
 #>    marker            est ci.lower ci.upper          pval
 #>    <chr>           <dbl>    <dbl>    <dbl>         <dbl>
-#>  1 (Intercept)    -5.18    -5.66     -4.70 0            
-#>  2 gyrA:Ser83Leu   4.98     4.33      5.62 0            
-#>  3 gyrA:Asp87Tyr   0.917   -2.94      4.78 0.642        
-#>  4 gyrA:Asp87Asn   1.19    -1.38      3.77 0.363        
-#>  5 parC:Ser80Ile   3.65     1.13      6.17 0.00457      
-#>  6 parE:Ser458Ala -1.03    -3.86      1.79 0.472        
-#>  7 parC:Ser80Arg   0.940   -0.896     2.78 0.316        
-#>  8 parE:Leu416Phe  1.08    -1.85      4.01 0.471        
-#>  9 parC:Ser57Thr   1.28    -1.57      4.13 0.377        
+#>  1 (Intercept)    -5.19    -5.67     -4.70 0            
+#>  2 gyrA:Ser83Leu   4.99     4.34      5.63 0            
+#>  3 gyrA:Asp87Tyr   0.912   -2.95      4.77 0.643        
+#>  4 gyrA:Asp87Asn   1.19    -1.38      3.77 0.364        
+#>  5 parC:Ser80Ile   3.65     1.12      6.17 0.00462      
+#>  6 parE:Ser458Ala -1.03    -3.85      1.79 0.473        
+#>  7 parC:Ser80Arg   0.900   -0.949     2.75 0.340        
+#>  8 parE:Leu416Phe  1.07    -1.85      4.00 0.473        
+#>  9 parC:Ser57Thr   1.29    -1.56      4.13 0.376        
 #> 10 soxS:Ala12Ser   1.62    -1.31      4.56 0.279        
-#> 11 parC:Ala56Thr   2.54    -0.420     5.50 0.0926       
-#> 12 qnrB19          5.13     4.26      6.01 0            
-#> 13 aac(6')-Ib-cr5  4.22     1.61      6.83 0.00151      
-#> 14 parC:Glu84Val  -0.733   -4.49      3.02 0.702        
-#> 15 parE:Ile529Leu  2.04     1.19      2.90 0.00000311   
-#> 16 parC:Glu84Gly   1.22    -1.92      4.35 0.448        
+#> 11 parC:Ala56Thr   2.55    -0.415     5.51 0.0919       
+#> 12 qnrB19          5.14     4.27      6.01 0            
+#> 13 aac(6')-Ib-cr5  4.23     1.62      6.84 0.00150      
+#> 14 parC:Glu84Val  -0.866   -4.63      2.90 0.652        
+#> 15 parE:Ile529Leu  2.18     1.29      3.07 0.00000151   
+#> 16 parC:Glu84Gly   1.21    -1.93      4.35 0.450        
 #> 17 qnrS1           5.38     4.54      6.22 0            
-#> 18 marR:Ser3Asn    3.04     2.06      4.02 0.00000000125
-#> 19 parE:Ile355Thr  1.86     0.190     3.53 0.0290       
-#> 20 parE:Asp475Glu -0.761   -3.48      1.96 0.583
+#> 18 marR:Ser3Asn    3.04     2.06      4.02 0.00000000128
+#> 19 parE:Ile355Thr  1.86     0.188     3.53 0.0292       
+#> 20 parE:Asp475Glu -0.759   -3.48      1.96 0.585
 #> Use ggplot2::autoplot() on this output to visualise
 
 models$modelNWT
 #> # A tibble: 20 × 5
-#>    marker            est ci.lower ci.upper     pval
-#>    <chr>           <dbl>    <dbl>    <dbl>    <dbl>
-#>  1 (Intercept)    -3.71    -3.97    -3.46  0       
-#>  2 gyrA:Ser83Leu   9.52     6.22    12.8   1.57e- 8
-#>  3 gyrA:Asp87Tyr   5.51     2.81     8.21  6.29e- 5
-#>  4 gyrA:Asp87Asn   5.14     2.08     8.21  1.00e- 3
-#>  5 parC:Ser80Ile  -2.52    -6.06     1.02  1.63e- 1
-#>  6 parE:Ser458Ala -3.85    -7.90     0.202 6.26e- 2
-#>  7 parC:Ser80Arg  -3.78    -7.89     0.337 7.20e- 2
-#>  8 parE:Leu416Phe -4.63    -8.40    -0.858 1.61e- 2
-#>  9 parC:Ser57Thr   0.959   -0.709    2.63  2.60e- 1
-#> 10 soxS:Ala12Ser   3.71     1.44     5.98  1.38e- 3
-#> 11 parC:Ala56Thr   1.13    -1.78     4.03  4.48e- 1
-#> 12 qnrB19          6.59     4.92     8.25  8.22e-15
-#> 13 aac(6')-Ib-cr5  5.75     2.31     9.19  1.06e- 3
-#> 14 parC:Glu84Val  -4.83    -9.41    -0.251 3.87e- 2
-#> 15 parE:Ile529Leu  2.35     1.16     3.54  1.07e- 4
-#> 16 parC:Glu84Gly  -4.54    -8.41    -0.681 2.11e- 2
-#> 17 qnrS1           6.73     5.07     8.39  1.78e-15
-#> 18 marR:Ser3Asn    2.91     2.22     3.59  1.11e-16
-#> 19 parE:Ile355Thr -0.882   -3.65     1.89  5.32e- 1
-#> 20 parE:Asp475Glu -0.263   -1.64     1.12  7.08e- 1
+#>    marker             est ci.lower ci.upper     pval
+#>    <chr>            <dbl>    <dbl>    <dbl>    <dbl>
+#>  1 (Intercept)    -4.46     -4.82   -4.10   0       
+#>  2 gyrA:Ser83Leu  10.5       7.16   13.9    7.30e-10
+#>  3 gyrA:Asp87Tyr   6.28      3.52    9.03   8.08e- 6
+#>  4 gyrA:Asp87Asn   5.57      2.65    8.49   1.87e- 4
+#>  5 parC:Ser80Ile  -2.90     -6.37    0.564  1.01e- 1
+#>  6 parE:Ser458Ala -4.14     -8.18   -0.0956 4.48e- 2
+#>  7 parC:Ser80Arg  -3.53     -7.57    0.509  8.67e- 2
+#>  8 parE:Leu416Phe -4.92     -8.72   -1.12   1.11e- 2
+#>  9 parC:Ser57Thr   0.552    -2.31    3.41   7.06e- 1
+#> 10 soxS:Ala12Ser   4.46      2.17    6.75   1.36e- 4
+#> 11 parC:Ala56Thr   1.88     -1.02    4.79   2.04e- 1
+#> 12 qnrB19          7.33      5.65    9.01   0       
+#> 13 aac(6')-Ib-cr5  5.34      0.957   9.73   1.70e- 2
+#> 14 parC:Glu84Val  -2.94     -7.96    2.08   2.51e- 1
+#> 15 parE:Ile529Leu  0.170    -2.89    3.23   9.13e- 1
+#> 16 parC:Glu84Gly  -4.94     -8.79   -1.09   1.19e- 2
+#> 17 qnrS1           7.40      5.72    9.08   0       
+#> 18 marR:Ser3Asn    2.90      1.98    3.81   4.78e-10
+#> 19 parE:Ile355Thr  0.193    -2.86    3.25   9.02e- 1
+#> 20 parE:Asp475Glu  0.0389   -1.69    1.77   9.65e- 1
 #> Use ggplot2::autoplot() on this output to visualise
 
-# Note the matrix output is the same as cip_bin, but without the MIC data as this is not required
-#    for logistic regression.
-models$bin_mat
-#> # A tibble: 3,630 × 49
-#>    id       pheno ecoff     R   NWT gyrA..Ser83Leu gyrA..Asp87Tyr gyrA..Asp87Asn
-#>    <chr>    <sir> <sir> <dbl> <dbl>          <dbl>          <dbl>          <dbl>
-#>  1 SAMN031…   S     S       0     0              0              0              0
-#>  2 SAMN031…   S     S       0     0              0              0              0
-#>  3 SAMN031…   S     S       0     0              0              0              0
-#>  4 SAMN031…   S     R       0     1              1              0              0
-#>  5 SAMN031…   S     R       0     1              0              1              0
-#>  6 SAMN031…   S     S       0     0              0              0              0
-#>  7 SAMN031…   S     S       0     0              0              0              0
-#>  8 SAMN031…   R     R       1     1              1              0              1
-#>  9 SAMN031…   S     R       0     1              1              0              0
-#> 10 SAMN031…   R     R       1     1              1              0              1
-#> # ℹ 3,620 more rows
-#> # ℹ 41 more variables: parC..Ser80Ile <dbl>, parE..Ser458Ala <dbl>,
-#> #   parC..Ser80Arg <dbl>, parE..Leu416Phe <dbl>, qnrB6 <dbl>,
-#> #   gyrA..Asp87Gly <dbl>, parC..Ser57Thr <dbl>, parC..Glu84Ala <dbl>,
-#> #   soxS..Ala12Ser <dbl>, qnrB2 <dbl>, qnrS2 <dbl>, parC..Glu84Lys <dbl>,
-#> #   parC..Ala56Thr <dbl>, qnrB19 <dbl>, `aac(6')-Ib-cr5` <dbl>,
-#> #   parC..Glu84Val <dbl>, parE..Ile529Leu <dbl>, parE..Ser458Thr <dbl>, …
+# Note the matrix output is the same as cip_bin.
+models$binary_matrix
+#> # A tibble: 3,629 × 51
+#>    id        pheno ecoff     mic  disk     R   NWT gyrA..Ser83Leu gyrA..Asp87Tyr
+#>    <chr>     <sir> <sir>   <mic> <dsk> <dbl> <dbl>          <dbl>          <dbl>
+#>  1 SAMN0317…   S     WT  <=0.015    NA     0     0              0              0
+#>  2 SAMN0317…   S     WT  <=0.015    NA     0     0              0              0
+#>  3 SAMN0317…   S     WT  <=0.015    NA     0     0              0              0
+#>  4 SAMN0317…   S    NWT    0.250    NA     0     1              1              0
+#>  5 SAMN0317…   S    NWT    0.120    NA     0     1              0              1
+#>  6 SAMN0317…   S     WT  <=0.015    NA     0     0              0              0
+#>  7 SAMN0317…   S     WT  <=0.015    NA     0     0              0              0
+#>  8 SAMN0317…   R    NWT   >4.000    NA     1     1              1              0
+#>  9 SAMN0317…   S    NWT    0.250    NA     0     1              1              0
+#> 10 SAMN0317…   R    NWT   >4.000    NA     1     1              1              0
+#> # ℹ 3,619 more rows
+#> # ℹ 42 more variables: gyrA..Asp87Asn <dbl>, parC..Ser80Ile <dbl>,
+#> #   parE..Ser458Ala <dbl>, parC..Ser80Arg <dbl>, parE..Leu416Phe <dbl>,
+#> #   qnrB6 <dbl>, gyrA..Asp87Gly <dbl>, parC..Ser57Thr <dbl>,
+#> #   parC..Glu84Ala <dbl>, soxS..Ala12Ser <dbl>, qnrB2 <dbl>, qnrS2 <dbl>,
+#> #   parC..Glu84Lys <dbl>, parC..Ala56Thr <dbl>, qnrB19 <dbl>,
+#> #   `aac(6')-Ib-cr5` <dbl>, parC..Glu84Val <dbl>, parE..Ile529Leu <dbl>, …
 ```
 
 ### 7. Assess solo positive predictive value of genetic markers
@@ -794,7 +986,7 @@ The function
 [`solo_ppv_analysis()`](https://AMRverse.github.io/AMRgen/reference/solo_ppv_analysis.md)
 takes as input our genotype and phenotype tables, and calculates solo
 PPV for resistance to a specific drug (included in our phenotype table)
-formarkers associated with the specified drug class (included in our
+for markers associated with the specified drug class (included in our
 genotype table). It uses the
 [`get_binary_matrix()`](https://AMRverse.github.io/AMRgen/reference/get_binary_matrix.md)
 function to first calculate the binary matrix, then filters out all
@@ -830,7 +1022,12 @@ soloPPV_cipro <- solo_ppv_analysis(
   antibiotic = "Ciprofloxacin",
   drug_class_list = "Quinolones"
 )
+#> Generating geno-pheno binary matrix
 #>  Defining NWT in binary matrix using ecoff column provided: ecoff
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
 ![](AnalysingGenoPhenoData_files/figure-html/solo_ppv_analysis-1.png)
@@ -839,53 +1036,53 @@ soloPPV_cipro <- solo_ppv_analysis(
 
 # Output table
 soloPPV_cipro$solo_stats
-#> # A tibble: 36 × 8
-#>    marker         category     x     n   ppv     se ci.lower ci.upper
-#>    <chr>          <chr>    <dbl> <int> <dbl>  <dbl>    <dbl>    <dbl>
-#>  1 aac(6')-Ib-cr5 R            0     1 0     0       0          0    
-#>  2 gyrA_D87N      R            0     1 0     0       0          0    
-#>  3 gyrA_D87Y      R            0     3 0     0       0          0    
-#>  4 gyrA_S83A      R            0     3 0     0       0          0    
-#>  5 gyrA_S83L      R           27    62 0.435 0.0630  0.312      0.559
-#>  6 marR_S3N       R            4    38 0.105 0.0498  0.00769    0.203
-#>  7 parC_A56T      R            0     6 0     0       0          0    
-#>  8 parC_S57T      R            0    23 0     0       0          0    
-#>  9 parE_D475E     R            0    61 0     0       0          0    
-#> 10 parE_I355T     R            0    24 0     0       0          0    
-#> # ℹ 26 more rows
+#> # A tibble: 40 × 8
+#>    marker         category     x     n   ppv    se ci.lower ci.upper
+#>    <chr>          <chr>    <dbl> <int> <dbl> <dbl>    <dbl>    <dbl>
+#>  1 aac(6')-Ib-cr5 R            0     1     0     0        0        0
+#>  2 gyrA_D87N      R            0     1     0     0        0        0
+#>  3 gyrA_D87Y      R            0     3     0     0        0        0
+#>  4 gyrA_S83A      R            0     3     0     0        0        0
+#>  5 parC_A56T      R            0     6     0     0        0        0
+#>  6 parC_S57T      R            0    23     0     0        0        0
+#>  7 parE_D475E     R            0    61     0     0        0        0
+#>  8 parE_I355T     R            0    24     0     0        0        0
+#>  9 parE_I529L     R            0    16     0     0        0        0
+#> 10 qnrA1          R            0     2     0     0        0        0
+#> # ℹ 30 more rows
 
 # Interim matrices with data used to compute stats and plots
 soloPPV_cipro$solo_binary
 #> # A tibble: 306 × 9
 #>    id           pheno ecoff   mic  disk     R   NWT marker    value
 #>    <chr>        <sir> <sir> <mic> <dsk> <dbl> <dbl> <chr>     <dbl>
-#>  1 SAMN03177618   S     R    0.25    NA     0     1 gyrA_S83L     1
-#>  2 SAMN03177619   S     R    0.12    NA     0     1 gyrA_D87Y     1
-#>  3 SAMN03177623   S     R    0.25    NA     0     1 gyrA_S83L     1
-#>  4 SAMN03177631   S     R    0.25    NA     0     1 gyrA_S83L     1
-#>  5 SAMN03177635   S     R    0.25    NA     0     1 gyrA_S83L     1
-#>  6 SAMN03177637   S     R    0.25    NA     0     1 gyrA_S83L     1
-#>  7 SAMN03177638   S     R    0.25    NA     0     1 qnrB6         1
-#>  8 SAMN03177639   S     R    0.12    NA     0     1 gyrA_S83L     1
-#>  9 SAMN03177643   S     R    0.25    NA     0     1 gyrA_S83L     1
-#> 10 SAMN03177646   S     R    0.25    NA     0     1 gyrA_S83L     1
+#>  1 SAMN03177618   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#>  2 SAMN03177619   S    NWT   0.12    NA     0     1 gyrA_D87Y     1
+#>  3 SAMN03177623   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#>  4 SAMN03177631   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#>  5 SAMN03177635   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#>  6 SAMN03177637   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#>  7 SAMN03177638   S    NWT   0.25    NA     0     1 qnrB6         1
+#>  8 SAMN03177639   S    NWT   0.12    NA     0     1 gyrA_S83L     1
+#>  9 SAMN03177643   S    NWT   0.25    NA     0     1 gyrA_S83L     1
+#> 10 SAMN03177646   S    NWT   0.25    NA     0     1 gyrA_S83L     1
 #> # ℹ 296 more rows
 
 soloPPV_cipro$amr_binary
-#> # A tibble: 3,630 × 51
+#> # A tibble: 3,629 × 51
 #>    id        pheno ecoff     mic  disk     R   NWT gyrA_S83L gyrA_D87Y gyrA_D87N
 #>    <chr>     <sir> <sir>   <mic> <dsk> <dbl> <dbl>     <dbl>     <dbl>     <dbl>
-#>  1 SAMN0317…   S     S   <=0.015    NA     0     0         0         0         0
-#>  2 SAMN0317…   S     S   <=0.015    NA     0     0         0         0         0
-#>  3 SAMN0317…   S     S   <=0.015    NA     0     0         0         0         0
-#>  4 SAMN0317…   S     R     0.250    NA     0     1         1         0         0
-#>  5 SAMN0317…   S     R     0.120    NA     0     1         0         1         0
-#>  6 SAMN0317…   S     S   <=0.015    NA     0     0         0         0         0
-#>  7 SAMN0317…   S     S   <=0.015    NA     0     0         0         0         0
-#>  8 SAMN0317…   R     R    >4.000    NA     1     1         1         0         1
-#>  9 SAMN0317…   S     R     0.250    NA     0     1         1         0         0
-#> 10 SAMN0317…   R     R    >4.000    NA     1     1         1         0         1
-#> # ℹ 3,620 more rows
+#>  1 SAMN0317…   S     WT  <=0.015    NA     0     0         0         0         0
+#>  2 SAMN0317…   S     WT  <=0.015    NA     0     0         0         0         0
+#>  3 SAMN0317…   S     WT  <=0.015    NA     0     0         0         0         0
+#>  4 SAMN0317…   S    NWT    0.250    NA     0     1         1         0         0
+#>  5 SAMN0317…   S    NWT    0.120    NA     0     1         0         1         0
+#>  6 SAMN0317…   S     WT  <=0.015    NA     0     0         0         0         0
+#>  7 SAMN0317…   S     WT  <=0.015    NA     0     0         0         0         0
+#>  8 SAMN0317…   R    NWT   >4.000    NA     1     1         1         0         1
+#>  9 SAMN0317…   S    NWT    0.250    NA     0     1         1         0         0
+#> 10 SAMN0317…   R    NWT   >4.000    NA     1     1         1         0         1
+#> # ℹ 3,619 more rows
 #> # ℹ 41 more variables: parC_S80I <dbl>, parE_S458A <dbl>, parC_S80R <dbl>,
 #> #   parE_L416F <dbl>, qnrB6 <dbl>, gyrA_D87G <dbl>, parC_S57T <dbl>,
 #> #   parC_E84A <dbl>, soxS_A12S <dbl>, qnrB2 <dbl>, qnrS2 <dbl>,
@@ -937,9 +1134,9 @@ cipro_mic_upset <- amr_upset(
 
 # Output table
 cipro_mic_upset$summary
-#> # A tibble: 103 × 19
+#> # A tibble: 103 × 21
 #>    marker_list        marker_count     n combination_id   R.n   R.ppv R.ci_lower
-#>    <chr>                     <dbl> <int> <chr>          <dbl>   <dbl>      <dbl>
+#>    <chr>                     <dbl> <int> <fct>          <dbl>   <dbl>      <dbl>
 #>  1 ""                            0  2590 0_0_0_0_0_0_0…    10 0.00386    0.00147
 #>  2 "qnrB"                        1     1 0_0_0_0_0_0_0…     1 1          1      
 #>  3 "parE_E460K, gyrA…            2     1 0_0_0_0_0_0_0…     1 1          1      
@@ -951,9 +1148,9 @@ cipro_mic_upset$summary
 #>  9 "marR_S3N"                    1    38 0_0_0_0_0_0_0…     4 0.105      0.00769
 #> 10 "marR_S3N, parE_D…            2     4 0_0_0_0_0_0_0…     0 0          0      
 #> # ℹ 93 more rows
-#> # ℹ 12 more variables: R.ci_upper <dbl>, NWT.n <dbl>, NWT.ppv <dbl>,
-#> #   NWT.ci_lower <dbl>, NWT.ci_upper <dbl>, median_excludeRangeValues <dbl>,
-#> #   q25_excludeRangeValues <dbl>, q75_excludeRangeValues <dbl>,
-#> #   n_excludeRangeValues <int>, median_ignoreRanges <dbl>,
-#> #   q25_ignoreRanges <dbl>, q75_ignoreRanges <dbl>
+#> # ℹ 14 more variables: R.ci_upper <dbl>, R.denom <int>, NWT.n <dbl>,
+#> #   NWT.ppv <dbl>, NWT.ci_lower <dbl>, NWT.ci_upper <dbl>, NWT.denom <int>,
+#> #   median_excludeRangeValues <dbl>, q25_excludeRangeValues <dbl>,
+#> #   q75_excludeRangeValues <dbl>, n_excludeRangeValues <int>,
+#> #   median_ignoreRanges <dbl>, q25_ignoreRanges <dbl>, q75_ignoreRanges <dbl>
 ```

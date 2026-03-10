@@ -1,7 +1,7 @@
-# Interpret AST data in a standard format tibble
+# Interpret antimicrobial susceptibility phenotype data in a standard format tibble
 
 This function applies human EUCAST or CLSI breakpoints, and/or ECOFF, to
-interpret AST data.
+interpret antimicrobial susceptibility testing (AST) data.
 
 ## Usage
 
@@ -97,14 +97,14 @@ pheno <- import_ncbi_ast(ecoli_ast_raw)
 #> Warning: Expected column 'BioProject' not found in input
 head(pheno)
 #> # A tibble: 6 × 29
-#>   id           drug_agent     mic  disk guideline method platform pheno_provided
-#>   <chr>        <ab>         <mic> <dsk> <chr>     <chr>  <chr>    <sir>         
-#> 1 SAMN36015110 CIP        <128.00    NA CLSI      MIC    NA         R           
-#> 2 SAMN11638310 CIP         256.00    NA CLSI      MIC    NA         R           
-#> 3 SAMN05729964 CIP          64.00    NA CLSI      Etest  Etest      R           
-#> 4 SAMN10620111 CIP         >=4.00    NA CLSI      MIC    NA         R           
-#> 5 SAMN10620168 CIP         >=4.00    NA CLSI      MIC    NA         R           
-#> 6 SAMN10620104 CIP         <=0.25    NA CLSI      MIC    NA         S           
+#>   id           drug_agent    mic  disk guideline method  platform pheno_provided
+#>   <chr>        <ab>        <mic> <dsk> <chr>     <chr>   <chr>    <sir>         
+#> 1 SAMN11638310 CIP        256.00    NA CLSI      broth … NA         R           
+#> 2 SAMN05729964 CIP         64.00    NA CLSI      Etest   Etest      R           
+#> 3 SAMN10620111 CIP        >=4.00    NA CLSI      broth … NA         R           
+#> 4 SAMN10620168 CIP        >=4.00    NA CLSI      broth … NA         R           
+#> 5 SAMN10620104 CIP        <=0.25    NA CLSI      broth … NA         S           
+#> 6 SAMN10620102 CIP        >=4.00    NA CLSI      broth … NA         R           
 #> # ℹ 21 more variables: spp_pheno <mo>, `Organism group` <chr>,
 #> #   `Scientific name` <chr>, `Isolation type` <chr>, Location <chr>,
 #> #   `Isolation source` <chr>, Isolate <chr>, Antibiotic <chr>,
@@ -115,11 +115,6 @@ head(pheno)
 
 # interpret phenotypes
 pheno <- interpret_ast(pheno)
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `across(...)`.
-#> Caused by warning:
-#> ! Some MICs were converted to the nearest higher log2 level, following the
-#> CLSI interpretation guideline.
 
 if (FALSE) { # \dontrun{
 pheno <- read_csv("AST.csv") %>%

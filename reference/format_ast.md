@@ -1,4 +1,4 @@
-# Import and Process AST Data from a generic format
+# Import and process antimicrobial phenotype data from a generic format
 
 This function attempts to import antibiotic susceptibility testing (AST)
 data in long-form antibiogram format (one row per sample and test),
@@ -125,9 +125,9 @@ format_ast(
 - method_col:
 
   (optional, default 'method') Name of the input data column that
-  indicates the testing method used (e.g. MIC, disk diffusion). If the
-  'rename' parameter is set to TRUE, this column will also be renamed as
-  'method'.
+  indicates the testing method used (e.g. broth dilution, disk
+  diffusion). If the 'rename' parameter is set to TRUE, this column will
+  also be renamed as 'method'.
 
 - platform_col:
 

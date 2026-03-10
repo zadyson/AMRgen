@@ -1,15 +1,15 @@
-# Import and Process AST Data from an EBI or NCBI antibiogram File
+# Import and process antimicrobial phenotype data from common sources
 
-This function imports an antibiotic susceptibility testing (AST) dataset
-in either EBI or NCBI antibiogram format, processes the data, and
-optionally interprets the results based on MIC or disk diffusion data.
-It assumes that the input file is a tab-delimited text file (e.g., TSV)
-or CSV (which may be compressed) and parses relevant columns (antibiotic
-names, species names, MIC or disk data) into suitable classes using the
-AMR package. It optionally can use the AMR package to interpret
-susceptibility phenotype (SIR) based on EUCAST or CLSI guidelines (human
-breakpoints and/or ECOFF). If expected columns are not found warnings
-will be given, and interpretation may not be possible.
+This function imports an antibiotic susceptibility testing (AST)
+datasets in formats exported by EBI, NCBI, WHOnet and several automated
+AST instruments (Vitek, Microscan, Sensititre). It assumes that the
+input file is a tab-delimited text file (e.g., TSV) or CSV (which may be
+compressed) and parses relevant columns (antibiotic names, species
+names, MIC or disk data) into suitable classes using the AMR package. It
+optionally can use the AMR package to interpret susceptibility phenotype
+(SIR) based on EUCAST or CLSI guidelines (human breakpoints and/or
+ECOFF). If expected columns are not found warnings will be given, and
+interpretation may not be possible.
 
 ## Usage
 
@@ -31,20 +31,23 @@ import_ast(
 - input:
 
   A string representing a dataframe, or a path to an input file,
-  containing the AST data in EBI or NCBI antibiogram format. These files
-  can be downloaded from the EBI AMR web browser
+  containing the AST data a supported format. These files may be
+  downloaded from public sources such as the EBI AMR web browser
   (https://www.ebi.ac.uk/amr/data/?view=experiments), EBI FTP site
   (ftp://ftp.ebi.ac.uk/pub/databases/amr_portal/releases/), or NCBI
   browser (e.g.
   https://www.ncbi.nlm.nih.gov/pathogens/ast#Pseudomonas%20aeruginosa),
-  or from EBI using the function
-  [`download_ebi()`](https://AMRverse.github.io/AMRgen/reference/download_ebi.md).
+  or using the functions
+  [download_ebi](https://AMRverse.github.io/AMRgen/reference/download_ebi.md)
+  or
+  [download_ncbi_ast](https://AMRverse.github.io/AMRgen/reference/download_ncbi_ast.md);
+  or the files may be exported from supported AST instruments.
 
 - format:
 
   A string indicating the format of the data: "ebi" (default),
-  "ebi_web", "ebi_ftp", "ncbi", "vitek", or "whonet". This determines
-  whether the data is passed on to the
+  "ebi_web", "ebi_ftp", "ncbi", "vitek", "microscan", "sensititre", or
+  "whonet". This determines whether the data is passed on to the
   [`import_ebi_ast()`](https://AMRverse.github.io/AMRgen/reference/import_ebi_ast.md)
   (ebi/ebi_web),
   [`import_ebi_ast_ftp()`](https://AMRverse.github.io/AMRgen/reference/import_ebi_ast_ftp.md)
@@ -52,7 +55,11 @@ import_ast(
   [`import_ncbi_ast()`](https://AMRverse.github.io/AMRgen/reference/import_ncbi_ast.md)
   (ncbi),
   [`import_vitek_ast()`](https://AMRverse.github.io/AMRgen/reference/import_vitek_ast.md)
-  (vitek), or
+  (vitek),
+  [`import_microscan_ast()`](https://AMRverse.github.io/AMRgen/reference/import_microscan_ast.md)
+  (microscan),
+  [`import_sensititre_ast()`](https://AMRverse.github.io/AMRgen/reference/import_sensititre_ast.md)
+  (sensititre), or
   [`import_whonet_ast()`](https://AMRverse.github.io/AMRgen/reference/import_whonet_ast.md)
   (whonet) function to process.
 
@@ -121,8 +128,9 @@ A data frame with the processed AST data, including additional columns:
 - `disk`: The disk diffusion measurement (in mm), formatted using the
   `as.disk` function.
 
-- `method`: The AST method (e.g., "MIC", "disk diffusion", "Etest",
-  "agar dilution").
+- `method`: The AST method (e.g., "broth dilution", "disk diffusion",
+  "Etest", "agar dilution"). Expected values are based on the NCBI/EBI
+  antibiogram specification.
 
 - `platform`: The AST platform/instrument (e.g., "Vitek", "Phoenix",
   "Sensititre").
@@ -156,16 +164,16 @@ ecoli_ast_raw
 #> # A tibble: 10 × 21
 #>    `#BioSample` `Organism group`    `Scientific name` `Isolation type` Location 
 #>    <chr>        <chr>               <chr>             <chr>            <chr>    
-#>  1 SAMN36015110 E.coli and Shigella Escherichia coli  clinical         India: A…
-#>  2 SAMN11638310 E.coli and Shigella Escherichia coli  clinical         India    
-#>  3 SAMN05729964 E.coli and Shigella Escherichia coli  clinical         Brazil: …
-#>  4 SAMN10620111 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#>  5 SAMN10620168 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#>  6 SAMN10620104 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#>  7 SAMN10620102 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#>  8 SAMN10620129 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#>  9 SAMN10620121 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
-#> 10 SAMN10620086 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  1 SAMN11638310 E.coli and Shigella Escherichia coli  clinical         India    
+#>  2 SAMN05729964 E.coli and Shigella Escherichia coli  clinical         Brazil: …
+#>  3 SAMN10620111 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  4 SAMN10620168 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  5 SAMN10620104 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  6 SAMN10620102 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  7 SAMN10620129 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  8 SAMN10620121 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#>  9 SAMN10620086 E.coli and Shigella Escherichia coli  clinical         USA: Roc…
+#> 10 SAMN04122821 E.coli and Shigella Escherichia coli  clinical         USA:Bost…
 #> # ℹ 16 more variables: `Isolation source` <chr>, Isolate <chr>,
 #> #   Antibiotic <chr>, `Resistance phenotype` <chr>, `Measurement sign` <chr>,
 #> #   `MIC (mg/L)` <dbl>, `Disk diffusion (mm)` <lgl>,
@@ -181,14 +189,14 @@ pheno <- import_ast(ecoli_ast_raw, format = "ncbi")
 #> Warning: Expected column 'BioProject' not found in input
 head(pheno)
 #> # A tibble: 6 × 29
-#>   id           drug_agent     mic  disk guideline method platform pheno_provided
-#>   <chr>        <ab>         <mic> <dsk> <chr>     <chr>  <chr>    <sir>         
-#> 1 SAMN36015110 CIP        <128.00    NA CLSI      MIC    NA         R           
-#> 2 SAMN11638310 CIP         256.00    NA CLSI      MIC    NA         R           
-#> 3 SAMN05729964 CIP          64.00    NA CLSI      Etest  Etest      R           
-#> 4 SAMN10620111 CIP         >=4.00    NA CLSI      MIC    NA         R           
-#> 5 SAMN10620168 CIP         >=4.00    NA CLSI      MIC    NA         R           
-#> 6 SAMN10620104 CIP         <=0.25    NA CLSI      MIC    NA         S           
+#>   id           drug_agent    mic  disk guideline method  platform pheno_provided
+#>   <chr>        <ab>        <mic> <dsk> <chr>     <chr>   <chr>    <sir>         
+#> 1 SAMN11638310 CIP        256.00    NA CLSI      broth … NA         R           
+#> 2 SAMN05729964 CIP         64.00    NA CLSI      Etest   Etest      R           
+#> 3 SAMN10620111 CIP        >=4.00    NA CLSI      broth … NA         R           
+#> 4 SAMN10620168 CIP        >=4.00    NA CLSI      broth … NA         R           
+#> 5 SAMN10620104 CIP        <=0.25    NA CLSI      broth … NA         S           
+#> 6 SAMN10620102 CIP        >=4.00    NA CLSI      broth … NA         R           
 #> # ℹ 21 more variables: spp_pheno <mo>, `Organism group` <chr>,
 #> #   `Scientific name` <chr>, `Isolation type` <chr>, Location <chr>,
 #> #   `Isolation source` <chr>, Isolate <chr>, Antibiotic <chr>,
@@ -204,14 +212,14 @@ pheno <- import_ast(ecoli_ast_raw, format = "ncbi", interpret_eucast = TRUE, int
 #> Warning: Expected column 'BioProject' not found in input
 head(pheno)
 #> # A tibble: 6 × 33
-#>   id       drug_agent     mic  disk pheno_eucast ecoff guideline method platform
-#>   <chr>    <ab>         <mic> <dsk> <sir>        <sir> <chr>     <chr>  <chr>   
-#> 1 SAMN360… CIP        <128.00    NA   NI           NI  CLSI      MIC    NA      
-#> 2 SAMN116… CIP         256.00    NA   R           NWT  CLSI      MIC    NA      
-#> 3 SAMN057… CIP          64.00    NA   R           NWT  CLSI      Etest  Etest   
-#> 4 SAMN106… CIP         >=4.00    NA   R           NWT  CLSI      MIC    NA      
-#> 5 SAMN106… CIP         >=4.00    NA   R           NWT  CLSI      MIC    NA      
-#> 6 SAMN106… CIP         <=0.25    NA   S            NI  CLSI      MIC    NA      
+#>   id        drug_agent    mic  disk pheno_eucast ecoff guideline method platform
+#>   <chr>     <ab>        <mic> <dsk> <sir>        <sir> <chr>     <chr>  <chr>   
+#> 1 SAMN1163… CIP        256.00    NA   R           NWT  CLSI      broth… NA      
+#> 2 SAMN0572… CIP         64.00    NA   R           NWT  CLSI      Etest  Etest   
+#> 3 SAMN1062… CIP        >=4.00    NA   R           NWT  CLSI      broth… NA      
+#> 4 SAMN1062… CIP        >=4.00    NA   R           NWT  CLSI      broth… NA      
+#> 5 SAMN1062… CIP        <=0.25    NA   S            NI  CLSI      broth… NA      
+#> 6 SAMN1062… CIP        >=4.00    NA   R           NWT  CLSI      broth… NA      
 #> # ℹ 24 more variables: pheno_provided <sir>, spp_pheno <mo>,
 #> #   `Organism group` <chr>, `Scientific name` <chr>, `Isolation type` <chr>,
 #> #   Location <chr>, `Isolation source` <chr>, Isolate <chr>, Antibiotic <chr>,
